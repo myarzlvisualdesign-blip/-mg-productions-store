@@ -50,5 +50,9 @@ server.log
 watchdog.log
 .zscripts/*.log
 .zscripts/*.pid
+db/custom.db
 # Skills directory
 /skills/
+
+lovable-handoff/
+lovable-handoff.zip

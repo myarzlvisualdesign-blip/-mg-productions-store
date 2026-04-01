@@ -7,10 +7,10 @@
     "build": "npm run db:generate && npm run db:push && next build",
     "start": "NODE_ENV=production next start",
     "lint": "eslint .",
-    "db:push": "node scripts/prisma-run.cjs db push",
-    "db:generate": "node scripts/prisma-run.cjs generate",
-    "db:migrate": "node scripts/prisma-run.cjs migrate dev",
-    "db:reset": "node scripts/prisma-run.cjs migrate reset",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset",
     "postinstall": "npm run db:generate && node scripts/patch-radix.cjs"
   },
   "dependencies": {
