@@ -1,0 +1,67 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { requireAdmin } from '@/lib/auth'
+
+// GET /api/topup-banners — list banners (active only by default, ?all=true for admin)
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const showAll = searchParams.get('all') === 'true'
+
+    const banners = await db.topUpBanner.findMany({
+      where: showAll ? {} : { active: true },
+      orderBy: { order: 'asc' },
+    })
+    return NextResponse.json(banners)
+  } catch {
+    return NextResponse.json(
+      { error: 'Gagal mengambil data banner' },
+      { status: 500 }
+    )
+  }
+}
+
+// POST /api/topup-banners — create a new banner (admin)
+export async function POST(request: NextRequest) {
+  try {
+    await requireAdmin(request)
+    const body = await request.json()
+    const { title, subtitle, badge, image, link, color, order, active } = body
+
+    if (!title || !title.trim()) {
+      return NextResponse.json(
+        { error: 'Judul banner wajib diisi' },
+        { status: 400 }
+      )
+    }
+
+    let bannerOrder = order ?? 0
+    if (!order && order !== 0) {
+      const maxOrder = await db.topUpBanner.findFirst({
+        orderBy: { order: 'desc' },
+        select: { order: true },
+      })
+      bannerOrder = (maxOrder?.order ?? -1) + 1
+    }
+
+    const banner = await db.topUpBanner.create({
+      data: {
+        title: title.trim(),
+        subtitle: (subtitle || '').trim(),
+        badge: (badge || 'PROMO').trim(),
+        image: (image || '').trim(),
+        link: (link || '').trim(),
+        color: (color || 'from-purple-600 to-blue-500').trim(),
+        order: bannerOrder,
+        active: active ?? true,
+      },
+    })
+
+    return NextResponse.json(banner, { status: 201 })
+  } catch {
+    return NextResponse.json(
+      { error: 'Gagal menambahkan banner' },
+      { status: 500 }
+    )
+  }
+}

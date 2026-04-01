@@ -1,0 +1,73 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { requireAdmin } from '@/lib/auth'
+
+// GET /api/partners — list partners (active only by default, ?all=true for admin)
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const showAll = searchParams.get('all') === 'true'
+
+    const partners = await db.partner.findMany({
+      where: showAll ? {} : { active: true },
+      orderBy: { order: 'asc' },
+    })
+    return NextResponse.json(partners)
+  } catch {
+    return NextResponse.json(
+      { error: 'Gagal mengambil data mitra' },
+      { status: 500 }
+    )
+  }
+}
+
+// POST /api/partners — create a new partner (admin)
+export async function POST(request: NextRequest) {
+  try {
+    await requireAdmin(request)
+    const body = await request.json()
+    const { name, description, image, link, order, active } = body
+
+    if (!name || !name.trim()) {
+      return NextResponse.json(
+        { error: 'Nama mitra wajib diisi' },
+        { status: 400 }
+      )
+    }
+
+    if (!image || !image.trim()) {
+      return NextResponse.json(
+        { error: 'Gambar mitra wajib diisi' },
+        { status: 400 }
+      )
+    }
+
+    // Get the next order value if not provided
+    let partnerOrder = order ?? 0
+    if (!order && order !== 0) {
+      const maxOrder = await db.partner.findFirst({
+        orderBy: { order: 'desc' },
+        select: { order: true },
+      })
+      partnerOrder = (maxOrder?.order ?? -1) + 1
+    }
+
+    const partner = await db.partner.create({
+      data: {
+        name: name.trim(),
+        description: (description || '').trim(),
+        image: image.trim(),
+        link: (link || '').trim(),
+        order: partnerOrder,
+        active: active ?? true,
+      },
+    })
+
+    return NextResponse.json(partner, { status: 201 })
+  } catch {
+    return NextResponse.json(
+      { error: 'Gagal menambahkan mitra' },
+      { status: 500 }
+    )
+  }
+}

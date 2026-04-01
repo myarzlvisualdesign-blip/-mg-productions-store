@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  image       String
+  category    String
+  link        String   @default("")
+  stock       Int      @default(0)
+  featured    Boolean  @default(false)
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Partner {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  image       String
+  link        String   @default("")
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Order {
+  id           String   @id @default(cuid())
+  items        String   // JSON string of order items
+  total        Float
+  status       String   @default("pending") // pending, processing, shipped, delivered, cancelled
+  customerName String
+  customerEmail String
+  customerPhone String?
+  address      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model TopUpService {
+  id        String   @id @default(cuid())
+  name      String
+  subtitle  String   @default("")
+  emoji     String   @default("🎮")
+  color     String   @default("from-purple-600 to-purple-400")
+  image     String   @default("")
+  items     String   @default("[]") // JSON array of strings
+  link      String   @default("")
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FoodItem {
+  id        String   @id @default(cuid())
+  name      String
+  subtitle  String   @default("")
+  emoji     String   @default("🍜")
+  color     String   @default("from-orange-600 to-orange-400")
+  image     String   @default("")
+  items     String   @default("[]") // JSON array of {name, price}
+  link      String   @default("")
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TravelService {
+  id        String   @id @default(cuid())
+  name      String
+  subtitle  String   @default("")
+  emoji     String   @default("✈️")
+  color     String   @default("from-sky-600 to-blue-400")
+  image     String   @default("")
+  desc      String   @default("")
+  link      String   @default("")
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TopUpBanner {
+  id        String   @id @default(cuid())
+  title     String
+  subtitle  String   @default("")
+  badge     String   @default("PROMO")
+  image     String   @default("")
+  link      String   @default("")
+  color     String   @default("from-purple-600 to-blue-500")
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChatbotSettings {
+  id             String   @id @default(cuid())
+  name           String   @default("MG Assistant")
+  avatar         String   @default("")
+  welcomeMessage String   @default("Halo! 👋 Saya MG Assistant. Ada yang bisa saya bantu?")
+  systemPrompt   String   @default("Kamu adalah MG Assistant, customer service AI dari MG PRODUCTIONS. Kamu ramah, profesional, dan membantu pelanggan dengan informasi tentang produk, layanan top-up, makanan, travel, dan promo. Jawab dalam Bahasa Indonesia yang santai dan mudah dipahami. Jika ditanya hal di luar produk MG PRODUCTIONS, arahkan kembali ke layanan yang tersedia.")
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ReferralSettings {
+  id              String   @id @default(cuid())
+  enabled         Boolean  @default(true)
+  referrerReward  Float    @default(50000)   // reward for the referrer (IDR)
+  refereeReward   Float    @default(25000)   // reward for the referee (discount) (IDR)
+  minOrderAmount  Float    @default(100000)  // minimum order to qualify (IDR)
+  minWithdraw     Float    @default(100000)  // minimum withdrawal amount (IDR)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ReferralCode {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  ownerName     String
+  ownerEmail    String
+  totalUsed     Int      @default(0)
+  totalReward   Float    @default(0)
+  totalWithdrawn Float   @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  uses          ReferralUse[]
+  withdrawals   ReferralWithdrawal[]
+}
+
+model ReferralUse {
+  id            String   @id @default(cuid())
+  referralCodeId String
+  referralCode  ReferralCode @relation(fields: [referralCodeId], references: [id])
+  orderType     String
+  orderId       String
+  customerName  String
+  customerEmail String
+  referrerReward Float    @default(0)
+  refereeReward  Float    @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model ReferralWithdrawal {
+  id            String   @id @default(cuid())
+  referralCodeId String
+  referralCode  ReferralCode @relation(fields: [referralCodeId], references: [id])
+  amount        Float
+  bankName      String
+  bankAccount   String
+  accountHolder String
+  status        String   @default("pending") // pending, approved, rejected, paid
+  adminNote     String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PopularDestination {
+  id        String   @id @default(cuid())
+  name      String
+  subtitle  String   @default("")
+  emoji     String   @default("📍")
+  color     String   @default("from-purple-600 to-blue-400")
+  image     String   @default("")
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
