@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingBag, Search, Menu, X, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ export default function StoreHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [scrolled, setScrolled] = useState(false)
 
   const totalItems = useCartStore((s) => s.totalItems())
   const openCart = useCartStore((s) => s.openCart)
@@ -31,9 +32,20 @@ export default function StoreHeader() {
     [searchQuery]
   )
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 8)
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent`}
+      className={`store-header fixed top-0 left-0 right-0 z-[70] transition-all duration-300 ${scrolled ? 'scrolled' : ''}`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
@@ -42,7 +54,7 @@ export default function StoreHeader() {
             <img
               src="/logo-sm.png"
               alt="MG PRODUCTIONS"
-              className="h-8 w-auto object-contain rounded-md"
+              className="h-10 sm:h-8 w-auto object-contain rounded-md transition-all duration-300"
             />
           </div>
 
