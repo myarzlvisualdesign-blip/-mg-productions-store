@@ -25,7 +25,13 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAdmin(request)
+    const { authorized } = requireAdmin(request)
+    if (!authorized) {
+      return NextResponse.json(
+        { error: 'Akses ditolak. Login sebagai admin diperlukan.' },
+        { status: 401 }
+      )
+    }
     const { id } = await params
     const body = await request.json()
     const { name, order, active } = body
@@ -69,7 +75,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAdmin(request)
+    const { authorized } = requireAdmin(request)
+    if (!authorized) {
+      return NextResponse.json(
+        { error: 'Akses ditolak. Login sebagai admin diperlukan.' },
+        { status: 401 }
+      )
+    }
     const { id } = await params
     const existing = await db.category.findUnique({ where: { id } })
     if (!existing) {

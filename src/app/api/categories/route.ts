@@ -25,7 +25,13 @@ export async function GET(request: NextRequest) {
 // POST /api/categories — create new category (admin)
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin(request)
+    const { authorized } = requireAdmin(request)
+    if (!authorized) {
+      return NextResponse.json(
+        { error: 'Akses ditolak. Login sebagai admin diperlukan.' },
+        { status: 401 }
+      )
+    }
     const body = await request.json()
     const { name, order, active } = body
 
