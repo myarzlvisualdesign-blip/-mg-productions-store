@@ -29,6 +29,7 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
   const [loading, setLoading] = useState(false)
 
   const login = useAuthStore((s) => s.login)
+  const checkAuth = useAuthStore((s) => s.checkAuth)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,14 +43,18 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
 
     setLoading(true)
     const result = await login(username, password)
-    setLoading(false)
 
     if (result.success) {
+      await checkAuth()
+      const { setViewMode } = useViewStore.getState()
+      setViewMode('admin')
+      setLoading(false)
       setError('')
       setUsername('')
       setPassword('')
       onClose()
     } else {
+      setLoading(false)
       setError(result.error || 'Login gagal')
     }
   }
