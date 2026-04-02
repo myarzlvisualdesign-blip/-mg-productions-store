@@ -16,6 +16,22 @@ interface StatsData {
   lowStockProducts: number
   totalStock: number
   categoryCount: Record<string, number>
+  totalPartners: number
+  activePartners: number
+  totalTopUpServices: number
+  activeTopUpServices: number
+  totalTopUpBanners: number
+  activeTopUpBanners: number
+  totalFoodItems: number
+  activeFoodItems: number
+  totalTravelServices: number
+  activeTravelServices: number
+  totalDestinations: number
+  activeDestinations: number
+  totalReferralCodes: number
+  pendingWithdrawals: number
+  referralEnabled: boolean
+  chatbotEnabled: boolean
 }
 
 interface OrdersData {

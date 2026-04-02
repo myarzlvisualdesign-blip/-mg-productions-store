@@ -28,6 +28,22 @@ interface StatsData {
   lowStockProducts: number
   totalStock: number
   categoryCount: Record<string, number>
+  totalPartners: number
+  activePartners: number
+  totalTopUpServices: number
+  activeTopUpServices: number
+  totalTopUpBanners: number
+  activeTopUpBanners: number
+  totalFoodItems: number
+  activeFoodItems: number
+  totalTravelServices: number
+  activeTravelServices: number
+  totalDestinations: number
+  activeDestinations: number
+  totalReferralCodes: number
+  pendingWithdrawals: number
+  referralEnabled: boolean
+  chatbotEnabled: boolean
 }
 
 interface Order {
@@ -96,6 +112,43 @@ const sectionVariants = {
   }),
 }
 
+const contentCards: Array<{
+  key: string
+  title: string
+  totalKey:
+    | 'totalPartners'
+    | 'totalTopUpServices'
+    | 'totalTopUpBanners'
+    | 'totalFoodItems'
+    | 'totalTravelServices'
+    | 'totalDestinations'
+    | 'totalReferralCodes'
+  activeKey?:
+    | 'activePartners'
+    | 'activeTopUpServices'
+    | 'activeTopUpBanners'
+    | 'activeFoodItems'
+    | 'activeTravelServices'
+    | 'activeDestinations'
+  tab:
+    | 'partners'
+    | 'topup'
+    | 'topup-banners'
+    | 'food'
+    | 'travel'
+    | 'destinations'
+    | 'referral'
+  emoji: string
+}> = [
+  { key: 'partners', title: 'Mitra', totalKey: 'totalPartners', activeKey: 'activePartners', tab: 'partners', emoji: '🤝' },
+  { key: 'topup', title: 'Top Up', totalKey: 'totalTopUpServices', activeKey: 'activeTopUpServices', tab: 'topup', emoji: '🎮' },
+  { key: 'topup-banners', title: 'Banner', totalKey: 'totalTopUpBanners', activeKey: 'activeTopUpBanners', tab: 'topup-banners', emoji: '🖼️' },
+  { key: 'food', title: 'Food', totalKey: 'totalFoodItems', activeKey: 'activeFoodItems', tab: 'food', emoji: '🍜' },
+  { key: 'travel', title: 'Travel', totalKey: 'totalTravelServices', activeKey: 'activeTravelServices', tab: 'travel', emoji: '✈️' },
+  { key: 'destinations', title: 'Destinasi', totalKey: 'totalDestinations', activeKey: 'activeDestinations', tab: 'destinations', emoji: '📍' },
+  { key: 'referral', title: 'Referral', totalKey: 'totalReferralCodes', tab: 'referral', emoji: '🎁' },
+]
+
 export default function AdminOverview() {
   const [stats, setStats] = useState<StatsData | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
@@ -145,6 +198,21 @@ export default function AdminOverview() {
 
   // Recent 5 orders for mini-table
   const recentOrders = orders.slice(0, 5)
+
+  const moduleCards = stats
+    ? contentCards.map((card) => {
+        const total = stats[card.totalKey] as number
+        const active = card.activeKey ? (stats[card.activeKey] as number) : null
+        const subtitle = card.key === 'referral'
+          ? `${stats.referralEnabled ? 'aktif' : 'nonaktif'} • ${stats.pendingWithdrawals} pending withdrawal`
+          : `${active ?? 0} aktif dari ${total}`
+        return {
+          ...card,
+          total,
+          subtitle,
+        }
+      })
+    : []
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -282,6 +350,50 @@ export default function AdminOverview() {
       {/* Recent Orders Mini Table */}
       <motion.div
         custom={3}
+        variants={sectionVariants}
+        initial="hidden"
+        animate="show"
+        className="glass-card rounded-2xl p-6"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-base font-semibold text-foreground">Market Content Sync</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Semua modul storefront yang harus sinkron dengan panel admin
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className={stats.chatbotEnabled ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' : 'bg-white/5 text-muted-foreground border-white/10'}>
+              Chatbot {stats.chatbotEnabled ? 'Aktif' : 'Nonaktif'}
+            </Badge>
+            <Badge className={stats.referralEnabled ? 'bg-purple-500/15 text-purple-300 border-purple-500/20' : 'bg-white/5 text-muted-foreground border-white/10'}>
+              Referral {stats.referralEnabled ? 'Aktif' : 'Nonaktif'}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+          {moduleCards.map((card) => (
+            <button
+              key={card.key}
+              onClick={() => setAdminTab(card.tab)}
+              className="text-left rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-purple-500/20 transition-all p-4"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-lg">{card.emoji}</span>
+                <span className="text-[10px] text-purple-400 font-medium">Buka</span>
+              </div>
+              <p className="text-sm font-semibold text-foreground">{card.title}</p>
+              <p className="mt-1 text-xl font-bold text-foreground">{card.total}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{card.subtitle}</p>
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Recent Orders Mini Table */}
+      <motion.div
+        custom={4}
         variants={sectionVariants}
         initial="hidden"
         animate="show"

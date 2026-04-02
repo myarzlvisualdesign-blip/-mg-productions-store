@@ -13,11 +13,36 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [totalProducts, totalOrders, orders, products] = await Promise.all([
+    const [
+      totalProducts,
+      totalOrders,
+      orders,
+      products,
+      partners,
+      topUpServices,
+      topUpBanners,
+      foodItems,
+      travelServices,
+      destinations,
+      referralCodes,
+      pendingWithdrawals,
+      referralSettings,
+      chatbotSettings,
+    ] = await Promise.all([
       db.product.count(),
       db.order.count(),
       db.order.findMany(),
       db.product.findMany(),
+      db.partner.findMany({ select: { active: true } }),
+      db.topUpService.findMany({ select: { active: true } }),
+      db.topUpBanner.findMany({ select: { active: true } }),
+      db.foodItem.findMany({ select: { active: true } }),
+      db.travelService.findMany({ select: { active: true } }),
+      db.popularDestination.findMany({ select: { active: true } }),
+      db.referralCode.count(),
+      db.referralWithdrawal.count({ where: { status: 'pending' } }),
+      db.referralSettings.findFirst({ select: { enabled: true } }),
+      db.chatbotSettings.findFirst({ select: { enabled: true } }),
     ])
 
     const totalRevenue = orders
@@ -43,6 +68,22 @@ export async function GET(request: NextRequest) {
       lowStockProducts,
       totalStock,
       categoryCount,
+      totalPartners: partners.length,
+      activePartners: partners.filter((item) => item.active).length,
+      totalTopUpServices: topUpServices.length,
+      activeTopUpServices: topUpServices.filter((item) => item.active).length,
+      totalTopUpBanners: topUpBanners.length,
+      activeTopUpBanners: topUpBanners.filter((item) => item.active).length,
+      totalFoodItems: foodItems.length,
+      activeFoodItems: foodItems.filter((item) => item.active).length,
+      totalTravelServices: travelServices.length,
+      activeTravelServices: travelServices.filter((item) => item.active).length,
+      totalDestinations: destinations.length,
+      activeDestinations: destinations.filter((item) => item.active).length,
+      totalReferralCodes: referralCodes,
+      pendingWithdrawals,
+      referralEnabled: referralSettings?.enabled ?? false,
+      chatbotEnabled: chatbotSettings?.enabled ?? false,
     })
   } catch {
     return NextResponse.json(
