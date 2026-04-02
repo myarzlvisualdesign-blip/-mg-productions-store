@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import SplashWrapper from "@/components/shared/splash-wrapper";
 import AIChatbot from "@/components/shared/ai-chatbot";
-import LegacyCacheCleanup from "@/components/shared/legacy-cache-cleanup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,12 +29,6 @@ export const metadata: Metadata = {
   description: "Discover premium products curated for modern living. Shop electronics, fashion, home goods and more.",
   keywords: ["e-commerce", "premium", "shopping", "MG PRODUCTIONS", "modern"],
   authors: [{ name: "MG PRODUCTIONS Team" }],
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "MG PRODUCTIONS",
-  },
   icons: {
     icon: [
       { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
@@ -61,16 +54,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className="dark" suppressHydrationWarning>
-      <head>
-        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="mobile-web-app-capable" content="yes" />
-      </head>
+      <head />
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
-        <LegacyCacheCleanup />
         <SplashWrapper>{children}</SplashWrapper>
         <Toaster
           position="top-right"

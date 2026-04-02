@@ -10,7 +10,6 @@ import dynamic from 'next/dynamic'
 
 // Store Components — loaded with ssr: false to prevent hydration mismatch
 const Storefront = dynamic(() => import('@/components/store/storefront-view'), { ssr: false })
-const PWAInstallBanner = dynamic(() => import('@/components/shared/pwa-install-banner'), { ssr: false })
 
 // Admin Components
 import AdminLoginDialog from '@/components/shared/admin-login-dialog'
@@ -272,7 +271,6 @@ export default function HomePage() {
         </motion.div>
       </AnimatePresence>
       <AdminLoginDialog open={loginDialogOpen} onClose={handleLoginClose} />
-      <PWAInstallBanner />
     </>
   )
 }

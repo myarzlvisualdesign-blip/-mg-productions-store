@@ -12,7 +12,6 @@ import CartDrawer from '@/components/store/cart-drawer'
 import Footer from '@/components/shared/footer'
 import BottomNav, { type BottomTab } from '@/components/store/bottom-nav'
 import ReferralDialog from '@/components/store/referral-dialog'
-import PWAInstallBanner from '@/components/shared/pwa-install-banner'
 import { toast } from 'sonner'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 
