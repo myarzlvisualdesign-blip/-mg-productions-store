@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UtensilsCrossed, ArrowRight, ExternalLink, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
+import { fetchJsonWithRetry } from '@/lib/client-fetch'
 
 const MAX_CARDS = 5
 const MAX_SUB_ITEMS = 5
@@ -50,8 +51,8 @@ export default function FoodSection() {
   useEffect(() => {
     async function fetchFood() {
       try {
-        const res = await fetch('/api/food')
-        if (res.ok) setCategories(await res.json())
+        const data = await fetchJsonWithRetry<FoodItemData[]>('/api/food')
+        if (Array.isArray(data)) setCategories(data)
       } catch {
         console.error('Failed to fetch food items')
       } finally {

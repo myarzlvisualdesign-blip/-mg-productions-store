@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Coins, ArrowRight, ExternalLink, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
+import { fetchJsonWithRetry } from '@/lib/client-fetch'
 
 const MAX_CARDS = 5
 const MAX_SUB_ITEMS = 5
@@ -61,8 +62,8 @@ function BannerSlider({ onOpenBrowser }: { onOpenBrowser: (link: string, title: 
   useEffect(() => {
     async function fetchBanners() {
       try {
-        const res = await fetch('/api/topup-banners')
-        if (res.ok) setBanners(await res.json())
+        const data = await fetchJsonWithRetry<BannerItem[]>('/api/topup-banners')
+        if (Array.isArray(data)) setBanners(data)
       } catch {
         console.error('Failed to fetch topup banners')
       } finally {
@@ -224,8 +225,8 @@ export default function TopUpSection() {
   useEffect(() => {
     async function fetchServices() {
       try {
-        const res = await fetch('/api/topup')
-        if (res.ok) setServices(await res.json())
+        const data = await fetchJsonWithRetry<TopUpItem[]>('/api/topup')
+        if (Array.isArray(data)) setServices(data)
       } catch {
         console.error('Failed to fetch topup services')
       } finally {

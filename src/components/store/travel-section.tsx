@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plane, ArrowRight, ExternalLink, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
+import { fetchJsonWithRetry } from '@/lib/client-fetch'
 
 const MAX_CARDS = 5
 const MAX_SUB_ITEMS = 5
@@ -65,8 +66,8 @@ function PopularDestinationsSlider() {
   useEffect(() => {
     async function fetchDestinations() {
       try {
-        const res = await fetch('/api/destinations')
-        if (res.ok) setDestinations(await res.json())
+        const data = await fetchJsonWithRetry<DestinationItem[]>('/api/destinations')
+        if (Array.isArray(data)) setDestinations(data)
       } catch {
         console.error('Failed to fetch destinations')
       } finally {
@@ -218,8 +219,8 @@ export default function TravelSection() {
   useEffect(() => {
     async function fetchTravel() {
       try {
-        const res = await fetch('/api/travel')
-        if (res.ok) setServices(await res.json())
+        const data = await fetchJsonWithRetry<TravelItem[]>('/api/travel')
+        if (Array.isArray(data)) setServices(data)
       } catch {
         console.error('Failed to fetch travel services')
       } finally {

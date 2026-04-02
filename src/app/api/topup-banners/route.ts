@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
+import { publicJson } from '@/lib/public-api'
 
 // GET /api/topup-banners — list banners (active only by default, ?all=true for admin)
 export async function GET(request: NextRequest) {
@@ -12,9 +13,9 @@ export async function GET(request: NextRequest) {
       where: showAll ? {} : { active: true },
       orderBy: { order: 'asc' },
     })
-    return NextResponse.json(banners)
+    return publicJson(banners)
   } catch {
-    return NextResponse.json(
+    return publicJson(
       { error: 'Gagal mengambil data banner' },
       { status: 500 }
     )

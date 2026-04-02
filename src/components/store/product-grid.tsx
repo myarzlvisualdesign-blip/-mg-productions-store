@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import CategoryFilter from './category-filter'
 import ProductCard, { type Product } from './product-card'
+import { fetchJsonWithRetry } from '@/lib/client-fetch'
 
 const ITEMS_PER_PAGE = 16
 
@@ -65,9 +66,10 @@ export default function ProductGrid() {
         const params = new URLSearchParams()
         if (selectedCategory !== 'All') params.set('category', selectedCategory)
         if (searchQuery) params.set('search', searchQuery)
-        const res = await fetch(`/api/products?${params.toString()}`)
-        if (res.ok) {
-          const data = await res.json()
+        const data = await fetchJsonWithRetry<Product[]>(
+          `/api/products?${params.toString()}`
+        )
+        if (Array.isArray(data)) {
           setProducts(data)
         }
       } catch (err) {

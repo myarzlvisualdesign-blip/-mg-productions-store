@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { fetchJsonWithRetry } from '@/lib/client-fetch'
 
 interface CategoryFilterProps {
   selectedCategory: string
@@ -24,9 +25,8 @@ export default function CategoryFilter({ selectedCategory, onSelect }: CategoryF
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch('/api/categories')
-        if (res.ok) {
-          const data = await res.json()
+        const data = await fetchJsonWithRetry<Array<{ name: string }>>('/api/categories')
+        if (Array.isArray(data) && data.length > 0) {
           setCategories(['All', ...data.map((c: { name: string }) => c.name)])
         }
       } catch {

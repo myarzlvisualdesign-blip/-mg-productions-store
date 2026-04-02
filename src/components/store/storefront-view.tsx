@@ -14,6 +14,7 @@ import BottomNav, { type BottomTab } from '@/components/store/bottom-nav'
 import ReferralDialog from '@/components/store/referral-dialog'
 import PWAInstallBanner from '@/components/shared/pwa-install-banner'
 import { toast } from 'sonner'
+import { fetchJsonWithRetry } from '@/lib/client-fetch'
 
 // Dynamic imports with SSR disabled — prevents hydration mismatch from Turbopack cache staleness
 const ProductGrid = dynamic(() => import('@/components/store/product-grid'), { ssr: false })
@@ -42,8 +43,8 @@ function FeaturedProducts() {
   useEffect(() => {
     async function fetchPartners() {
       try {
-        const res = await fetch('/api/partners')
-        if (res.ok) setPartners(await res.json())
+        const data = await fetchJsonWithRetry<PartnerData[]>('/api/partners')
+        if (Array.isArray(data)) setPartners(data)
       } catch {
         console.error('Failed to fetch partners')
       } finally {

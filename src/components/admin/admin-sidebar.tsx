@@ -55,6 +55,9 @@ const toolItems = [
 export default function AdminSidebar() {
   const [expanded, setExpanded] = useState(false)
   const { adminTab, setAdminTab, toggleView } = useViewStore()
+  const itemLayoutClass = expanded
+    ? 'justify-start px-3'
+    : 'justify-center px-0'
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -65,7 +68,11 @@ export default function AdminSidebar() {
         className="fixed left-0 top-0 z-40 flex h-screen flex-col glass-card border-r border-white/[0.06]"
       >
         {/* Top: Logo + Toggle */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-white/[0.06]">
+        <div
+          className={`flex items-center border-b border-white/[0.06] py-5 ${
+            expanded ? 'gap-3 px-4' : 'justify-center px-3'
+          }`}
+        >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 overflow-hidden">
             <img
               src="/logo-sm.png"
@@ -93,7 +100,9 @@ export default function AdminSidebar() {
             variant="ghost"
             size="icon"
             onClick={() => setExpanded(!expanded)}
-            className="ml-auto h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground hover:bg-white/5"
+            className={`h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground hover:bg-white/5 ${
+              expanded ? 'ml-auto' : 'absolute right-3 top-6'
+            }`}
           >
             {expanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
@@ -111,7 +120,7 @@ export default function AdminSidebar() {
                 onClick={() => setAdminTab(item.id)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                className={`relative flex items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ${itemLayoutClass} ${
                   isActive
                     ? 'bg-gradient-to-r from-purple-600/80 to-indigo-600/60 text-white shadow-lg shadow-purple-500/20'
                     : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
@@ -179,7 +188,7 @@ export default function AdminSidebar() {
                 onClick={() => setAdminTab(item.id)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                className={`relative flex items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ${itemLayoutClass} ${
                   isActive
                     ? 'bg-gradient-to-r from-purple-600/80 to-indigo-600/60 text-white shadow-lg shadow-purple-500/20'
                     : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
@@ -247,7 +256,7 @@ export default function AdminSidebar() {
                 onClick={() => setAdminTab(item.id)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                className={`relative flex items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ${itemLayoutClass} ${
                   isActive
                     ? 'bg-gradient-to-r from-purple-600/80 to-indigo-600/60 text-white shadow-lg shadow-purple-500/20'
                     : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
@@ -313,7 +322,7 @@ export default function AdminSidebar() {
                 <Button
                   variant="ghost"
                   onClick={toggleView}
-                  className="w-full text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-xl px-3"
+                  className="w-full justify-center text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-xl px-0"
                 >
                   <ArrowLeft className="h-5 w-5 shrink-0" />
                 </Button>

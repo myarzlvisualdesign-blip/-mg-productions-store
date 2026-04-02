@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
+import { publicJson } from '@/lib/public-api'
 
 // GET /api/topup — list topup services (active only by default, ?all=true for admin)
 export async function GET(request: NextRequest) {
@@ -12,9 +13,9 @@ export async function GET(request: NextRequest) {
       where: showAll ? {} : { active: true },
       orderBy: { order: 'asc' },
     })
-    return NextResponse.json(topupServices)
+    return publicJson(topupServices)
   } catch {
-    return NextResponse.json(
+    return publicJson(
       { error: 'Gagal mengambil data layanan top-up' },
       { status: 500 }
     )
