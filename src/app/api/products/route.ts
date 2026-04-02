@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
 import { publicJson } from '@/lib/public-api'
+import { normalizeAssetUrl } from '@/lib/asset-url'
 
 // PUBLIC — Semua orang bisa melihat produk
 export async function GET(request: NextRequest) {
@@ -31,7 +32,10 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    return publicJson(products)
+    return publicJson(products.map((product) => ({
+      ...product,
+      image: normalizeAssetUrl(product.image),
+    })))
   } catch {
     return publicJson(
       { error: 'Failed to fetch products' },

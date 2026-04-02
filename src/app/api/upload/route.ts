@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     await mkdir(uploadDir, { recursive: true })
     await writeFile(filePath, buffer)
 
-    return NextResponse.json({ url: `/api/images/${safeFolder}/${uniqueName}` })
+    return NextResponse.json({ url: `/uploads/${safeFolder}/${uniqueName}` })
   } catch {
     return NextResponse.json(
       { error: 'Gagal mengupload gambar' },

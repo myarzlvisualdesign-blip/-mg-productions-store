@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
 import { publicJson } from '@/lib/public-api'
+import { normalizeAssetUrl } from '@/lib/asset-url'
 
 // GET /api/destinations — list popular destinations (active only by default, ?all=true for admin)
 export async function GET(request: NextRequest) {
@@ -13,7 +14,10 @@ export async function GET(request: NextRequest) {
       where: showAll ? {} : { active: true },
       orderBy: { order: 'asc' },
     })
-    return publicJson(destinations)
+    return publicJson(destinations.map((destination) => ({
+      ...destination,
+      image: normalizeAssetUrl(destination.image),
+    })))
   } catch {
     return publicJson(
       { error: 'Gagal mengambil data destinasi' },

@@ -223,29 +223,6 @@ export default function HomePage() {
   const setViewMode = useViewStore((s) => s.setViewMode)
   const checkAuth = useAuthStore((s) => s.checkAuth)
 
-  // ─── Disable stale service workers/caches from previous deploys ───
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        registrations.forEach((registration) => {
-          registration.unregister().catch(() => {
-            // ignore unregister failures
-          })
-        })
-      })
-    }
-
-    if ('caches' in window) {
-      caches.keys().then((keys) => {
-        keys.forEach((key) => {
-          caches.delete(key).catch(() => {
-            // ignore cache delete failures
-          })
-        })
-      })
-    }
-  }, [])
-
   const [loginDialogOpen, setLoginDialogOpen] = useState(false)
   const pendingAdminRef = useRef(false)
 
