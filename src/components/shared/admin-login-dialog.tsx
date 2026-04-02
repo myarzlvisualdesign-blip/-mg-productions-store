@@ -43,15 +43,13 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
     const result = await login(username, password)
 
     if (result.success) {
-      await new Promise((resolve) => window.setTimeout(resolve, 120))
       const authenticated = await checkAuth()
       if (!authenticated) {
         setLoading(false)
         setError('Sesi admin belum aktif. Coba login sekali lagi.')
         return
       }
-      const { setViewMode } = useViewStore.getState()
-      const { setAdminTab } = useViewStore.getState()
+      const { setViewMode, setAdminTab } = useViewStore.getState()
       setAdminTab('overview')
       setViewMode('admin')
       setLoading(false)
