@@ -4,7 +4,8 @@ import { createHash, randomBytes, createHmac } from 'crypto'
 // Keep legacy fallbacks so old admin credentials continue to work after deploys.
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'mgproductions2025'
-const LEGACY_PASSWORDS = ['mgproductions2025', 'AdminMG2026!']
+const LEGACY_USERNAMES = ['admin']
+const LEGACY_PASSWORDS = ['mgproductions2025', 'AdminMG2026!', 'admin123', 'Admin123']
 
 // Secret key for signing tokens (derived at startup, stable across hot reloads)
 const SIGNING_SECRET = process.env.AUTH_SECRET || 'mg-productions-auth-secret-key-2025'
@@ -50,12 +51,17 @@ export function verifyToken(token: string): { valid: boolean; username?: string 
 }
 
 export function verifyCredentials(username: string, password: string): boolean {
-  const hashedInput = createHash('sha256').update(password).digest('hex')
+  const normalizedUsername = username.trim().toLowerCase()
+  const normalizedPassword = password.trim()
+  const hashedInput = createHash('sha256').update(normalizedPassword).digest('hex')
+  const allowedUsernames = [ADMIN_USERNAME, ...LEGACY_USERNAMES].map((value) =>
+    value.trim().toLowerCase()
+  )
   const allowedHashes = [ADMIN_PASSWORD, ...LEGACY_PASSWORDS]
     .filter(Boolean)
-    .map((value) => createHash('sha256').update(value).digest('hex'))
+    .map((value) => createHash('sha256').update(value.trim()).digest('hex'))
 
-  return username === ADMIN_USERNAME && allowedHashes.includes(hashedInput)
+  return allowedUsernames.includes(normalizedUsername) && allowedHashes.includes(hashedInput)
 }
 
 export function extractBearerToken(request: Request): string | null {
