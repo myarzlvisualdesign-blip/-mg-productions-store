@@ -43,6 +43,7 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
     const result = await login(username, password)
 
     if (result.success) {
+      await new Promise((resolve) => window.setTimeout(resolve, 120))
       const authenticated = await checkAuth()
       if (!authenticated) {
         setLoading(false)

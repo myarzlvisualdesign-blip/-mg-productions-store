@@ -12,9 +12,8 @@ export async function GET(request: NextRequest) {
 
     const banners = await db.topUpBanner.findMany({
       where: showAll ? {} : { active: true },
-      orderBy: { order: 'asc' },
     })
-    return publicJson(banners.map((banner) => ({
+    return publicJson(banners.sort((a, b) => a.order - b.order).map((banner) => ({
       ...banner,
       image: normalizeAssetUrl(banner.image),
     })))
@@ -48,11 +47,8 @@ export async function POST(request: NextRequest) {
 
     let bannerOrder = order ?? 0
     if (!order && order !== 0) {
-      const maxOrder = await db.topUpBanner.findFirst({
-        orderBy: { order: 'desc' },
-        select: { order: true },
-      })
-      bannerOrder = (maxOrder?.order ?? -1) + 1
+      const banners = await db.topUpBanner.findMany({ select: { order: true } })
+      bannerOrder = banners.reduce((max, item) => Math.max(max, item.order), -1) + 1
     }
 
     const banner = await db.topUpBanner.create({

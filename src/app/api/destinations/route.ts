@@ -12,9 +12,8 @@ export async function GET(request: NextRequest) {
 
     const destinations = await db.popularDestination.findMany({
       where: showAll ? {} : { active: true },
-      orderBy: { order: 'asc' },
     })
-    return publicJson(destinations.map((destination) => ({
+    return publicJson(destinations.sort((a, b) => a.order - b.order).map((destination) => ({
       ...destination,
       image: normalizeAssetUrl(destination.image),
     })))
@@ -49,11 +48,8 @@ export async function POST(request: NextRequest) {
     // Get the next order value if not provided
     let destOrder = order ?? 0
     if (!order && order !== 0) {
-      const maxOrder = await db.popularDestination.findFirst({
-        orderBy: { order: 'desc' },
-        select: { order: true },
-      })
-      destOrder = (maxOrder?.order ?? -1) + 1
+      const destinations = await db.popularDestination.findMany({ select: { order: true } })
+      destOrder = destinations.reduce((max, item) => Math.max(max, item.order), -1) + 1
     }
 
     const destination = await db.popularDestination.create({

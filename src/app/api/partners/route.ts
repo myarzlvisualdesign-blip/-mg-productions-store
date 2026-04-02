@@ -12,9 +12,8 @@ export async function GET(request: NextRequest) {
 
     const partners = await db.partner.findMany({
       where: showAll ? {} : { active: true },
-      orderBy: { order: 'asc' },
     })
-    return publicJson(partners.map((partner) => ({
+    return publicJson(partners.sort((a, b) => a.order - b.order).map((partner) => ({
       ...partner,
       image: normalizeAssetUrl(partner.image),
     })))
@@ -56,11 +55,8 @@ export async function POST(request: NextRequest) {
     // Get the next order value if not provided
     let partnerOrder = order ?? 0
     if (!order && order !== 0) {
-      const maxOrder = await db.partner.findFirst({
-        orderBy: { order: 'desc' },
-        select: { order: true },
-      })
-      partnerOrder = (maxOrder?.order ?? -1) + 1
+      const partners = await db.partner.findMany({ select: { order: true } })
+      partnerOrder = partners.reduce((max, item) => Math.max(max, item.order), -1) + 1
     }
 
     const partner = await db.partner.create({

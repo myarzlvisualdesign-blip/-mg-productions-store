@@ -12,9 +12,8 @@ export async function GET(request: NextRequest) {
 
     const travelServices = await db.travelService.findMany({
       where: showAll ? {} : { active: true },
-      orderBy: { order: 'asc' },
     })
-    return publicJson(travelServices.map((service) => ({
+    return publicJson(travelServices.sort((a, b) => a.order - b.order).map((service) => ({
       ...service,
       image: normalizeAssetUrl(service.image),
     })))
@@ -49,11 +48,8 @@ export async function POST(request: NextRequest) {
     // Get the next order value if not provided
     let serviceOrder = order ?? 0
     if (!order && order !== 0) {
-      const maxOrder = await db.travelService.findFirst({
-        orderBy: { order: 'desc' },
-        select: { order: true },
-      })
-      serviceOrder = (maxOrder?.order ?? -1) + 1
+      const services = await db.travelService.findMany({ select: { order: true } })
+      serviceOrder = services.reduce((max, item) => Math.max(max, item.order), -1) + 1
     }
 
     const travelService = await db.travelService.create({

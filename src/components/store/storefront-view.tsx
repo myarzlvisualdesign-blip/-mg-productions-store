@@ -175,41 +175,52 @@ export default function Storefront() {
     <div className="min-h-screen flex flex-col">
       <StoreHeader />
       <main className="storefront-main flex-1 pb-24 md:pb-0">
-        <div className="md:hidden">
-          <AnimatePresence mode="wait">
-            {activeTab === 'store' && (
-              <motion.div key="tab-store" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-                <HeroSection />
-                <FeaturedProducts />
-                <ProductGrid />
-              </motion.div>
-            )}
-            {activeTab === 'topup' && (
-              <motion.div key="tab-topup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-                <TopUpSection />
-              </motion.div>
-            )}
-            {activeTab === 'food' && (
-              <motion.div key="tab-food" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-                <FoodSection />
-              </motion.div>
-            )}
-            {activeTab === 'travel' && (
-              <motion.div key="tab-travel" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-                <TravelSection />
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <div className="hidden md:flex justify-center pt-6 pb-2 px-6">
+          <div className="inline-flex items-center gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-1.5 backdrop-blur-xl">
+            {[
+              { id: 'store' as BottomTab, label: 'Store' },
+              { id: 'topup' as BottomTab, label: 'Top Up' },
+              { id: 'food' as BottomTab, label: 'Food' },
+              { id: 'travel' as BottomTab, label: 'Travel' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`rounded-xl px-5 py-2.5 text-sm font-medium transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                    : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
-
-        <div className="hidden md:block">
-          <HeroSection />
-          <FeaturedProducts />
-          <ProductGrid />
-          <TopUpSection />
-          <FoodSection />
-          <TravelSection />
-        </div>
+        <AnimatePresence mode="wait">
+          {activeTab === 'store' && (
+            <motion.div key="tab-store" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+              <HeroSection />
+              <FeaturedProducts />
+              <ProductGrid />
+            </motion.div>
+          )}
+          {activeTab === 'topup' && (
+            <motion.div key="tab-topup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+              <TopUpSection />
+            </motion.div>
+          )}
+          {activeTab === 'food' && (
+            <motion.div key="tab-food" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+              <FoodSection />
+            </motion.div>
+          )}
+          {activeTab === 'travel' && (
+            <motion.div key="tab-travel" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+              <TravelSection />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
       <Footer />
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />

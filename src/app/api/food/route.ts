@@ -12,9 +12,8 @@ export async function GET(request: NextRequest) {
 
     const foodItems = await db.foodItem.findMany({
       where: showAll ? {} : { active: true },
-      orderBy: { order: 'asc' },
     })
-    return publicJson(foodItems.map((item) => ({
+    return publicJson(foodItems.sort((a, b) => a.order - b.order).map((item) => ({
       ...item,
       image: normalizeAssetUrl(item.image),
     })))
@@ -49,11 +48,8 @@ export async function POST(request: NextRequest) {
     // Get the next order value if not provided
     let itemOrder = order ?? 0
     if (!order && order !== 0) {
-      const maxOrder = await db.foodItem.findFirst({
-        orderBy: { order: 'desc' },
-        select: { order: true },
-      })
-      itemOrder = (maxOrder?.order ?? -1) + 1
+      const items = await db.foodItem.findMany({ select: { order: true } })
+      itemOrder = items.reduce((max, item) => Math.max(max, item.order), -1) + 1
     }
 
     const foodItem = await db.foodItem.create({

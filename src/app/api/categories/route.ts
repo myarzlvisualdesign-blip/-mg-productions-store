@@ -11,9 +11,8 @@ export async function GET(request: NextRequest) {
 
     const categories = await db.category.findMany({
       where: showAll ? {} : { active: true },
-      orderBy: { order: 'asc' },
     })
-    return publicJson(categories)
+    return publicJson(categories.sort((a, b) => a.order - b.order))
   } catch {
     return publicJson(
       { error: 'Gagal mengambil data kategori' },
@@ -55,11 +54,8 @@ export async function POST(request: NextRequest) {
 
     let catOrder = order ?? 0
     if (!order && order !== 0) {
-      const maxOrder = await db.category.findFirst({
-        orderBy: { order: 'desc' },
-        select: { order: true },
-      })
-      catOrder = (maxOrder?.order ?? -1) + 1
+      const categories = await db.category.findMany({ select: { order: true } })
+      catOrder = categories.reduce((max, item) => Math.max(max, item.order), -1) + 1
     }
 
     const category = await db.category.create({

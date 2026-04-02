@@ -3,7 +3,6 @@ import { useAuthStore } from '@/store/auth-store'
 
 function handleUnauthorized() {
   useAuthStore.setState({ isAuthenticated: false, username: null, isLoading: false })
-  useViewStore.setState({ viewMode: 'store' })
 }
 
 export async function adminFetch(input: string, init?: RequestInit) {
