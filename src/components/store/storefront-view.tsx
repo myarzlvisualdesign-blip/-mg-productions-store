@@ -172,9 +172,9 @@ export default function Storefront() {
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="storefront-shell min-h-screen flex flex-col">
       <StoreHeader />
-      <main className="flex-1 pb-24 sm:pb-20">
+      <main className="storefront-main flex-1 pb-24 sm:pb-20">
         <AnimatePresence mode="wait">
           {activeTab === 'store' && (
             <motion.div key="tab-store" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
