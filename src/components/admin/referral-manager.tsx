@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 import { formatRupiah } from '@/lib/utils'
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -60,17 +61,14 @@ export default function ReferralManager() {
     async function init() {
       setLoading(true)
       try {
-        const settingsRes = await fetch('/api/referral/settings')
-        if (settingsRes.ok) {
-          const data = await settingsRes.json()
-          setConfig({
-            enabled: data.enabled,
-            referrerReward: data.referrerReward,
-            refereeReward: data.refereeReward,
-            minOrderAmount: data.minOrderAmount,
-            minWithdraw: data.minWithdraw || 100000,
-          })
-        }
+        const data = await adminFetchJson<ReferralConfig & { minWithdraw?: number }>('/api/referral/settings')
+        setConfig({
+          enabled: data.enabled,
+          referrerReward: data.referrerReward,
+          refereeReward: data.refereeReward,
+          minOrderAmount: data.minOrderAmount,
+          minWithdraw: data.minWithdraw || 100000,
+        })
       } catch {
         toast.error('Gagal memuat data referral')
       } finally {
@@ -85,11 +83,8 @@ export default function ReferralManager() {
     setWdLoading(true)
     try {
       const params = wdFilter ? `?status=${wdFilter}` : ''
-      const res = await fetch(`/api/referral/withdrawals-admin${params}`)
-      if (res.ok) {
-        const data = await res.json()
-        setWithdrawals(Array.isArray(data.withdrawals) ? data.withdrawals : Array.isArray(data) ? data : [])
-      }
+      const data = await adminFetchJson<{ withdrawals?: WithdrawalRow[] } | WithdrawalRow[]>(`/api/referral/withdrawals-admin${params}`)
+      setWithdrawals(Array.isArray(data) ? data : Array.isArray(data.withdrawals) ? data.withdrawals : [])
     } catch {
       // Silent
     } finally {
@@ -106,7 +101,7 @@ export default function ReferralManager() {
     if (!config) return
     setSaving(true)
     try {
-      const res = await fetch('/api/referral/settings', {
+      const res = await adminFetch('/api/referral/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
@@ -128,7 +123,7 @@ export default function ReferralManager() {
     setProcessingId(id)
     const status = action === 'approve' ? 'approved' : 'rejected'
     try {
-      const res = await fetch('/api/referral/withdrawals-admin', {
+      const res = await adminFetch('/api/referral/withdrawals-admin', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

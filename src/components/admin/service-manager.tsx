@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 
 type ServiceType = 'topup' | 'food' | 'travel'
 
@@ -129,7 +130,7 @@ function ServiceForm({
       const formData = new FormData()
       formData.append('image', file)
       formData.append('folder', folderName)
-      const res = await fetch('/api/upload', {
+      const res = await adminFetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -448,8 +449,8 @@ export default function ServiceManager({ type, title, description, iconEmoji }: 
 
   const fetchItems = useCallback(async () => {
     try {
-      const res = await fetch(`${apiPath}?all=true`)
-      if (res.ok) setItems(await res.json())
+      const data = await adminFetchJson<ServiceItem[]>(`${apiPath}?all=true`)
+      setItems(data)
     } catch {
       toast.error('Gagal mengambil data')
     } finally {
@@ -465,7 +466,7 @@ export default function ServiceManager({ type, title, description, iconEmoji }: 
     const method = isEditing ? 'PUT' : 'POST'
 
     try {
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -493,7 +494,7 @@ export default function ServiceManager({ type, title, description, iconEmoji }: 
     if (!deleteTarget) return
     setDeleting(true)
     try {
-      const res = await fetch(`${apiPath}/${deleteTarget.id}`, { method: 'DELETE' })
+      const res = await adminFetch(`${apiPath}/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
         toast.success(`"${deleteTarget.name}" berhasil dihapus`)
         fetchItems()
@@ -512,7 +513,7 @@ export default function ServiceManager({ type, title, description, iconEmoji }: 
   const handleToggleActive = async (item: ServiceItem) => {
     setToggling(item.id)
     try {
-      const res = await fetch(`${apiPath}/${item.id}`, {
+      const res = await adminFetch(`${apiPath}/${item.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: !item.active }),

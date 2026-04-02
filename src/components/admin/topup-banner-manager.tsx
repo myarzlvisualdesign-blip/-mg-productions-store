@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 
 interface BannerItem {
   id: string
@@ -93,7 +94,7 @@ function BannerForm({
       const formData = new FormData()
       formData.append('image', file)
       formData.append('folder', 'topup-banners')
-      const res = await fetch('/api/upload', {
+      const res = await adminFetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -359,8 +360,8 @@ export default function TopUpBannerManager() {
 
   const fetchItems = useCallback(async () => {
     try {
-      const res = await fetch('/api/topup-banners?all=true')
-      if (res.ok) setItems(await res.json())
+      const data = await adminFetchJson<BannerItem[]>('/api/topup-banners?all=true')
+      setItems(data)
     } catch {
       toast.error('Gagal mengambil data banner')
     } finally {
@@ -376,7 +377,7 @@ export default function TopUpBannerManager() {
     const method = isEditing ? 'PUT' : 'POST'
 
     try {
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -404,7 +405,7 @@ export default function TopUpBannerManager() {
     if (!deleteTarget) return
     setDeleting(true)
     try {
-      const res = await fetch(`/api/topup-banners/${deleteTarget.id}`, { method: 'DELETE' })
+      const res = await adminFetch(`/api/topup-banners/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
         toast.success(`"${deleteTarget.title}" berhasil dihapus`)
         fetchItems()
@@ -423,7 +424,7 @@ export default function TopUpBannerManager() {
   const handleToggleActive = async (item: BannerItem) => {
     setToggling(item.id)
     try {
-      const res = await fetch(`/api/topup-banners/${item.id}`, {
+      const res = await adminFetch(`/api/topup-banners/${item.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: !item.active }),

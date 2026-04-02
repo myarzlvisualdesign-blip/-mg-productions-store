@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 import { formatRupiah } from '@/lib/utils'
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -88,11 +89,8 @@ export default function WithdrawalManager() {
     setLoading(true)
     try {
       const queryParam = filter === 'all' ? '' : `?status=${filter}`
-      const res = await fetch(`/api/referral/withdrawals-admin${queryParam}`)
-      if (res.ok) {
-        const data = await res.json()
-        setWithdrawals(Array.isArray(data.withdrawals) ? data.withdrawals : [])
-      }
+      const data = await adminFetchJson<{ withdrawals?: WithdrawalRow[] }>(`/api/referral/withdrawals-admin${queryParam}`)
+      setWithdrawals(Array.isArray(data.withdrawals) ? data.withdrawals : [])
     } catch {
       toast.error('Gagal memuat data pencairan')
     } finally {
@@ -109,7 +107,7 @@ export default function WithdrawalManager() {
     async (id: string, status: string, adminNote?: string) => {
       setUpdating(id)
       try {
-        const res = await fetch('/api/referral/withdrawals-admin', {
+        const res = await adminFetch('/api/referral/withdrawals-admin', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, status, adminNote: adminNote || undefined }),

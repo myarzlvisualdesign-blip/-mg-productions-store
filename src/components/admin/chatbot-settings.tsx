@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -37,21 +38,15 @@ export default function ChatbotSettings() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const res = await fetch('/api/chatbot/settings', {
-          headers: { 'Cache-Control': 'no-cache' },
+        const data = await adminFetchJson<Partial<ChatbotConfig>>('/api/chatbot/settings')
+        setConfig({
+          id: data.id || '',
+          name: data.name || 'MG Assistant',
+          avatar: data.avatar || '',
+          welcomeMessage: data.welcomeMessage || '',
+          systemPrompt: data.systemPrompt || '',
+          enabled: data.enabled ?? true,
         })
-        if (res.ok) {
-          const data = await res.json()
-          // Admin sees all fields including systemPrompt (re-fetch for that)
-          setConfig({
-            id: data.id || '',
-            name: data.name || 'MG Assistant',
-            avatar: data.avatar || '',
-            welcomeMessage: data.welcomeMessage || '',
-            systemPrompt: data.systemPrompt || '',
-            enabled: data.enabled ?? true,
-          })
-        }
       } catch {
         toast.error('Gagal memuat pengaturan chatbot')
       } finally {
@@ -84,7 +79,7 @@ export default function ChatbotSettings() {
       formData.append('image', file)
       formData.append('folder', 'chatbot')
 
-      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const res = await adminFetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Upload gagal' }))
         throw new Error(err.error || 'Upload gagal')
@@ -116,7 +111,7 @@ export default function ChatbotSettings() {
 
     setSaving(true)
     try {
-      const res = await fetch('/api/chatbot/settings', {
+      const res = await adminFetch('/api/chatbot/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

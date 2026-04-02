@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { adminFetch } from '@/lib/admin-fetch'
 
 export interface Partner {
   id: string
@@ -91,7 +92,7 @@ export default function PartnerForm({ editPartner, onDone }: PartnerFormProps) {
       formData.append('image', file)
       formData.append('folder', 'partners')
 
-      const res = await fetch('/api/upload', {
+      const res = await adminFetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -178,7 +179,7 @@ export default function PartnerForm({ editPartner, onDone }: PartnerFormProps) {
       const url = isEditing ? `/api/partners/${editPartner!.id}` : '/api/partners'
       const method = isEditing ? 'PUT' : 'POST'
 
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

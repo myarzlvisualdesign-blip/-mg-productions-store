@@ -51,7 +51,7 @@ function EditRow({
     }
     setSaving(true)
     try {
-      const res = await fetch(`/api/categories/${category.id}`, {
+      const res = await adminFetch(`/api/categories/${category.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim() }),

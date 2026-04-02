@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { Product } from './inventory-table'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 import { formatRupiah } from '@/lib/utils'
 
 interface ProductFormProps {
@@ -38,11 +39,8 @@ export default function ProductForm({ editProduct, onDone }: ProductFormProps) {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch('/api/categories')
-        if (res.ok) {
-          const data = await res.json()
-          setCategories(data.map((c: { name: string }) => c.name))
-        }
+        const data = await adminFetchJson<{ name: string }[]>('/api/categories')
+        setCategories(data.map((c) => c.name))
       } catch {
         console.error('Failed to fetch categories')
       } finally {
@@ -114,7 +112,7 @@ export default function ProductForm({ editProduct, onDone }: ProductFormProps) {
       const formData = new FormData()
       formData.append('image', file)
 
-      const res = await fetch('/api/upload', {
+      const res = await adminFetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -211,7 +209,7 @@ export default function ProductForm({ editProduct, onDone }: ProductFormProps) {
       const url = isEditing ? `/api/products/${editProduct!.id}` : '/api/products'
       const method = isEditing ? 'PUT' : 'POST'
 
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
