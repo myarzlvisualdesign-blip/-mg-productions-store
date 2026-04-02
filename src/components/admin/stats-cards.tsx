@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Banknote, ShoppingCart, Package, Users } from 'lucide-react'
 import { formatRupiah } from '@/lib/utils'
 import { useViewStore } from '@/store/view-store'
+import { adminFetchJson } from '@/lib/admin-fetch'
 
 interface StatsData {
   totalProducts: number
@@ -43,12 +44,10 @@ export default function StatsCards() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statsRes, ordersRes] = await Promise.all([
-          fetch('/api/stats'),
-          fetch('/api/orders'),
+        const [statsData, ordersData] = await Promise.all([
+          adminFetchJson<StatsData>('/api/stats'),
+          adminFetchJson<OrdersData[]>('/api/orders'),
         ])
-        const statsData = await statsRes.json()
-        const ordersData = await ordersRes.json()
         setStats(statsData)
         setOrders(ordersData)
       } catch (err) {

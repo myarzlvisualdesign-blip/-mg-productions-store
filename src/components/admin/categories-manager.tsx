@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 
 export interface Category {
   id: string
@@ -101,8 +102,8 @@ export default function CategoriesManager() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch('/api/categories?all=true')
-      if (res.ok) setCategories(await res.json())
+      const data = await adminFetchJson<Category[]>('/api/categories?all=true')
+      setCategories(data)
     } catch {
       toast.error('Gagal mengambil data kategori')
     } finally {
@@ -119,7 +120,7 @@ export default function CategoriesManager() {
     if (!newName.trim()) return
     setAdding(true)
     try {
-      const res = await fetch('/api/categories', {
+      const res = await adminFetch('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newName.trim() }),
@@ -148,7 +149,7 @@ export default function CategoriesManager() {
     if (!deleteTarget) return
     setDeleting(true)
     try {
-      const res = await fetch(`/api/categories/${deleteTarget.id}`, { method: 'DELETE' })
+      const res = await adminFetch(`/api/categories/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
         toast.success(`Kategori "${deleteTarget.name}" berhasil dihapus`)
         fetchCategories()
@@ -167,7 +168,7 @@ export default function CategoriesManager() {
   const handleToggleActive = async (category: Category) => {
     setToggling(category.id)
     try {
-      const res = await fetch(`/api/categories/${category.id}`, {
+      const res = await adminFetch(`/api/categories/${category.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: !category.active }),

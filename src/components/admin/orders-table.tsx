@@ -16,6 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatRupiah } from '@/lib/utils'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,8 +73,7 @@ export default function OrdersTable() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch('/api/orders')
-      const data = await res.json()
+      const data = await adminFetchJson<Order[]>('/api/orders')
       setOrders(data)
     } catch (err) {
       console.error('Failed to fetch orders:', err)
@@ -88,7 +88,7 @@ export default function OrdersTable() {
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await adminFetch(`/api/orders/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

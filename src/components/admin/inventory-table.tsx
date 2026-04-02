@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatRupiah } from '@/lib/utils'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -77,8 +78,7 @@ export default function InventoryTable({ onEditProduct, refreshKey }: InventoryT
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await fetch('/api/products')
-      const data = await res.json()
+      const data = await adminFetchJson<Product[]>('/api/products')
       setProducts(data)
     } catch (err) {
       console.error('Failed to fetch products:', err)
@@ -95,7 +95,7 @@ export default function InventoryTable({ onEditProduct, refreshKey }: InventoryT
     if (!deleteTarget) return
     setDeleting(true)
     try {
-      const res = await fetch(`/api/products/${deleteTarget.id}`, { method: 'DELETE' })
+      const res = await adminFetch(`/api/products/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
         toast.success('Product deleted successfully')
         fetchProducts()

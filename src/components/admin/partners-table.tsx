@@ -7,6 +7,7 @@ import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Loader2, ImageIcon, External
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { Partner } from './partner-form'
+import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 
 interface PartnersTableProps {
   onEditPartner: (partner: Partner) => void
@@ -22,11 +23,8 @@ export default function PartnersTable({ onEditPartner, refreshKey }: PartnersTab
 
   const fetchPartners = useCallback(async () => {
     try {
-      // Fetch all partners (including inactive) for admin view
-      const res = await fetch('/api/partners?all=true')
-      if (res.ok) {
-        setPartners(await res.json())
-      }
+      const data = await adminFetchJson<Partner[]>('/api/partners?all=true')
+      setPartners(data)
     } catch {
       toast.error('Gagal mengambil data mitra')
     } finally {
@@ -43,7 +41,7 @@ export default function PartnersTable({ onEditPartner, refreshKey }: PartnersTab
 
     setDeleting(partner.id)
     try {
-      const res = await fetch(`/api/partners/${partner.id}`, { method: 'DELETE' })
+      const res = await adminFetch(`/api/partners/${partner.id}`, { method: 'DELETE' })
       if (res.ok) {
         toast.success('Mitra berhasil dihapus')
         setPartners((prev) => prev.filter((p) => p.id !== partner.id))
@@ -60,7 +58,7 @@ export default function PartnersTable({ onEditPartner, refreshKey }: PartnersTab
   const handleToggleActive = async (partner: Partner) => {
     setToggling(partner.id)
     try {
-      const res = await fetch(`/api/partners/${partner.id}`, {
+      const res = await adminFetch(`/api/partners/${partner.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: !partner.active }),

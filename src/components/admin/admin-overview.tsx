@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { useViewStore } from '@/store/view-store'
 import StatsCards from './stats-cards'
 import { formatRupiah } from '@/lib/utils'
+import { adminFetchJson } from '@/lib/admin-fetch'
 
 interface StatsData {
   totalProducts: number
@@ -104,12 +105,10 @@ export default function AdminOverview() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statsRes, ordersRes] = await Promise.all([
-          fetch('/api/stats'),
-          fetch('/api/orders'),
+        const [statsData, ordersData] = await Promise.all([
+          adminFetchJson<StatsData>('/api/stats'),
+          adminFetchJson<Order[]>('/api/orders'),
         ])
-        const statsData = await statsRes.json()
-        const ordersData = await ordersRes.json()
         setStats(statsData)
         setOrders(ordersData)
       } catch (err) {
