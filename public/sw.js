@@ -1,6 +1,5 @@
-const CACHE_NAME = 'mg-productions-v1';
+const CACHE_NAME = 'mg-productions-v2';
 const STATIC_ASSETS = [
-  '/',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -60,7 +59,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // HTML pages: network first, fallback to cache
+  // HTML pages: always prefer fresh HTML to avoid stale app shells after deploys
   event.respondWith(
     fetch(request)
       .then((response) => {
