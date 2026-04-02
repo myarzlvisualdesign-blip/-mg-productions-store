@@ -22,13 +22,6 @@ const TopUpSection = dynamic(() => import('@/components/store/topup-section'), {
 const FoodSection = dynamic(() => import('@/components/store/food-section'), { ssr: false })
 const TravelSection = dynamic(() => import('@/components/store/travel-section'), { ssr: false })
 
-const desktopTabs: Array<{ id: BottomTab; label: string; emoji: string }> = [
-  { id: 'store', label: 'Store', emoji: '🛍️' },
-  { id: 'topup', label: 'Top Up', emoji: '🎮' },
-  { id: 'food', label: 'Food', emoji: '🍜' },
-  { id: 'travel', label: 'Travel', emoji: '✈️' },
-]
-
 // ─── Featured Products (Mitra Resmi Kami) Section ───────────────────────
 
 interface PartnerData {
@@ -179,31 +172,9 @@ export default function Storefront() {
   }, [])
 
   return (
-    <div className="storefront-shell min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <StoreHeader />
-      <main className="storefront-main flex-1 pb-24 sm:pb-20">
-        <div className="hidden md:flex justify-center px-6 pt-4 pb-2">
-          <div className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-2 backdrop-blur-xl">
-            {desktopTabs.map((tab) => {
-              const isActive = activeTab === tab.id
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`rounded-xl px-4 py-2 text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/20'
-                      : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
-                  }`}
-                >
-                  <span className="mr-2">{tab.emoji}</span>
-                  {tab.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
+      <main className="flex-1 pb-24 sm:pb-20">
         <AnimatePresence mode="wait">
           {activeTab === 'store' && (
             <motion.div key="tab-store" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>

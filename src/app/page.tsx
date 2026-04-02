@@ -6,7 +6,6 @@ import { LogOut, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useViewStore } from '@/store/view-store'
 import { useAuthStore } from '@/store/auth-store'
-import { getPreferredAdminView, setPreferredAdminView } from '@/lib/admin-session'
 import dynamic from 'next/dynamic'
 
 // Store Components — loaded with ssr: false to prevent hydration mismatch
@@ -65,7 +64,6 @@ function AdminDashboard() {
 
   const handleLogout = useCallback(async () => {
     setLoggingOut(true)
-    setPreferredAdminView(false)
     await logout()
     useViewStore.getState().setViewMode('store')
     setLoggingOut(false)
@@ -224,8 +222,6 @@ export default function HomePage() {
   const viewMode = useViewStore((s) => s.viewMode)
   const setViewMode = useViewStore((s) => s.setViewMode)
   const checkAuth = useAuthStore((s) => s.checkAuth)
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const isAuthLoading = useAuthStore((s) => s.isLoading)
 
   const [loginDialogOpen, setLoginDialogOpen] = useState(false)
   const pendingAdminRef = useRef(false)
@@ -235,24 +231,9 @@ export default function HomePage() {
   }, [checkAuth])
 
   useEffect(() => {
-    if (isAuthLoading) return
-
-    if (isAuthenticated && getPreferredAdminView()) {
-      setViewMode('admin')
-      return
-    }
-
-    if (!isAuthenticated && viewMode === 'admin') {
-      setPreferredAdminView(false)
-      setViewMode('store')
-    }
-  }, [isAuthenticated, isAuthLoading, setViewMode, viewMode])
-
-  useEffect(() => {
     const unsub = useAuthStore.subscribe((state) => {
       if (state.isAuthenticated && pendingAdminRef.current) {
         pendingAdminRef.current = false
-        setPreferredAdminView(true)
         setLoginDialogOpen(false)
         setViewMode('admin')
       }
@@ -264,14 +245,12 @@ export default function HomePage() {
     const currentMode = useViewStore.getState().viewMode
     if (currentMode === 'store') {
       if (useAuthStore.getState().isAuthenticated) {
-        setPreferredAdminView(true)
         setViewMode('admin')
       } else {
         pendingAdminRef.current = true
         setLoginDialogOpen(true)
       }
     } else {
-      setPreferredAdminView(false)
       setViewMode('store')
     }
   }, [setViewMode])

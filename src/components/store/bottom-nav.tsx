@@ -21,7 +21,7 @@ const tabs: { id: BottomTab; label: string; icon: typeof ShoppingBag }[] = [
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]"
       aria-label="Bottom navigation"
     >
       <div className="mx-auto max-w-lg">

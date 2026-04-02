@@ -161,23 +161,7 @@
   background: transparent;
 }
 
-.storefront-main {
-  padding-top: 0;
-}
-
-.storefront-main section[id] {
-  scroll-margin-top: 4.5rem;
-}
-
 @media (max-width: 768px) {
-  .storefront-main {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 5rem);
-  }
-
-  .storefront-main section[id] {
-    scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 5.5rem);
-  }
-
   .store-header {
     background: transparent;
     border-bottom: 1px solid transparent;

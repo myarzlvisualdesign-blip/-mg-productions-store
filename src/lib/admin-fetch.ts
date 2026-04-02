@@ -1,9 +1,7 @@
 import { useViewStore } from '@/store/view-store'
 import { useAuthStore } from '@/store/auth-store'
-import { setPreferredAdminView } from '@/lib/admin-session'
 
 function handleUnauthorized() {
-  setPreferredAdminView(false)
   useAuthStore.setState({ isAuthenticated: false, username: null, isLoading: false })
   useViewStore.setState({ viewMode: 'store' })
 }
