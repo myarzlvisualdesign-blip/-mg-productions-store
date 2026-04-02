@@ -18,8 +18,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
         credentials: 'include',
+        cache: 'no-store',
         body: JSON.stringify({ action: 'login', username, password }),
       })
 
@@ -40,8 +44,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       await fetch('/api/auth', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
         credentials: 'include',
+        cache: 'no-store',
         body: JSON.stringify({ action: 'logout' }),
       })
     } catch {
@@ -56,6 +64,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const res = await fetch('/api/auth', {
         method: 'GET',
         credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
       })
 
       if (res.ok) {

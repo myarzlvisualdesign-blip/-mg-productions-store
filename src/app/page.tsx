@@ -34,11 +34,17 @@ import type { Partner } from '@/components/admin/partner-form'
 
 function AdminDashboard() {
   const { adminTab } = useViewStore()
-  const { isAuthenticated, username, logout } = useAuthStore()
+  const { isAuthenticated, username, logout, checkAuth, isLoading } = useAuthStore()
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [editPartner, setEditPartner] = useState<Partner | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [loggingOut, setLoggingOut] = useState(false)
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      checkAuth()
+    }
+  }, [checkAuth, isAuthenticated])
 
   const handleEditProduct = useCallback((product: Product) => {
     setEditPartner(null)
@@ -63,12 +69,31 @@ function AdminDashboard() {
     setLoggingOut(false)
   }, [logout])
 
-  if (!isAuthenticated) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="size-8 text-purple-400 animate-spin" />
           <p className="text-sm text-muted-foreground">Memverifikasi akses admin...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="glass-card rounded-2xl p-6 text-center max-w-sm">
+          <p className="text-base font-semibold text-foreground">Sesi admin tidak aktif</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Silakan kembali ke storefront lalu login ulang ke admin panel.
+          </p>
+          <Button
+            className="mt-4"
+            onClick={() => useViewStore.getState().setViewMode('store')}
+          >
+            Kembali ke Store
+          </Button>
         </div>
       </div>
     )
