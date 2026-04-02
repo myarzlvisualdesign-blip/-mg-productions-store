@@ -8,6 +8,9 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+    const isSecure =
+      request.nextUrl.protocol === 'https:' ||
+      request.headers.get('x-forwarded-proto') === 'https'
     const body = await request.json()
     const { action, username, password } = body
 
@@ -38,7 +41,7 @@ export async function POST(request: NextRequest) {
       // Set HTTP-only cookie
       response.cookies.set('admin_token', token, {
         httpOnly: true,
-        secure: false,
+        secure: isSecure,
         sameSite: 'lax',
         maxAge: 60 * 60 * 24, // 24 hours
         path: '/',
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
 
       response.cookies.set('admin_token', '', {
         httpOnly: true,
-        secure: false,
+        secure: isSecure,
         sameSite: 'lax',
         maxAge: 0,
         path: '/',
