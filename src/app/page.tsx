@@ -198,11 +198,25 @@ export default function HomePage() {
   const setViewMode = useViewStore((s) => s.setViewMode)
   const checkAuth = useAuthStore((s) => s.checkAuth)
 
-  // ─── Register service worker ───────────────────────────────────────
+  // ─── Disable stale service workers/caches from previous deploys ───
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
-        // SW registration failed silently
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => {
+          registration.unregister().catch(() => {
+            // ignore unregister failures
+          })
+        })
+      })
+    }
+
+    if ('caches' in window) {
+      caches.keys().then((keys) => {
+        keys.forEach((key) => {
+          caches.delete(key).catch(() => {
+            // ignore cache delete failures
+          })
+        })
       })
     }
   }, [])
