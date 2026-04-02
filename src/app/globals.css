@@ -162,6 +162,10 @@
 }
 
 @media (max-width: 768px) {
+  .storefront-main {
+    padding-top: 4rem;
+  }
+
   .store-header {
     background: transparent;
     border-bottom: 1px solid transparent;

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import SplashWrapper from "@/components/shared/splash-wrapper";
 import AIChatbot from "@/components/shared/ai-chatbot";
+import LegacyCacheCleanup from "@/components/shared/legacy-cache-cleanup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,6 +70,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
+        <LegacyCacheCleanup />
         <SplashWrapper>{children}</SplashWrapper>
         <Toaster
           position="top-right"

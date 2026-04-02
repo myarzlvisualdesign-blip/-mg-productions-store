@@ -54,7 +54,7 @@ export default function StoreHeader() {
             <img
               src="/logo-sm.png"
               alt="MG PRODUCTIONS"
-              className="h-10 sm:h-8 w-auto object-contain rounded-md transition-all duration-300"
+              className="h-11 sm:h-8 w-auto object-contain rounded-md transition-all duration-300"
             />
           </div>
 

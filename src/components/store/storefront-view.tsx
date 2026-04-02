@@ -174,31 +174,42 @@ export default function Storefront() {
   return (
     <div className="min-h-screen flex flex-col">
       <StoreHeader />
-      <main className="flex-1 pb-24 sm:pb-20">
-        <AnimatePresence mode="wait">
-          {activeTab === 'store' && (
-            <motion.div key="tab-store" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-              <HeroSection />
-              <FeaturedProducts />
-              <ProductGrid />
-            </motion.div>
-          )}
-          {activeTab === 'topup' && (
-            <motion.div key="tab-topup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-              <TopUpSection />
-            </motion.div>
-          )}
-          {activeTab === 'food' && (
-            <motion.div key="tab-food" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-              <FoodSection />
-            </motion.div>
-          )}
-          {activeTab === 'travel' && (
-            <motion.div key="tab-travel" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-              <TravelSection />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <main className="storefront-main flex-1 pb-24 md:pb-0">
+        <div className="md:hidden">
+          <AnimatePresence mode="wait">
+            {activeTab === 'store' && (
+              <motion.div key="tab-store" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <HeroSection />
+                <FeaturedProducts />
+                <ProductGrid />
+              </motion.div>
+            )}
+            {activeTab === 'topup' && (
+              <motion.div key="tab-topup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <TopUpSection />
+              </motion.div>
+            )}
+            {activeTab === 'food' && (
+              <motion.div key="tab-food" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <FoodSection />
+              </motion.div>
+            )}
+            {activeTab === 'travel' && (
+              <motion.div key="tab-travel" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <TravelSection />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="hidden md:block">
+          <HeroSection />
+          <FeaturedProducts />
+          <ProductGrid />
+          <TopUpSection />
+          <FoodSection />
+          <TravelSection />
+        </div>
       </main>
       <Footer />
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />

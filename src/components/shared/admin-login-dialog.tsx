@@ -30,8 +30,6 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
 
   const login = useAuthStore((s) => s.login)
   const checkAuth = useAuthStore((s) => s.checkAuth)
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -45,8 +43,15 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
     const result = await login(username, password)
 
     if (result.success) {
-      await checkAuth()
+      const authenticated = await checkAuth()
+      if (!authenticated) {
+        setLoading(false)
+        setError('Sesi admin belum aktif. Coba login sekali lagi.')
+        return
+      }
       const { setViewMode } = useViewStore.getState()
+      const { setAdminTab } = useViewStore.getState()
+      setAdminTab('overview')
       setViewMode('admin')
       setLoading(false)
       setError('')
@@ -62,7 +67,7 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
   const handleClose = () => {
     if (!loading) {
       // Jika belum login, kembalikan ke store view
-      if (!isAuthenticated) {
+      if (!useAuthStore.getState().isAuthenticated) {
         const { setViewMode } = useViewStore.getState()
         setViewMode('store')
       }

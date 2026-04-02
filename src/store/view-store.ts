@@ -16,8 +16,5 @@ export const useViewStore = create<ViewStore>((set, get) => ({
   adminTab: 'overview',
   setViewMode: (mode) => set({ viewMode: mode }),
   setAdminTab: (tab) => set({ adminTab: tab }),
-  toggleView: () =>
-    set((state) => ({
-      viewMode: state.viewMode === 'store' ? 'admin' : 'store',
-    })),
+  toggleView: () => {},
 }))
