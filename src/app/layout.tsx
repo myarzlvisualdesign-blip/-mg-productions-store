@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import SplashWrapper from "@/components/shared/splash-wrapper";
 import AIChatbot from "@/components/shared/ai-chatbot";
+import ServiceWorkerReset from "@/components/shared/service-worker-reset";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -70,6 +71,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <SplashWrapper>{children}</SplashWrapper>
+        <ServiceWorkerReset />
         <Toaster
           position="top-right"
           toastOptions={{
