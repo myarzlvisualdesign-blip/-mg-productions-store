@@ -6,6 +6,7 @@ import { Lock, User, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { setPreferredAdminView } from '@/lib/admin-session'
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,7 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
 
     if (result.success) {
       await checkAuth()
+      setPreferredAdminView(true)
       const { setViewMode } = useViewStore.getState()
       setViewMode('admin')
       setLoading(false)
@@ -53,6 +55,7 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
       setUsername('')
       setPassword('')
       onClose()
+      window.location.reload()
     } else {
       setLoading(false)
       setError(result.error || 'Login gagal')
