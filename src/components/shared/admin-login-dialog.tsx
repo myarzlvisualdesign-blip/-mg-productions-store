@@ -55,7 +55,6 @@ export default function AdminLoginDialog({ open, onClose }: AdminLoginDialogProp
       setUsername('')
       setPassword('')
       onClose()
-      window.location.reload()
     } else {
       setLoading(false)
       setError(result.error || 'Login gagal')
