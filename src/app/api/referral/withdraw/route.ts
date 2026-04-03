@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { getCanonicalReferralSettings } from '@/lib/referral-settings'
 
 // PUBLIC GET — List withdrawal history + balance for a referral code
 // Query: ?code=MG-XXXXXX or ?referralCodeId=xxx
@@ -57,9 +58,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Jumlah pencairan tidak valid' }, { status: 400 })
     }
 
-    // Get settings for min withdrawal
-    let settings = await db.referralSettings.findFirst()
-    if (!settings) settings = await db.referralSettings.create({ data: {} })
+    const settings = await getCanonicalReferralSettings()
 
     if (!settings.enabled) {
       return NextResponse.json({ error: 'Program referral sedang tidak aktif' }, { status: 503 })

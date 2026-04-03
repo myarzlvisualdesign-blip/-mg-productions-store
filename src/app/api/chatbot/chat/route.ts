@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCanonicalChatbotSettings } from '@/lib/chatbot-settings'
+import { getCanonicalReferralSettings } from '@/lib/referral-settings'
 
 const DEFAULT_SYSTEM_PROMPT = 'Kamu adalah MG Assistant untuk MG PRODUCTIONS. Kamu hanya membantu pertanyaan seputar produk, pencarian barang, checkout, top up, food, travel, referral, promo, dan fitur toko. Jika pertanyaan di luar topik toko, arahkan kembali ke layanan MG PRODUCTIONS.'
 
@@ -79,9 +80,7 @@ export async function POST(request: NextRequest) {
       'produk', 'barang', 'catalog', 'katalog', 'tersedia', 'available',
       'rekomendasi', 'cari', 'search', 'shop', 'belanja',
     ]) || searchTerms.length > 0
-    const activeReferralSettings = await db.referralSettings.findFirst({
-      select: { enabled: true, minOrderAmount: true, refereeReward: true },
-    })
+    const activeReferralSettings = await getCanonicalReferralSettings()
 
     if (hasAnyKeyword(normalized, ['halo', 'hai', 'hello', 'pagi', 'siang', 'malam'])) {
       return NextResponse.json({

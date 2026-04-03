@@ -1,27 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
+import { publicJson } from '@/lib/public-api'
+import {
+  getCanonicalReferralSettings,
+  toPublicReferralSettings,
+} from '@/lib/referral-settings'
 
 // PUBLIC GET — Fetch referral settings (create defaults if not exist)
 export async function GET() {
   try {
-    let settings = await db.referralSettings.findFirst()
-
-    // Create default settings if none exist
-    if (!settings) {
-      settings = await db.referralSettings.create({ data: {} })
-    }
-
-    return NextResponse.json({
-      id: settings.id,
-      enabled: settings.enabled,
-      referrerReward: settings.referrerReward,
-      refereeReward: settings.refereeReward,
-      minOrderAmount: settings.minOrderAmount,
-      minWithdraw: settings.minWithdraw,
-      createdAt: settings.createdAt,
-      updatedAt: settings.updatedAt,
-    })
+    const settings = await getCanonicalReferralSettings()
+    return publicJson(toPublicReferralSettings(settings))
   } catch {
     return NextResponse.json(
       { error: 'Gagal mengambil pengaturan referral' },
@@ -44,11 +34,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const { enabled, referrerReward, refereeReward, minOrderAmount, minWithdraw } = body
 
-    // Get or create settings record
-    let settings = await db.referralSettings.findFirst()
-    if (!settings) {
-      settings = await db.referralSettings.create({ data: {} })
-    }
+    const settings = await getCanonicalReferralSettings()
 
     // Build update payload with only provided fields
     const updateData: Record<string, unknown> = {}
@@ -58,22 +44,12 @@ export async function PUT(request: NextRequest) {
     if (minOrderAmount !== undefined) updateData.minOrderAmount = minOrderAmount
     if (minWithdraw !== undefined) updateData.minWithdraw = minWithdraw
 
-    // Update settings
     const updated = await db.referralSettings.update({
       where: { id: settings.id },
       data: updateData,
     })
 
-    return NextResponse.json({
-      id: updated.id,
-      enabled: updated.enabled,
-      referrerReward: updated.referrerReward,
-      refereeReward: updated.refereeReward,
-      minOrderAmount: updated.minOrderAmount,
-      minWithdraw: updated.minWithdraw,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt,
-    })
+    return publicJson(toPublicReferralSettings(updated))
   } catch {
     return NextResponse.json(
       { error: 'Gagal memperbarui pengaturan referral' },

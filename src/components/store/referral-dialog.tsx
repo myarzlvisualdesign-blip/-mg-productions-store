@@ -19,6 +19,7 @@ import {
 import { toast } from 'sonner'
 import { formatRupiah } from '@/lib/utils'
 import ReferralShareSheet from '@/components/store/referral-share-sheet'
+import { subscribeLiveSync } from '@/lib/live-sync'
 import { cn } from '@/lib/utils'
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -92,6 +93,14 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   const [wdLoading, setWdLoading] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
 
+  const loadSettings = useCallback(async () => {
+    const settingsRes = await fetch('/api/referral/settings', { cache: 'no-store' })
+    if (!settingsRes.ok) return
+
+    const data = await settingsRes.json()
+    setSettings(data)
+  }, [])
+
   useEffect(() => {
     window.dispatchEvent(
       new CustomEvent('mg-referral-visibility', {
@@ -115,11 +124,7 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
     async function init() {
       setLoading(true)
       try {
-        const settingsRes = await fetch('/api/referral/settings')
-        if (settingsRes.ok) {
-          const data = await settingsRes.json()
-          setSettings(data)
-        }
+        await loadSettings()
 
         const savedCode = localStorage.getItem('mg-referral-code')
         if (savedCode) {
@@ -138,7 +143,13 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
       }
     }
     init()
-  }, [open])
+  }, [loadSettings, open])
+
+  useEffect(() => subscribeLiveSync(['referral-settings'], () => {
+    if (open) {
+      void loadSettings()
+    }
+  }), [loadSettings, open])
 
   // ─── Fetch withdrawal history when tab opens ─────────────────────────
   useEffect(() => {

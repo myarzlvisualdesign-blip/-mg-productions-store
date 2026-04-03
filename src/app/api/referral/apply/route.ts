@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { getCanonicalReferralSettings } from '@/lib/referral-settings'
 
 // PUBLIC POST — Apply a referral code to an order (called after checkout)
 export async function POST(request: NextRequest) {
@@ -23,11 +24,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get referral settings (create defaults if not exist)
-    let settings = await db.referralSettings.findFirst()
-    if (!settings) {
-      settings = await db.referralSettings.create({ data: {} })
-    }
+    const settings = await getCanonicalReferralSettings()
 
     // Check if referral program is enabled
     if (!settings.enabled) {

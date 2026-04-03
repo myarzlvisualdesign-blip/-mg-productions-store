@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import { subscribeLiveSync } from '@/lib/live-sync'
 import { formatRupiah } from '@/lib/utils'
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -24,8 +25,31 @@ export default function ReferralCodeInput({ onApplyCode, onRemoveCode, disabled 
   const [applying, setApplying] = useState(false)
   const [appliedCode, setAppliedCode] = useState<string | null>(null)
   const [discount, setDiscount] = useState<number>(0)
+  const [refereeReward, setRefereeReward] = useState<number>(25000)
+  const [minOrderAmount, setMinOrderAmount] = useState<number>(100000)
   const [error, setError] = useState<string | null>(null)
   const [autoApplied, setAutoApplied] = useState(false)
+
+  const loadReferralSettings = useCallback(async () => {
+    try {
+      const settingsRes = await fetch('/api/referral/settings', { cache: 'no-store' })
+      if (!settingsRes.ok) return
+
+      const settings = await settingsRes.json()
+      setRefereeReward(settings.refereeReward || 25000)
+      setMinOrderAmount(settings.minOrderAmount || 100000)
+    } catch {
+      // Silent
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadReferralSettings()
+  }, [loadReferralSettings])
+
+  useEffect(() => subscribeLiveSync(['referral-settings'], () => {
+    void loadReferralSettings()
+  }), [loadReferralSettings])
 
   // ─── Auto-apply referral code from URL invite ─────────────────────
   useEffect(() => {
@@ -53,12 +77,7 @@ export default function ReferralCodeInput({ onApplyCode, onRemoveCode, disabled 
           setAppliedCode(code)
           setInputCode(code)
           // Fetch settings to get referee reward
-          const settingsRes = await fetch('/api/referral/settings')
-          let reward = 25000
-          if (settingsRes.ok) {
-            const settings = await settingsRes.json()
-            reward = settings.refereeReward || 25000
-          }
+          const reward = refereeReward || 25000
           setDiscount(reward)
           onApplyCode(code, reward)
           toast.success(`Kode referral ${code} otomatis diterapkan! Diskon ${formatRupiah(reward)}`)
@@ -74,7 +93,7 @@ export default function ReferralCodeInput({ onApplyCode, onRemoveCode, disabled 
       }
     }
     autoApply()
-  }, [autoApplied, onApplyCode])
+  }, [autoApplied, onApplyCode, refereeReward])
 
   const handleApply = useCallback(async () => {
     const code = inputCode.trim().toUpperCase()
@@ -89,12 +108,7 @@ export default function ReferralCodeInput({ onApplyCode, onRemoveCode, disabled 
         const data = await res.json()
         setAppliedCode(code)
         // Fetch settings to get referee reward
-        const settingsRes = await fetch('/api/referral/settings')
-        let reward = 25000
-        if (settingsRes.ok) {
-          const settings = await settingsRes.json()
-          reward = settings.refereeReward || 25000
-        }
+        const reward = refereeReward || 25000
         setDiscount(reward)
         onApplyCode(code, reward)
         toast.success(`Kode referral diterapkan! Diskon ${formatRupiah(reward)}`)
@@ -107,7 +121,7 @@ export default function ReferralCodeInput({ onApplyCode, onRemoveCode, disabled 
     } finally {
       setApplying(false)
     }
-  }, [inputCode, onApplyCode])
+  }, [inputCode, onApplyCode, refereeReward])
 
   const handleRemove = () => {
     setAppliedCode(null)
@@ -185,7 +199,7 @@ export default function ReferralCodeInput({ onApplyCode, onRemoveCode, disabled 
       {/* Hint */}
       {!error && !inputCode && (
         <p className="text-[10px] text-muted-foreground/40 pl-6">
-          Berlaku untuk produk Store & Travel (min. {formatRupiah(100000)})
+          Berlaku untuk produk Store & Travel (min. {formatRupiah(minOrderAmount)})
         </p>
       )}
     </div>

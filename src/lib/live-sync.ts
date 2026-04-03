@@ -10,6 +10,7 @@ export type LiveSyncTopic =
   | 'destinations'
   | 'topup-banners'
   | 'chatbot-settings'
+  | 'referral-settings'
   | 'storefront-all'
 
 const LIVE_SYNC_EVENT = 'mg-live-sync'

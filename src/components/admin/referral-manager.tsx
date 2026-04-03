@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
+import { broadcastLiveSync } from '@/lib/live-sync'
 import { formatRupiah } from '@/lib/utils'
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -110,6 +111,18 @@ export default function ReferralManager() {
         const data = await res.json().catch(() => ({ error: 'Gagal menyimpan' }))
         throw new Error(data.error || 'Gagal menyimpan')
       }
+
+      const updated = (await res.json()) as Partial<ReferralConfig>
+      setConfig((prev) => prev ? {
+        ...prev,
+        enabled: updated.enabled ?? prev.enabled,
+        referrerReward: updated.referrerReward ?? prev.referrerReward,
+        refereeReward: updated.refereeReward ?? prev.refereeReward,
+        minOrderAmount: updated.minOrderAmount ?? prev.minOrderAmount,
+        minWithdraw: updated.minWithdraw ?? prev.minWithdraw,
+      } : prev)
+
+      broadcastLiveSync('referral-settings')
       toast.success('Pengaturan referral berhasil disimpan!')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Gagal menyimpan')

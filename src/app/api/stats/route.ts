@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
+import { getCanonicalChatbotSettings } from '@/lib/chatbot-settings'
+import { getCanonicalReferralSettings } from '@/lib/referral-settings'
 
 type StatsSummaryRow = {
   totalProducts: number
@@ -26,8 +28,6 @@ type StatsSummaryRow = {
   activeDestinations: number
   totalReferralCodes: number
   pendingWithdrawals: number
-  referralEnabled: boolean
-  chatbotEnabled: boolean
 }
 
 // ADMIN ONLY — Statistik dashboard
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [summaryRows, categoryRows] = await Promise.all([
+    const [summaryRows, categoryRows, referralSettings, chatbotSettings] = await Promise.all([
       db.$queryRaw<StatsSummaryRow[]>(Prisma.sql`
         SELECT
           CAST((SELECT COUNT(*) FROM "Product") AS INTEGER) AS "totalProducts",
@@ -65,9 +65,7 @@ export async function GET(request: NextRequest) {
           CAST((SELECT COUNT(*) FROM "PopularDestination") AS INTEGER) AS "totalDestinations",
           CAST((SELECT COUNT(*) FROM "PopularDestination" WHERE active = true) AS INTEGER) AS "activeDestinations",
           CAST((SELECT COUNT(*) FROM "ReferralCode") AS INTEGER) AS "totalReferralCodes",
-          CAST((SELECT COUNT(*) FROM "ReferralWithdrawal" WHERE status = 'pending') AS INTEGER) AS "pendingWithdrawals",
-          COALESCE((SELECT enabled FROM "ReferralSettings" LIMIT 1), false) AS "referralEnabled",
-          COALESCE((SELECT enabled FROM "ChatbotSettings" LIMIT 1), false) AS "chatbotEnabled"
+          CAST((SELECT COUNT(*) FROM "ReferralWithdrawal" WHERE status = 'pending') AS INTEGER) AS "pendingWithdrawals"
       `),
       db.$queryRaw<Array<{ category: string; count: number }>>(Prisma.sql`
         SELECT
@@ -76,6 +74,8 @@ export async function GET(request: NextRequest) {
         FROM "Product"
         GROUP BY category
       `),
+      getCanonicalReferralSettings(),
+      getCanonicalChatbotSettings(),
     ])
 
     const summary = summaryRows[0]
@@ -109,8 +109,8 @@ export async function GET(request: NextRequest) {
       activeDestinations: summary.activeDestinations,
       totalReferralCodes: summary.totalReferralCodes,
       pendingWithdrawals: summary.pendingWithdrawals,
-      referralEnabled: summary.referralEnabled,
-      chatbotEnabled: summary.chatbotEnabled,
+      referralEnabled: referralSettings.enabled,
+      chatbotEnabled: chatbotSettings.enabled,
     })
   } catch (error) {
     console.error('Failed to fetch admin stats:', error)
