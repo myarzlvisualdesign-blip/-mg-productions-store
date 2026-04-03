@@ -128,13 +128,20 @@ function usePWAState() {
 
   useEffect(() => {
     const handler = () => {
+      if (typeof window !== 'undefined') {
+        ;(window as typeof window & {
+          __mgDeferredPrompt?: BeforeInstallPromptEvent | null
+        }).__mgDeferredPrompt = null
+      }
+
+      setDeferredPrompt(null)
       setShowBanner(false)
-      setShowLauncher(false)
-      setDismissed(true)
+      setShowLauncher(true)
+      setDismissed(false)
     }
     window.addEventListener('appinstalled', handler)
     return () => window.removeEventListener('appinstalled', handler)
-  }, [])
+  }, [setDeferredPrompt])
 
   useEffect(() => {
     if (!stateHydrated || isStandalone) return
