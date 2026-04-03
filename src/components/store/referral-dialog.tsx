@@ -296,11 +296,11 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   // ─── Helpers ─────────────────────────────────────────────────────────
   const balance = myCode ? (myCode.balance ?? myCode.totalReward - (myCode.totalWithdrawn || 0)) : 0
   const minWithdraw = settings?.minWithdraw || 100000
-  const dialogClassName = "!left-1/2 !top-1/2 !grid !h-[min(42rem,calc(100dvh-1rem))] !w-[calc(100%-1rem)] !max-w-[34rem] !translate-x-[-50%] !translate-y-[-50%] !gap-0 !overflow-hidden rounded-[1.75rem] border border-white/10 bg-background/95 p-0 shadow-2xl shadow-black/40 backdrop-blur-xl sm:!h-[min(44rem,calc(100dvh-3rem))] sm:!w-[calc(100%-2rem)] lg:!max-w-xl"
+  const dialogClassName = "!left-1/2 !top-1/2 !flex !h-auto !max-h-[min(34rem,calc(100dvh-1.5rem))] !w-[calc(100%-1rem)] !max-w-[32rem] !translate-x-[-50%] !translate-y-[-50%] !flex-col !gap-0 !overflow-hidden rounded-[1.75rem] border border-white/10 bg-background/95 p-0 shadow-2xl shadow-black/40 backdrop-blur-xl sm:!max-h-[min(38rem,calc(100dvh-4rem))] sm:!w-[calc(100%-2rem)]"
 
   function DialogShell({ children, bodyClassName }: { children: React.ReactNode; bodyClassName?: string }) {
     return (
-      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex shrink-0 items-start justify-between gap-3 border-b border-white/[0.06] bg-background/95 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur sm:px-6 sm:pt-5">
           <DialogHeader className="text-left">
             <DialogTitle className="flex items-center gap-2 pr-4 text-lg">
@@ -317,7 +317,7 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
           </DialogClose>
         </div>
 
-        <div className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 [-webkit-overflow-scrolling:touch] touch-pan-y sm:px-6 sm:pb-6", bodyClassName)}>
+        <div className={cn("min-h-0 max-h-full flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 [-webkit-overflow-scrolling:touch] touch-pan-y sm:px-6 sm:pb-6", bodyClassName)}>
           {children}
         </div>
       </div>

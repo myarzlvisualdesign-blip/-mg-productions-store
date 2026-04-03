@@ -91,14 +91,14 @@ function FeaturedProducts() {
           </p>
         </div>
 
-        <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap py-2">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 flex-nowrap py-2">
           {partners.map((partner, index) => {
             const isActive = index === activeIndex
             const hasLink = !!partner.link
             const avatar = (
-              <div className="flex h-16 w-16 items-center justify-center sm:h-20 sm:w-20">
-                <div className={`h-16 w-16 rounded-full p-[3px] transition-all duration-300 transform-gpu sm:h-20 sm:w-20 ${isActive ? 'scale-100 bg-gradient-to-br from-purple-400 to-purple-600 shadow-[0_0_28px_rgba(168,85,247,0.35)]' : 'scale-[0.86] bg-white/[0.06]'}`}>
-                  <div className={`h-full w-full rounded-full overflow-hidden bg-muted/20 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-55 hover:opacity-80'}`}>
+              <div className="flex h-14 w-14 items-center justify-center sm:h-16 sm:w-16">
+                <div className={`h-14 w-14 rounded-full p-[3px] transition-all duration-300 transform-gpu sm:h-16 sm:w-16 ${isActive ? 'scale-100 bg-gradient-to-br from-purple-400 to-purple-600 shadow-[0_0_28px_rgba(168,85,247,0.35)]' : 'scale-[0.82] bg-white/[0.06]'}`}>
+                  <div className={`h-full w-full rounded-full overflow-hidden bg-muted/20 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-60 hover:opacity-80'}`}>
                     {!imgErrors[partner.id] ? (
                       <img src={partner.image} alt={partner.name} className="h-full w-full object-cover" onError={() => setImgErrors(p => ({ ...p, [partner.id]: true }))} />
                     ) : (
@@ -111,7 +111,7 @@ function FeaturedProducts() {
               </div>
             )
 
-            const itemClassName = "relative flex h-16 w-16 shrink-0 items-center justify-center transition-all duration-300 focus:outline-none sm:h-20 sm:w-20"
+            const itemClassName = "relative flex h-14 w-14 shrink-0 items-center justify-center transition-all duration-300 focus:outline-none sm:h-16 sm:w-16"
 
             if (hasLink) {
               return (
