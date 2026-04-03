@@ -192,14 +192,9 @@ export default function PWAInstallBanner() {
   }, [deferredPrompt, dismiss, reopenBanner, setDeferredPrompt])
 
   const handleLauncherClick = useCallback(() => {
-    if (!isIOSDevice && deferredPrompt) {
-      void handleInstall()
-      return
-    }
-
-    hideBanner()
-    setGuideOpen(true)
-  }, [deferredPrompt, handleInstall, hideBanner, isIOSDevice])
+    setGuideOpen(false)
+    reopenBanner()
+  }, [reopenBanner])
 
   const showManualInstallHint = !isIOSDevice && !deferredPrompt
   const guideTitle = isIOSDevice ? 'Cara Install di iPhone' : isAndroidDevice ? 'Cara Install di Android' : 'Cara Install di Desktop'
@@ -289,21 +284,18 @@ export default function PWAInstallBanner() {
 
                 {isIOSDevice ? (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                      <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/10 shrink-0">
-                        <Smartphone className="size-3.5 text-blue-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-medium text-foreground leading-tight">
-                          Tap{' '}
-                          <span className="inline-flex items-center">
-                            <ArrowDownToLine className="size-3 mx-0.5 text-blue-400" />
-                          </span>
-                          {' '}di Safari, lalu pilih{' '}
-                          <span className="font-semibold text-purple-300">Tambahkan ke Layar Utama</span>
-                        </p>
-                      </div>
-                    </div>
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      type="button"
+                      onClick={() => {
+                        hideBanner()
+                        setGuideOpen(true)
+                      }}
+                      className="w-full h-11 rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 text-white font-semibold text-sm shadow-lg shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
+                    >
+                      <ArrowDownToLine className="size-4" />
+                      Install Sekarang
+                    </motion.button>
                     <button
                       type="button"
                       onClick={() => {
@@ -314,6 +306,9 @@ export default function PWAInstallBanner() {
                     >
                       Lihat Tutorial Install
                     </button>
+                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-3 text-[11px] leading-relaxed text-muted-foreground">
+                      iPhone tetap perlu langkah manual. Setelah tekan <span className="font-semibold text-purple-200">Install Sekarang</span>, ikuti tutorial Safari untuk <span className="font-semibold text-purple-200">Tambahkan ke Layar Utama</span>.
+                    </div>
                     <button
                       onClick={dismiss}
                       className="w-full h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/[0.06] text-xs text-muted-foreground hover:text-foreground transition-all font-medium"
