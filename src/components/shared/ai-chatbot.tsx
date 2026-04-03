@@ -242,6 +242,24 @@ export default function AIChatbot() {
     [isLoading, sessionId]
   )
 
+  useEffect(() => {
+    const handleServiceOrder = (event: Event) => {
+      const customEvent = event as CustomEvent<{ message?: string }>
+      const message = customEvent.detail?.message?.trim()
+
+      setIsOpen(true)
+
+      if (message) {
+        window.setTimeout(() => {
+          void sendMessage(message)
+        }, 160)
+      }
+    }
+
+    window.addEventListener('mg-service-order', handleServiceOrder)
+    return () => window.removeEventListener('mg-service-order', handleServiceOrder)
+  }, [sendMessage])
+
   // ─── Submit handler ─────────────────────────────────────────────────
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

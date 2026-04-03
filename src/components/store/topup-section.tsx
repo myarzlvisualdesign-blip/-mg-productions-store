@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Coins, ArrowRight, ChevronDown, ChevronUp, ChevronRight, ExternalLink } from 'lucide-react'
+import { Coins, ArrowRight, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
+import ServiceActionButton from '@/components/store/service-action-button'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
 import { useLiveRefresh } from '@/hooks/use-live-refresh'
@@ -403,17 +404,13 @@ export default function TopUpSection() {
                         )}
 
                         <div className="pt-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (service.link) openBrowser(service.link, service.name)
-                            }}
-                            disabled={!service.link}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] sm:text-xs font-semibold text-foreground transition-colors hover:bg-white/[0.07] disabled:cursor-default disabled:opacity-55 disabled:hover:bg-white/[0.04]"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            <span>Buka</span>
-                          </button>
+                          <ServiceActionButton
+                            link={service.link}
+                            title={service.name}
+                            category="topup"
+                            onVisit={openBrowser}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] sm:text-xs font-semibold text-foreground transition-colors hover:bg-white/[0.07]"
+                          />
                         </div>
                       </div>
                     </motion.div>

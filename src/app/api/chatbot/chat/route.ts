@@ -88,6 +88,26 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    if (normalized.includes('saya ingin order layanan')) {
+      if (hasAnyKeyword(normalized, ['topup', 'top up', 'diamond', 'koin', 'game', 'voucher'])) {
+        return NextResponse.json({
+          response: 'Siapp, untuk layanan top up ini ordernya masih dibantu lewat alur internal MG PRODUCTIONS. Sebutkan detail game atau nominal yang kamu butuhkan, nanti aku bantu arahkan langkah berikutnya ya.',
+        })
+      }
+
+      if (hasAnyKeyword(normalized, ['food', 'makan', 'minum', 'drink', 'menu', 'kuliner'])) {
+        return NextResponse.json({
+          response: 'Siapp, untuk menu food & drink ini ordernya masih dibantu secara internal. Tinggal balas item yang kamu mau dan jumlahnya, nanti admin bisa bantu lanjutkan pemesanannya.',
+        })
+      }
+
+      if (hasAnyKeyword(normalized, ['travel', 'wisata', 'liburan', 'destinasi', 'trip'])) {
+        return NextResponse.json({
+          response: 'Siapp, untuk layanan travel ini ordernya masih dibantu secara internal. Balas kebutuhan kamu, misalnya tujuan, tanggal, atau jenis layanan, nanti aku bantu arahkan langkah selanjutnya.',
+        })
+      }
+    }
+
     if (hasAnyKeyword(normalized, ['checkout', 'bayar', 'pembayaran', 'order', 'pesan', 'keranjang', 'cart'])) {
       return NextResponse.json({
         response: 'Siapp. Untuk belanja, pilih produk lalu masukkan ke keranjang. Setelah itu lanjut checkout dari cart. Kalau produk punya tombol Visit, berarti produk itu diarahkan ke link eksternal. Kalau ada kendala pembayaran atau order, admin toko bisa bantu lanjut.',
