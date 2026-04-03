@@ -346,7 +346,7 @@ export default function TravelSection() {
                       className="glass-card rounded-xl overflow-hidden hover:border-purple-500/20 transition-all duration-300 group relative"
                     >
                       {/* Header */}
-                      <div className={`relative bg-gradient-to-br ${service.color} p-3 sm:p-4`}>
+                      <div className={`bg-gradient-to-br ${service.color} p-3 sm:p-4`}>
                         <div className="flex items-center gap-2.5">
                           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl overflow-hidden">
                             {service.image ? (
@@ -360,17 +360,6 @@ export default function TravelSection() {
                             <p className="text-[9px] sm:text-[11px] text-white/70 truncate">{service.subtitle}</p>
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (service.link) openBrowser(service.link, service.name)
-                          }}
-                          disabled={!service.link}
-                          className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/15 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/20 disabled:cursor-default disabled:opacity-55 disabled:hover:bg-white/15"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          <span>Buka</span>
-                        </button>
                       </div>
 
                       {/* Body */}
@@ -414,6 +403,20 @@ export default function TravelSection() {
                             )}
                           </div>
                         )}
+
+                        <div className="mt-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (service.link) openBrowser(service.link, service.name)
+                            }}
+                            disabled={!service.link}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] sm:text-xs font-semibold text-foreground transition-colors hover:bg-white/[0.07] disabled:cursor-default disabled:opacity-55 disabled:hover:bg-white/[0.04]"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            <span>Buka</span>
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
                   )

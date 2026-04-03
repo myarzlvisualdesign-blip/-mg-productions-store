@@ -159,7 +159,7 @@ export default function FoodSection() {
                       className="glass-card rounded-xl overflow-hidden hover:border-purple-500/20 transition-all duration-300 relative"
                     >
                       {/* Header */}
-                      <div className={`relative bg-gradient-to-r ${cat.color} px-4 py-3`}>
+                      <div className={`bg-gradient-to-r ${cat.color} px-4 py-3`}>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg overflow-hidden">
                             {cat.image ? (
@@ -173,17 +173,6 @@ export default function FoodSection() {
                             <p className="text-[11px] text-white/70">{cat.subtitle}</p>
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (cat.link) openBrowser(cat.link, cat.name)
-                          }}
-                          disabled={!cat.link}
-                          className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/15 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/20 disabled:cursor-default disabled:opacity-55 disabled:hover:bg-white/15"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          <span>Buka</span>
-                        </button>
                       </div>
 
                       {/* Sub-items */}
@@ -219,6 +208,20 @@ export default function FoodSection() {
                             }
                           </button>
                         )}
+
+                        <div className="px-4 py-3 border-t border-white/[0.04]">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (cat.link) openBrowser(cat.link, cat.name)
+                            }}
+                            disabled={!cat.link}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] sm:text-xs font-semibold text-foreground transition-colors hover:bg-white/[0.07] disabled:cursor-default disabled:opacity-55 disabled:hover:bg-white/[0.04]"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            <span>Buka</span>
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
                   )
