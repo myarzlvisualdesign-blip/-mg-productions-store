@@ -13,9 +13,7 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
 }
 
-const PWA_UI_STATE_KEY = 'mg-pwa-ui-state'
-
-type PwaUiState = 'banner' | 'launcher' | 'installed'
+const PWA_INSTALLED_KEY = 'mg-pwa-installed'
 
 // ─── Helpers ────────────────────────────────────────────────────────────
 
@@ -33,20 +31,17 @@ function usePWAState() {
   const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
   const isStandalone = typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as unknown as { standalone?: boolean }).standalone === true)
 
-  const persistUiState = useCallback((state: PwaUiState) => {
+  const persistInstalledState = useCallback(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(PWA_UI_STATE_KEY, state)
+    window.localStorage.setItem(PWA_INSTALLED_KEY, '1')
   }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const savedState = window.localStorage.getItem(PWA_UI_STATE_KEY) as PwaUiState | null
-    if (savedState === 'installed') {
+    const isInstalled = window.localStorage.getItem(PWA_INSTALLED_KEY) === '1'
+    if (isInstalled) {
       setAppInstalled(true)
-    } else if (savedState === 'launcher') {
-      setDismissed(true)
-      setShowLauncher(true)
     }
 
     setStateHydrated(true)
@@ -60,10 +55,9 @@ function usePWAState() {
 
     const timer = setTimeout(() => {
       setShowBanner(true)
-      persistUiState('banner')
-    }, 4000)
+    }, 1800)
     return () => clearTimeout(timer)
-  }, [appInstalled, dismissed, isStandalone, persistUiState, stateHydrated])
+  }, [appInstalled, dismissed, isStandalone, stateHydrated])
 
   // Android: capture beforeinstallprompt event
   useEffect(() => {
@@ -74,13 +68,12 @@ function usePWAState() {
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       setTimeout(() => {
         setShowBanner(true)
-        persistUiState('banner')
-      }, 3000)
+      }, 1200)
     }
 
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
-  }, [appInstalled, dismissed, isIOSDevice, isStandalone, persistUiState, stateHydrated])
+  }, [appInstalled, dismissed, isIOSDevice, isStandalone, stateHydrated])
 
   // App installed event
   useEffect(() => {
@@ -88,11 +81,11 @@ function usePWAState() {
       setAppInstalled(true)
       setShowBanner(false)
       setShowLauncher(false)
-      persistUiState('installed')
+      persistInstalledState()
     }
     window.addEventListener('appinstalled', handler)
     return () => window.removeEventListener('appinstalled', handler)
-  }, [persistUiState])
+  }, [persistInstalledState])
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -119,8 +112,7 @@ function usePWAState() {
     setShowBanner(false)
     setShowLauncher(true)
     setDismissed(true)
-    persistUiState('launcher')
-  }, [persistUiState])
+  }, [])
 
   const hideBanner = useCallback(() => {
     setShowBanner(false)
@@ -131,15 +123,13 @@ function usePWAState() {
     setDismissed(false)
     setShowLauncher(false)
     setShowBanner(true)
-    persistUiState('banner')
-  }, [persistUiState])
+  }, [])
 
   const showDownloadLauncher = useCallback(() => {
     setDismissed(true)
     setShowBanner(false)
     setShowLauncher(true)
-    persistUiState('launcher')
-  }, [persistUiState])
+  }, [])
 
   return {
     deferredPrompt,
