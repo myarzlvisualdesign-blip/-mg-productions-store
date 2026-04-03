@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { UtensilsCrossed, ArrowRight, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
+import { UtensilsCrossed, ArrowRight, ChevronDown, ChevronUp, ChevronRight, ExternalLink } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
@@ -159,13 +159,7 @@ export default function FoodSection() {
                       className="glass-card rounded-xl overflow-hidden hover:border-purple-500/20 transition-all duration-300 relative"
                     >
                       {/* Header */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (cat.link) openBrowser(cat.link, cat.name)
-                        }}
-                        className={`w-full bg-gradient-to-r ${cat.color} px-4 py-3 text-left transition-opacity ${cat.link ? 'cursor-pointer hover:opacity-95' : 'cursor-default'}`}
-                      >
+                      <div className={`relative bg-gradient-to-r ${cat.color} px-4 py-3`}>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg overflow-hidden">
                             {cat.image ? (
@@ -179,21 +173,28 @@ export default function FoodSection() {
                             <p className="text-[11px] text-white/70">{cat.subtitle}</p>
                           </div>
                         </div>
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (cat.link) openBrowser(cat.link, cat.name)
+                          }}
+                          disabled={!cat.link}
+                          className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/15 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/20 disabled:cursor-default disabled:opacity-55 disabled:hover:bg-white/15"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Buka</span>
+                        </button>
+                      </div>
 
                       {/* Sub-items */}
                       <div className="divide-y divide-white/[0.04]">
                         <AnimatePresence>
                           {visibleItems.map((item: MenuItem) => (
-                            <motion.button
+                            <motion.div
                               key={item.name}
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
                               exit={{ opacity: 0, height: 0 }}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                if (cat.link) openBrowser(cat.link, cat.name)
-                              }}
                               className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/[0.03] transition-colors group/item"
                             >
                               <div className="text-left">
@@ -201,21 +202,14 @@ export default function FoodSection() {
                                 <p className="text-[10px] text-muted-foreground">{item.price}</p>
                               </div>
                               <ArrowRight className="size-3.5 opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all text-purple-400" />
-                            </motion.button>
+                            </motion.div>
                           ))}
                         </AnimatePresence>
 
                         {/* Lihat Lainnya inside card — sub-items > 5 */}
                         {hasMoreItems && (
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              if (cat.link) {
-                                openBrowser(cat.link, cat.name)
-                              } else {
-                                toggleCardExpand(cat.id)
-                              }
-                            }}
+                            onClick={() => toggleCardExpand(cat.id)}
                             className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-[10px] sm:text-xs font-medium text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 transition-colors"
                           >
                             <span>{isCardExpanded ? 'Sembunyikan' : 'Lihat Lainnya'}</span>

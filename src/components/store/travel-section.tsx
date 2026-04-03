@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plane, ArrowRight, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
+import { Plane, ArrowRight, ChevronDown, ChevronUp, ChevronRight, ExternalLink } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
@@ -346,13 +346,7 @@ export default function TravelSection() {
                       className="glass-card rounded-xl overflow-hidden hover:border-purple-500/20 transition-all duration-300 group relative"
                     >
                       {/* Header */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (service.link) openBrowser(service.link, service.name)
-                        }}
-                        className={`w-full bg-gradient-to-br ${service.color} p-3 sm:p-4 text-left transition-opacity ${service.link ? 'cursor-pointer hover:opacity-95' : 'cursor-default'}`}
-                      >
+                      <div className={`relative bg-gradient-to-br ${service.color} p-3 sm:p-4`}>
                         <div className="flex items-center gap-2.5">
                           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl overflow-hidden">
                             {service.image ? (
@@ -366,19 +360,24 @@ export default function TravelSection() {
                             <p className="text-[9px] sm:text-[11px] text-white/70 truncate">{service.subtitle}</p>
                           </div>
                         </div>
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (service.link) openBrowser(service.link, service.name)
+                          }}
+                          disabled={!service.link}
+                          className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/15 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/20 disabled:cursor-default disabled:opacity-55 disabled:hover:bg-white/15"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Buka</span>
+                        </button>
+                      </div>
 
                       {/* Body */}
                       <div className="p-3 sm:p-4">
                         {/* Description only (no sub-items) */}
                         {service.desc && parsedItems.length === 0 && (
-                          <>
-                            <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">{service.desc}</p>
-                            <div className="mt-2 flex items-center gap-1 text-[10px] text-purple-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                              <span>Lihat Detail</span>
-                              <ArrowRight className="size-3" />
-                            </div>
-                          </>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">{service.desc}</p>
                         )}
 
                         {/* Sub-items list */}
@@ -386,35 +385,24 @@ export default function TravelSection() {
                           <div className="space-y-1">
                             <AnimatePresence>
                               {visibleItems.map((item: SubItem, i: number) => (
-                                <motion.button
+                                <motion.div
                                   key={i}
                                   initial={{ opacity: 0, height: 0 }}
                                   animate={{ opacity: 1, height: 'auto' }}
                                   exit={{ opacity: 0, height: 0 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    if (service.link) openBrowser(service.link, service.name)
-                                  }}
                                   className="w-full flex items-center justify-between px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors group/sub"
                                 >
                                   <span className="font-medium truncate">{item.name}</span>
                                   {item.price && <span className="text-[9px] text-muted-foreground shrink-0 ml-2">{item.price}</span>}
                                   <ArrowRight className="size-3 opacity-0 -translate-x-1 group-hover/sub:opacity-100 group-hover/sub:translate-x-0 transition-all text-purple-400 shrink-0 ml-1" />
-                                </motion.button>
+                                </motion.div>
                               ))}
                             </AnimatePresence>
 
                             {/* Lihat Lainnya inside card — sub-items > 5 */}
                             {hasMoreItems && (
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  if (service.link) {
-                                    openBrowser(service.link, service.name)
-                                  } else {
-                                    toggleCardExpand(service.id)
-                                  }
-                                }}
+                                onClick={() => toggleCardExpand(service.id)}
                                 className="w-full flex items-center justify-center gap-1.5 px-2 sm:px-2.5 py-2 rounded-lg text-[10px] sm:text-xs font-medium text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 transition-colors mt-1"
                               >
                                 <span>{isCardExpanded ? 'Sembunyikan' : 'Lihat Lainnya'}</span>
