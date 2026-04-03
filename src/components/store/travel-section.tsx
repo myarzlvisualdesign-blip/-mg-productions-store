@@ -6,6 +6,7 @@ import { Plane, ArrowRight, ExternalLink, ChevronDown, ChevronUp, ChevronRight }
 import InAppBrowser from '@/components/shared/in-app-browser'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
+import { useLiveRefresh } from '@/hooks/use-live-refresh'
 
 const MAX_CARDS = 5
 const MAX_SUB_ITEMS = 5
@@ -63,7 +64,11 @@ function PopularDestinationsSlider() {
   const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const fetchDestinations = useCallback(async () => {
+  const fetchDestinations = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setLoading(true)
+    }
+
     try {
       const data = await fetchJsonWithRetry<DestinationItem[]>('/api/destinations')
       if (Array.isArray(data)) {
@@ -73,7 +78,9 @@ function PopularDestinationsSlider() {
     } catch {
       console.error('Failed to fetch destinations')
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -83,8 +90,13 @@ function PopularDestinationsSlider() {
   }, [fetchDestinations])
 
   useEffect(() => subscribeLiveSync(['destinations'], () => {
-    void fetchDestinations()
+    void fetchDestinations({ silent: true })
   }), [fetchDestinations])
+
+  useLiveRefresh(
+    useCallback(() => fetchDestinations({ silent: true }), [fetchDestinations]),
+    { intervalMs: 15000 }
+  )
 
   // Auto-slide timer
   useEffect(() => {
@@ -226,14 +238,20 @@ export default function TravelSection() {
   const [browserTitle, setBrowserTitle] = useState('')
   const [browserOpen, setBrowserOpen] = useState(false)
 
-  const fetchTravel = useCallback(async () => {
+  const fetchTravel = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setLoading(true)
+    }
+
     try {
       const data = await fetchJsonWithRetry<TravelItem[]>('/api/travel')
       if (Array.isArray(data)) setServices(data)
     } catch {
       console.error('Failed to fetch travel services')
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -242,8 +260,13 @@ export default function TravelSection() {
   }, [fetchTravel])
 
   useEffect(() => subscribeLiveSync(['travel'], () => {
-    void fetchTravel()
+    void fetchTravel({ silent: true })
   }), [fetchTravel])
+
+  useLiveRefresh(
+    useCallback(() => fetchTravel({ silent: true }), [fetchTravel]),
+    { intervalMs: 15000 }
+  )
 
   const parseItems = (itemsJson: string): SubItem[] => {
     try { return JSON.parse(itemsJson) } catch { return [] }

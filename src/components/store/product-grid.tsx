@@ -10,6 +10,7 @@ import CategoryFilter from './category-filter'
 import ProductCard, { type Product } from './product-card'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
+import { useLiveRefresh } from '@/hooks/use-live-refresh'
 
 const ITEMS_PER_PAGE = 16
 type StoreSearchDetail = string | { query: string; scrollToResults?: boolean }
@@ -55,8 +56,11 @@ export default function ProductGrid() {
   const visibleProducts = products.slice(0, visibleCount)
   const hasMore = visibleCount < products.length
 
-  const fetchProducts = useCallback(async () => {
-    setLoading(true)
+  const fetchProducts = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setLoading(true)
+    }
+
     try {
       const params = new URLSearchParams()
       if (selectedCategory !== 'All') params.set('category', selectedCategory)
@@ -70,7 +74,9 @@ export default function ProductGrid() {
     } catch (err) {
       console.error('Failed to fetch products:', err)
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [searchQuery, selectedCategory])
 
@@ -85,8 +91,13 @@ export default function ProductGrid() {
   }, [fetchProducts])
 
   useEffect(() => subscribeLiveSync(['products', 'categories'], () => {
-    void fetchProducts()
+    void fetchProducts({ silent: true })
   }), [fetchProducts])
+
+  useLiveRefresh(
+    useCallback(() => fetchProducts({ silent: true }), [fetchProducts]),
+    { intervalMs: 12000 }
+  )
 
   // Intersection Observer — auto load more when scrolling to bottom
   useEffect(() => {

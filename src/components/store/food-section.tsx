@@ -6,6 +6,7 @@ import { UtensilsCrossed, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Chev
 import InAppBrowser from '@/components/shared/in-app-browser'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
+import { useLiveRefresh } from '@/hooks/use-live-refresh'
 
 const MAX_CARDS = 5
 const MAX_SUB_ITEMS = 5
@@ -50,14 +51,20 @@ export default function FoodSection() {
   const [browserTitle, setBrowserTitle] = useState('')
   const [browserOpen, setBrowserOpen] = useState(false)
 
-  const fetchFood = useCallback(async () => {
+  const fetchFood = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setLoading(true)
+    }
+
     try {
       const data = await fetchJsonWithRetry<FoodItemData[]>('/api/food')
       if (Array.isArray(data)) setCategories(data)
     } catch {
       console.error('Failed to fetch food items')
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -66,8 +73,13 @@ export default function FoodSection() {
   }, [fetchFood])
 
   useEffect(() => subscribeLiveSync(['food'], () => {
-    void fetchFood()
+    void fetchFood({ silent: true })
   }), [fetchFood])
+
+  useLiveRefresh(
+    useCallback(() => fetchFood({ silent: true }), [fetchFood]),
+    { intervalMs: 15000 }
+  )
 
   const parseItems = (itemsJson: string): MenuItem[] => {
     try { return JSON.parse(itemsJson) } catch { return [] }

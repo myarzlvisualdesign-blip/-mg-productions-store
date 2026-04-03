@@ -6,6 +6,7 @@ import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { subscribeLiveSync } from '@/lib/live-sync'
+import { useLiveRefresh } from '@/hooks/use-live-refresh'
 
 // ─── Types ───────────────────────────────────────────────────────────────
 
@@ -130,6 +131,11 @@ export default function AIChatbot() {
   useEffect(() => subscribeLiveSync(['chatbot-settings'], () => {
     void refreshSettings()
   }), [refreshSettings])
+
+  useLiveRefresh(refreshSettings, {
+    enabled: settingsLoaded,
+    intervalMs: isOpen ? 12000 : 25000,
+  })
 
   // ─── Auto-scroll to bottom ──────────────────────────────────────────
   useEffect(() => {

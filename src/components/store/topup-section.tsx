@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Coins, ArrowRight, ExternalLink, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
+import { useLiveRefresh } from '@/hooks/use-live-refresh'
 
 const MAX_CARDS = 5
 const MAX_SUB_ITEMS = 5
@@ -60,7 +61,11 @@ function BannerSlider({ onOpenBrowser }: { onOpenBrowser: (link: string, title: 
   const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const fetchBanners = useCallback(async () => {
+  const fetchBanners = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setLoading(true)
+    }
+
     try {
       const data = await fetchJsonWithRetry<BannerItem[]>('/api/topup-banners')
       if (Array.isArray(data)) {
@@ -70,7 +75,9 @@ function BannerSlider({ onOpenBrowser }: { onOpenBrowser: (link: string, title: 
     } catch {
       console.error('Failed to fetch topup banners')
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -79,8 +86,13 @@ function BannerSlider({ onOpenBrowser }: { onOpenBrowser: (link: string, title: 
   }, [fetchBanners])
 
   useEffect(() => subscribeLiveSync(['topup-banners'], () => {
-    void fetchBanners()
+    void fetchBanners({ silent: true })
   }), [fetchBanners])
+
+  useLiveRefresh(
+    useCallback(() => fetchBanners({ silent: true }), [fetchBanners]),
+    { intervalMs: 15000 }
+  )
 
   // Auto-slide
   useEffect(() => {
@@ -232,14 +244,20 @@ export default function TopUpSection() {
   const [browserTitle, setBrowserTitle] = useState('')
   const [browserOpen, setBrowserOpen] = useState(false)
 
-  const fetchServices = useCallback(async () => {
+  const fetchServices = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setLoading(true)
+    }
+
     try {
       const data = await fetchJsonWithRetry<TopUpItem[]>('/api/topup')
       if (Array.isArray(data)) setServices(data)
     } catch {
       console.error('Failed to fetch topup services')
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -248,8 +266,13 @@ export default function TopUpSection() {
   }, [fetchServices])
 
   useEffect(() => subscribeLiveSync(['topup'], () => {
-    void fetchServices()
+    void fetchServices({ silent: true })
   }), [fetchServices])
+
+  useLiveRefresh(
+    useCallback(() => fetchServices({ silent: true }), [fetchServices]),
+    { intervalMs: 15000 }
+  )
 
   const parseItems = (itemsJson: string): string[] => {
     try { return JSON.parse(itemsJson) } catch { return [] }

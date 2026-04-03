@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   BarChart,
@@ -18,6 +18,7 @@ import { useViewStore } from '@/store/view-store'
 import StatsCards from './stats-cards'
 import { formatRupiah } from '@/lib/utils'
 import { adminFetchJson } from '@/lib/admin-fetch'
+import { useLiveRefresh } from '@/hooks/use-live-refresh'
 
 interface StatsData {
   totalProducts: number
@@ -157,46 +158,52 @@ export default function AdminOverview() {
   const [ordersLoading, setOrdersLoading] = useState(true)
   const { setAdminTab } = useViewStore()
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function fetchStats() {
-      try {
-        const statsData = await adminFetchJson<StatsData>('/api/stats')
-        if (!cancelled) {
-          setStats(statsData)
-        }
-      } catch (err) {
-        console.error('Failed to fetch overview stats:', err)
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
+  const fetchStats = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setLoading(true)
     }
 
-    async function fetchRecentOrders() {
-      try {
-        const ordersData = await adminFetchJson<Order[]>('/api/orders?limit=5')
-        if (!cancelled) {
-          setOrders(ordersData)
-        }
-      } catch (err) {
-        console.error('Failed to fetch recent orders:', err)
-      } finally {
-        if (!cancelled) {
-          setOrdersLoading(false)
-        }
+    try {
+      const statsData = await adminFetchJson<StatsData>('/api/stats')
+      setStats(statsData)
+    } catch (err) {
+      console.error('Failed to fetch overview stats:', err)
+    } finally {
+      if (!silent) {
+        setLoading(false)
       }
-    }
-
-    void fetchStats()
-    void fetchRecentOrders()
-
-    return () => {
-      cancelled = true
     }
   }, [])
+
+  const fetchRecentOrders = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setOrdersLoading(true)
+    }
+
+    try {
+      const ordersData = await adminFetchJson<Order[]>('/api/orders?limit=5')
+      setOrders(ordersData)
+    } catch (err) {
+      console.error('Failed to fetch recent orders:', err)
+    } finally {
+      if (!silent) {
+        setOrdersLoading(false)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    void fetchStats()
+    void fetchRecentOrders()
+  }, [fetchRecentOrders, fetchStats])
+
+  useLiveRefresh(
+    useCallback(() => {
+      void fetchStats({ silent: true })
+      void fetchRecentOrders({ silent: true })
+    }, [fetchRecentOrders, fetchStats]),
+    { intervalMs: 12000 }
+  )
 
   // Prepare orders-by-status data for bar chart
   const ordersByStatus = (() => {

@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
+import { useLiveRefresh } from '@/hooks/use-live-refresh'
 
 interface CategoryFilterProps {
   selectedCategory: string
@@ -43,6 +44,8 @@ export default function CategoryFilter({ selectedCategory, onSelect }: CategoryF
   useEffect(() => subscribeLiveSync(['categories'], () => {
     void fetchCategories()
   }), [fetchCategories])
+
+  useLiveRefresh(fetchCategories, { intervalMs: 20000 })
 
   useEffect(() => {
     if (selectedCategory !== 'All' && !categories.includes(selectedCategory)) {
