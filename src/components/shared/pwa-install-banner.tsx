@@ -261,11 +261,10 @@ export default function PWAInstallBanner() {
           exit={{ opacity: 0, y: 20, scale: 0.92 }}
           transition={{ type: 'spring', stiffness: 340, damping: 28 }}
           onClick={handleLauncherClick}
-          className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-4 z-[68] inline-flex h-11 items-center gap-2 rounded-full border border-purple-400/25 bg-[rgba(18,12,34,0.92)] px-4 text-sm font-semibold text-purple-100 shadow-lg shadow-purple-500/20 backdrop-blur-xl sm:bottom-24"
+          className="fixed bottom-[calc(env(safe-area-inset-bottom)+5.75rem)] left-4 z-[68] inline-flex h-12 w-12 items-center justify-center rounded-full border border-purple-400/25 bg-[rgba(18,12,34,0.92)] text-purple-100 shadow-lg shadow-purple-500/20 backdrop-blur-xl md:bottom-8"
           aria-label="Buka instal aplikasi"
         >
           <Download className="size-4 text-purple-300" />
-          <span>Download App</span>
         </motion.button>
       )}
     </AnimatePresence>
