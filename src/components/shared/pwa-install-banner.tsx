@@ -40,6 +40,31 @@ function usePWAState() {
     setShowBanner(true)
   }, [])
 
+  const waitForInstallPrompt = useCallback((timeoutMs = 1800) => {
+    if (typeof window === 'undefined') {
+      return Promise.resolve<BeforeInstallPromptEvent | null>(null)
+    }
+
+    return new Promise<BeforeInstallPromptEvent | null>((resolve) => {
+      const timeout = window.setTimeout(() => {
+        window.removeEventListener('beforeinstallprompt', handler as EventListener)
+        resolve(null)
+      }, timeoutMs)
+
+      const handler = (event: Event) => {
+        event.preventDefault()
+        const promptEvent = event as BeforeInstallPromptEvent
+        window.clearTimeout(timeout)
+        setDeferredPrompt(promptEvent)
+        revealBanner()
+        window.removeEventListener('beforeinstallprompt', handler as EventListener)
+        resolve(promptEvent)
+      }
+
+      window.addEventListener('beforeinstallprompt', handler as EventListener, { once: true })
+    })
+  }, [revealBanner])
+
   // Universal fallback: show banner after delay on any browser session outside standalone.
   useEffect(() => {
     if (!stateHydrated || isStandalone || dismissed) return
@@ -168,6 +193,7 @@ function usePWAState() {
     isStandalone,
     shouldHide,
     stateHydrated,
+    waitForInstallPrompt,
     dismiss,
     hideBanner,
     reopenBanner,
@@ -190,29 +216,12 @@ export default function PWAInstallBanner() {
     isStandalone,
     shouldHide,
     stateHydrated,
+    waitForInstallPrompt,
     dismiss,
     hideBanner,
     reopenBanner,
     showDownloadLauncher,
   } = usePWAState()
-
-  // ─── Handle install click (Android) ─────────────────────────────────
-  const handleInstall = useCallback(async () => {
-    if (!deferredPrompt) {
-      reopenBanner()
-      return
-    }
-
-    await deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
-    setDeferredPrompt(null)
-
-    if (outcome === 'accepted') {
-      return
-    }
-
-    dismiss()
-  }, [deferredPrompt, dismiss, reopenBanner, setDeferredPrompt])
 
   const handleLauncherClick = useCallback(() => {
     setGuideOpen(false)
@@ -261,6 +270,37 @@ export default function PWAInstallBanner() {
     hideBanner()
     setGuideOpen(true)
   }, [hideBanner])
+
+  // ─── Handle install click (Android/Desktop Chromium) ───────────────
+  const handleInstall = useCallback(async () => {
+    let promptEvent = deferredPrompt
+
+    if (!promptEvent && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        await navigator.serviceWorker.ready
+      } catch {
+        // Keep flowing to the fallback below.
+      }
+
+      promptEvent = await waitForInstallPrompt(1600)
+    }
+
+    if (!promptEvent) {
+      openGuide()
+      return
+    }
+
+    await promptEvent.prompt()
+    const { outcome } = await promptEvent.userChoice
+    setDeferredPrompt(null)
+
+    if (outcome === 'accepted') {
+      return
+    }
+
+    dismiss()
+  }, [deferredPrompt, dismiss, openGuide, setDeferredPrompt, waitForInstallPrompt])
 
   const handlePrimaryAction = useCallback(() => {
     if (isIOSDevice) {
