@@ -34,16 +34,21 @@ function usePWAState() {
   }, [])
 
   const shouldHide = isStandalone || !showBanner || dismissed
+  const revealBanner = useCallback(() => {
+    setDismissed(false)
+    setShowLauncher(false)
+    setShowBanner(true)
+  }, [])
 
-  // Universal fallback: show banner after delay on any non-installed browser.
+  // Universal fallback: show banner after delay on any browser session outside standalone.
   useEffect(() => {
     if (!stateHydrated || isStandalone || dismissed) return
 
     const timer = setTimeout(() => {
-      setShowBanner(true)
+      revealBanner()
     }, 1800)
     return () => clearTimeout(timer)
-  }, [dismissed, isStandalone, stateHydrated])
+  }, [dismissed, isStandalone, revealBanner, stateHydrated])
 
   // Android: capture beforeinstallprompt event
   useEffect(() => {
@@ -53,26 +58,24 @@ function usePWAState() {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       setTimeout(() => {
-        setShowBanner(true)
+        revealBanner()
       }, 1200)
     }
 
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
-  }, [dismissed, isIOSDevice, isStandalone, stateHydrated])
+  }, [dismissed, isIOSDevice, isStandalone, revealBanner, stateHydrated])
 
   // App installed event
   useEffect(() => {
     const handler = () => {
       if (typeof window !== 'undefined' && !window.matchMedia('(display-mode: standalone)').matches) {
-        setShowBanner(true)
+        revealBanner()
       }
-      setShowLauncher(false)
-      setDismissed(false)
     }
     window.addEventListener('appinstalled', handler)
     return () => window.removeEventListener('appinstalled', handler)
-  }, [])
+  }, [revealBanner])
 
   useEffect(() => {
     if (!stateHydrated || isStandalone) return
@@ -80,21 +83,21 @@ function usePWAState() {
     const reopen = () => {
       if (document.visibilityState === 'hidden') return
 
-      setDismissed(false)
-      setShowLauncher(false)
-      setShowBanner(true)
+      revealBanner()
     }
 
     window.addEventListener('pageshow', reopen)
     window.addEventListener('focus', reopen)
+    window.addEventListener('popstate', reopen)
     document.addEventListener('visibilitychange', reopen)
 
     return () => {
       window.removeEventListener('pageshow', reopen)
       window.removeEventListener('focus', reopen)
+      window.removeEventListener('popstate', reopen)
       document.removeEventListener('visibilitychange', reopen)
     }
-  }, [isStandalone, stateHydrated])
+  }, [isStandalone, revealBanner, stateHydrated])
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -125,14 +128,12 @@ function usePWAState() {
         return
       }
 
-      setDismissed(false)
-      setShowLauncher(false)
-      setShowBanner(true)
+      revealBanner()
     }
 
     window.addEventListener('mg-store-tab-change', handler as EventListener)
     return () => window.removeEventListener('mg-store-tab-change', handler as EventListener)
-  }, [isStandalone])
+  }, [isStandalone, revealBanner])
 
   const dismiss = useCallback(() => {
     setShowBanner(false)
@@ -146,10 +147,8 @@ function usePWAState() {
   }, [])
 
   const reopenBanner = useCallback(() => {
-    setDismissed(false)
-    setShowLauncher(false)
-    setShowBanner(true)
-  }, [])
+    revealBanner()
+  }, [revealBanner])
 
   const showDownloadLauncher = useCallback(() => {
     setDismissed(true)
@@ -258,6 +257,25 @@ export default function PWAInstallBanner() {
       ? 'Android bisa install langsung jika prompt muncul. Kalau belum muncul, buka tutorial lalu pilih Install app atau Tambahkan ke layar utama.'
       : 'Desktop bisa install lewat menu browser. Kalau prompt belum muncul, buka tutorial lalu pilih Install App, Add to Dock, atau Create Shortcut.'
 
+  const openGuide = useCallback(() => {
+    hideBanner()
+    setGuideOpen(true)
+  }, [hideBanner])
+
+  const handlePrimaryAction = useCallback(() => {
+    if (isIOSDevice) {
+      openGuide()
+      return
+    }
+
+    if (deferredPrompt) {
+      void handleInstall()
+      return
+    }
+
+    openGuide()
+  }, [deferredPrompt, handleInstall, isIOSDevice, openGuide])
+
   return (
     <AnimatePresence>
       {stateHydrated && !shouldHide && !guideOpen && !chatOpen && !referralOpen && (
@@ -314,15 +332,7 @@ export default function PWAInstallBanner() {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     type="button"
-                    onClick={() => {
-                      if (isIOSDevice) {
-                        hideBanner()
-                        setGuideOpen(true)
-                        return
-                      }
-
-                      void handleInstall()
-                    }}
+                    onClick={handlePrimaryAction}
                     className="flex h-[2.55rem] w-full items-center justify-center gap-2 rounded-[1rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[12.5px] font-semibold text-white shadow-[0_12px_24px_rgba(168,85,247,0.22)] transition-all hover:brightness-110"
                   >
                     {isIOSDevice ? <ArrowDownToLine className="size-4" /> : <Download className="size-4" />}
@@ -330,10 +340,7 @@ export default function PWAInstallBanner() {
                   </motion.button>
                   <button
                     type="button"
-                    onClick={() => {
-                      hideBanner()
-                      setGuideOpen(true)
-                    }}
+                    onClick={openGuide}
                     className="h-[2.5rem] w-full rounded-[1rem] border border-purple-400/18 bg-white/[0.03] text-[12.5px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
                   >
                     Lihat Tutorial Install
