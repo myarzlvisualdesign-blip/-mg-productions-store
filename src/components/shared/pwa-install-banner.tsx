@@ -264,48 +264,12 @@ export default function PWAInstallBanner() {
     ? 'iPhone tetap perlu langkah manual. Setelah tekan Install Sekarang, ikuti tutorial Safari untuk Tambahkan ke Layar Utama.'
     : isAndroidDevice
       ? 'Android bisa install langsung jika prompt muncul. Kalau belum muncul, buka tutorial lalu pilih Install app atau Tambahkan ke layar utama.'
-      : 'Desktop akan langsung mengunduh file shortcut saat tombol Install Sekarang ditekan. Kalau perlu langkah manual, buka tutorial install.'
+      : 'Desktop bisa install lewat prompt browser. Kalau prompt belum muncul, buka tutorial lalu pilih Install App, Add to Dock, atau Create Shortcut.'
 
   const openGuide = useCallback(() => {
     hideBanner()
     setGuideOpen(true)
   }, [hideBanner])
-
-  const downloadDesktopShortcut = useCallback(() => {
-    if (typeof window === 'undefined') return
-
-    const shortcutUrl = window.location.origin
-    const userAgent = navigator.userAgent
-    const platform = navigator.platform
-
-    let fileName = 'MG-PRODUCTIONS.url'
-    let mimeType = 'text/plain;charset=utf-8'
-    let fileContent = `[InternetShortcut]\nURL=${shortcutUrl}\nIconFile=${shortcutUrl}/icons/icon-192.png\nIconIndex=0\n`
-
-    if (/Mac/i.test(platform) || /Macintosh/i.test(userAgent)) {
-      fileName = 'MG-PRODUCTIONS.webloc'
-      mimeType = 'application/xml;charset=utf-8'
-      fileContent = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>URL</key>\n  <string>${shortcutUrl}</string>\n</dict>\n</plist>\n`
-    } else if (/Linux/i.test(platform) || /X11/i.test(userAgent)) {
-      fileName = 'MG-PRODUCTIONS.desktop'
-      mimeType = 'application/x-desktop;charset=utf-8'
-      fileContent = `[Desktop Entry]\nVersion=1.0\nType=Link\nName=MG PRODUCTIONS\nComment=Open MG PRODUCTIONS storefront\nURL=${shortcutUrl}\nIcon=${shortcutUrl}/icons/icon-192.png\n`
-    }
-
-    const blob = new Blob([fileContent], { type: mimeType })
-    const objectUrl = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-
-    link.href = objectUrl
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-
-    window.setTimeout(() => {
-      window.URL.revokeObjectURL(objectUrl)
-    }, 1000)
-  }, [])
 
   // ─── Handle install click (Android/Desktop Chromium) ───────────────
   const handleInstall = useCallback(async () => {
@@ -344,18 +308,8 @@ export default function PWAInstallBanner() {
       return
     }
 
-    if (!isAndroidDevice) {
-      downloadDesktopShortcut()
-      return
-    }
-
-    if (deferredPrompt) {
-      void handleInstall()
-      return
-    }
-
-    openGuide()
-  }, [deferredPrompt, downloadDesktopShortcut, handleInstall, isAndroidDevice, isIOSDevice, openGuide])
+    void handleInstall()
+  }, [handleInstall, isIOSDevice, openGuide])
 
   return (
     <AnimatePresence>
