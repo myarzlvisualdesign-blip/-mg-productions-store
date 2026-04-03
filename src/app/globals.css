@@ -211,6 +211,22 @@
   }
 }
 
+@media (display-mode: standalone) {
+  .store-header {
+    padding-top: max(env(safe-area-inset-top), 0.5rem);
+  }
+
+  .storefront-main {
+    padding-top: calc(4.5rem + max(env(safe-area-inset-top), 0.5rem));
+  }
+}
+
+@media (display-mode: standalone) and (min-width: 769px) {
+  .storefront-main {
+    padding-top: calc(5rem + max(env(safe-area-inset-top), 0.5rem));
+  }
+}
+
 /* Purple glow effect */
 .purple-glow {
   box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
