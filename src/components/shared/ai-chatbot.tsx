@@ -130,6 +130,22 @@ export default function AIChatbot() {
     }
   }, [isOpen, settings, messages.length])
 
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('mg-chat-visibility', {
+        detail: { open: isOpen },
+      })
+    )
+
+    return () => {
+      window.dispatchEvent(
+        new CustomEvent('mg-chat-visibility', {
+          detail: { open: false },
+        })
+      )
+    }
+  }, [isOpen])
+
   // ─── Send message ───────────────────────────────────────────────────
   const sendMessage = useCallback(
     async (text: string) => {

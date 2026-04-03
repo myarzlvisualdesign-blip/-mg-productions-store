@@ -21,6 +21,7 @@ function usePWAState() {
   const [appInstalled, setAppInstalled] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const [showLauncher, setShowLauncher] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
 
   const isIOSDevice = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream
   const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
@@ -63,6 +64,16 @@ function usePWAState() {
     return () => window.removeEventListener('appinstalled', handler)
   }, [])
 
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const customEvent = event as CustomEvent<{ open?: boolean }>
+      setChatOpen(Boolean(customEvent.detail?.open))
+    }
+
+    window.addEventListener('mg-chat-visibility', handler as EventListener)
+    return () => window.removeEventListener('mg-chat-visibility', handler as EventListener)
+  }, [])
+
   const dismiss = useCallback(() => {
     setShowBanner(false)
     setShowLauncher(true)
@@ -92,6 +103,7 @@ function usePWAState() {
     showBanner,
     showLauncher,
     appInstalled,
+    chatOpen,
     isAndroidDevice,
     isIOSDevice,
     isStandalone,
@@ -112,6 +124,7 @@ export default function PWAInstallBanner() {
     setDeferredPrompt,
     showLauncher,
     appInstalled,
+    chatOpen,
     isAndroidDevice,
     isIOSDevice,
     isStandalone,
@@ -185,7 +198,7 @@ export default function PWAInstallBanner() {
 
   return (
     <AnimatePresence>
-      {!shouldHide && !guideOpen && (
+      {!shouldHide && !guideOpen && !chatOpen && (
         <motion.div
           initial={{ opacity: 0, y: 80, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -345,7 +358,7 @@ export default function PWAInstallBanner() {
         </motion.div>
       )}
 
-      {showLauncher && !appInstalled && !isStandalone && !guideOpen && (
+      {showLauncher && !appInstalled && !isStandalone && !guideOpen && !chatOpen && (
         <motion.button
           initial={{ opacity: 0, y: 20, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
