@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plane, ArrowRight, ExternalLink, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
+import { Plane, ArrowRight, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
@@ -343,21 +343,16 @@ export default function TravelSection() {
                       key={service.id}
                       variants={itemVariants}
                       layout
-                      onClick={() => {
-                        if (service.link) openBrowser(service.link, service.name)
-                      }}
-                      className={`glass-card rounded-xl overflow-hidden hover:border-purple-500/20 transition-all duration-300 group relative ${service.link ? 'cursor-pointer' : ''}`}
+                      className="glass-card rounded-xl overflow-hidden hover:border-purple-500/20 transition-all duration-300 group relative"
                     >
-                      {/* External link badge */}
-                      {service.link && (
-                        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-blue-500/90 text-white text-[8px] font-medium flex items-center gap-0.5 shadow-sm z-10">
-                          <ExternalLink className="h-2 w-2" />
-                          <span>Buka</span>
-                        </div>
-                      )}
-
                       {/* Header */}
-                      <div className={`bg-gradient-to-br ${service.color} p-3 sm:p-4`}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (service.link) openBrowser(service.link, service.name)
+                        }}
+                        className={`w-full bg-gradient-to-br ${service.color} p-3 sm:p-4 text-left transition-opacity ${service.link ? 'cursor-pointer hover:opacity-95' : 'cursor-default'}`}
+                      >
                         <div className="flex items-center gap-2.5">
                           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl overflow-hidden">
                             {service.image ? (
@@ -371,7 +366,7 @@ export default function TravelSection() {
                             <p className="text-[9px] sm:text-[11px] text-white/70 truncate">{service.subtitle}</p>
                           </div>
                         </div>
-                      </div>
+                      </button>
 
                       {/* Body */}
                       <div className="p-3 sm:p-4">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { UtensilsCrossed, ArrowRight, ExternalLink, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
+import { UtensilsCrossed, ArrowRight, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
@@ -156,13 +156,16 @@ export default function FoodSection() {
                       key={cat.id}
                       variants={itemVariants}
                       layout
-                      onClick={() => {
-                        if (cat.link) openBrowser(cat.link, cat.name)
-                      }}
-                      className={`glass-card rounded-xl overflow-hidden hover:border-purple-500/20 transition-all duration-300 relative ${cat.link ? 'cursor-pointer' : ''}`}
+                      className="glass-card rounded-xl overflow-hidden hover:border-purple-500/20 transition-all duration-300 relative"
                     >
                       {/* Header */}
-                      <div className={`bg-gradient-to-r ${cat.color} px-4 py-3`}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (cat.link) openBrowser(cat.link, cat.name)
+                        }}
+                        className={`w-full bg-gradient-to-r ${cat.color} px-4 py-3 text-left transition-opacity ${cat.link ? 'cursor-pointer hover:opacity-95' : 'cursor-default'}`}
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg overflow-hidden">
                             {cat.image ? (
@@ -176,7 +179,7 @@ export default function FoodSection() {
                             <p className="text-[11px] text-white/70">{cat.subtitle}</p>
                           </div>
                         </div>
-                      </div>
+                      </button>
 
                       {/* Sub-items */}
                       <div className="divide-y divide-white/[0.04]">
@@ -223,14 +226,6 @@ export default function FoodSection() {
                           </button>
                         )}
                       </div>
-
-                      {/* External link badge */}
-                      {cat.link && (
-                        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-blue-500/90 text-white text-[8px] font-medium flex items-center gap-0.5 shadow-sm">
-                          <ExternalLink className="h-2 w-2" />
-                          <span>Buka</span>
-                        </div>
-                      )}
                     </motion.div>
                   )
                 })}
