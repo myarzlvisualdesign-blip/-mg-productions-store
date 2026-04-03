@@ -39,16 +39,15 @@ function usePWAState() {
 
   const shouldHide = isStandalone || appInstalled || !showBanner || dismissed
 
-  // iOS: show banner after delay (no beforeinstallprompt event)
+  // Universal fallback: show banner after delay on any non-installed browser.
   useEffect(() => {
     if (isStandalone || dismissed) return
-    if (!isIOSDevice) return
 
     const timer = setTimeout(() => {
       setShowBanner(true)
     }, 4000)
     return () => clearTimeout(timer)
-  }, [isStandalone, dismissed, isIOSDevice])
+  }, [isStandalone, dismissed])
 
   // Android: capture beforeinstallprompt event
   useEffect(() => {
@@ -144,6 +143,8 @@ export default function PWAInstallBanner() {
     reopenBanner()
   }, [deferredPrompt, handleInstall, isIOSDevice, reopenBanner])
 
+  const showManualInstallHint = !isIOSDevice && !deferredPrompt
+
   return (
     <AnimatePresence>
       {!shouldHide && (
@@ -221,7 +222,7 @@ export default function PWAInstallBanner() {
                       Mengerti
                     </button>
                   </div>
-                ) : (
+                ) : deferredPrompt ? (
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleInstall}
@@ -230,6 +231,18 @@ export default function PWAInstallBanner() {
                     <Download className="size-4" />
                     Install Sekarang
                   </motion.button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-3 text-[11px] leading-relaxed text-muted-foreground">
+                      Di browser desktop, buka menu browser lalu pilih <span className="font-semibold text-purple-200">Install App</span>, <span className="font-semibold text-purple-200">Add to Dock</span>, atau <span className="font-semibold text-purple-200">Create Shortcut</span>.
+                    </div>
+                    <button
+                      onClick={dismiss}
+                      className="w-full h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/[0.06] text-xs text-muted-foreground hover:text-foreground transition-all font-medium"
+                    >
+                      Mengerti
+                    </button>
+                  </div>
                 )}
 
                 <div className="flex items-center justify-center gap-3 mt-3">
@@ -245,7 +258,7 @@ export default function PWAInstallBanner() {
                   <div className="w-px h-3 bg-white/10" />
                   <div className="flex items-center gap-1 text-[9px] text-muted-foreground/50">
                     <Download className="size-3" />
-                    <span>Installable</span>
+                    <span>{showManualInstallHint ? 'Install Guide' : 'Installable'}</span>
                   </div>
                 </div>
               </div>
