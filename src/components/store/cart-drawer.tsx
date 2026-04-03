@@ -34,17 +34,17 @@ export default function CartDrawer() {
   return (
     <>
       <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-md bg-background/95 backdrop-blur-xl border-l border-white/5 flex flex-col">
+        <SheetContent side="right" className="w-full sm:max-w-md bg-[linear-gradient(180deg,rgba(24,14,42,0.98),rgba(9,8,16,0.98))] backdrop-blur-xl border-l border-white/8 flex flex-col">
           {/* Header */}
-          <SheetHeader className="px-6 pt-6 pb-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <SheetTitle className="text-lg font-semibold flex items-center gap-2">
+          <SheetHeader className="px-5 pb-0 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-6 sm:pt-6">
+            <div className="flex min-w-0 items-center justify-between gap-3 pr-14">
+              <div className="flex min-w-0 items-center gap-3">
+                <SheetTitle className="flex min-w-0 items-center gap-2 text-xl font-semibold sm:text-lg">
                   <ShoppingBag className="size-5 text-purple-400" />
-                  Shopping Cart
+                  <span className="truncate">Shopping Cart</span>
                 </SheetTitle>
                 {totalItems > 0 && (
-                  <span className="flex items-center justify-center h-5 min-w-5 rounded-full bg-purple-600 text-white text-[10px] font-bold px-1.5">
+                  <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-purple-600 text-xs font-bold text-white px-2 sm:h-5 sm:min-w-5 sm:px-1.5 sm:text-[10px]">
                     {totalItems}
                   </span>
                 )}
@@ -91,10 +91,10 @@ export default function CartDrawer() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20, height: 0 }}
                         transition={{ duration: 0.25 }}
-                        className="flex gap-4 p-3 rounded-xl glass-card"
+                        className="flex gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-3 sm:gap-4"
                       >
                         {/* Item Image */}
-                        <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-muted/20 flex items-center justify-center">
+                        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted/20 sm:h-16 sm:w-16 sm:rounded-lg">
                           {item.image ? (
                             <img
                               src={item.image}
@@ -111,28 +111,28 @@ export default function CartDrawer() {
 
                         {/* Item Details */}
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-foreground truncate">
+                          <h4 className="truncate text-base font-semibold text-foreground sm:text-sm">
                             {item.name}
                           </h4>
-                          <p className="text-sm font-semibold gradient-text mt-0.5">
+                          <p className="mt-0.5 text-lg font-semibold gradient-text sm:text-sm">
                             {formatRupiah(item.price)}
                           </p>
 
-                          <div className="flex items-center justify-between mt-2">
+                          <div className="mt-3 flex items-center justify-between gap-3">
                             {/* Quantity Controls */}
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                className="flex items-center justify-center w-7 h-7 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 transition-colors hover:bg-white/10 sm:h-7 sm:w-7 sm:rounded-md"
                               >
                                 <Minus className="size-3" />
                               </button>
-                              <span className="w-8 text-center text-sm font-medium">
+                              <span className="w-8 text-center text-lg font-medium sm:text-sm">
                                 {item.quantity}
                               </span>
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                className="flex items-center justify-center w-7 h-7 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 transition-colors hover:bg-white/10 sm:h-7 sm:w-7 sm:rounded-md"
                               >
                                 <Plus className="size-3" />
                               </button>
@@ -141,9 +141,9 @@ export default function CartDrawer() {
                             {/* Remove Button */}
                             <button
                               onClick={() => removeItem(item.id)}
-                              className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                              className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-red-400/10 hover:text-red-400 sm:h-7 sm:w-7 sm:rounded-md"
                             >
-                              <Trash2 className="size-3.5" />
+                              <Trash2 className="size-4 sm:size-3.5" />
                             </button>
                           </div>
                         </div>
@@ -154,7 +154,7 @@ export default function CartDrawer() {
               </ScrollArea>
 
               {/* Footer */}
-              <SheetFooter className="px-6 pb-6 pt-4 border-t border-white/5 flex-col gap-4">
+              <SheetFooter className="flex-col gap-4 border-t border-white/5 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
                 <div className="w-full space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal ({totalItems} item)</span>

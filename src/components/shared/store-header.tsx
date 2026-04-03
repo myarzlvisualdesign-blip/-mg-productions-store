@@ -43,23 +43,35 @@ export default function StoreHeader() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   return (
     <header
-      className={`store-header fixed top-0 left-0 right-0 z-[70] transition-all duration-300 ${scrolled ? 'scrolled' : ''}`}
+      className={`store-header fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${scrolled || mobileMenuOpen ? 'scrolled' : ''}`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-[72px] items-center justify-between gap-3 sm:h-20">
           {/* Logo */}
-          <div className="flex items-center gap-2 select-none">
+          <div className="min-w-0 flex items-center gap-2 select-none">
             <img
               src="/logo-sm.png"
               alt="MG PRODUCTIONS"
-              className="h-11 sm:h-8 w-auto object-contain rounded-md transition-all duration-300"
+              className="h-8 sm:h-9 w-auto object-contain rounded-md transition-all duration-300"
             />
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             {/* Search */}
             <AnimatePresence>
               {searchOpen && (
@@ -85,10 +97,11 @@ export default function StoreHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-muted-foreground hover:text-foreground"
+              className="h-10 w-10 rounded-xl text-muted-foreground hover:bg-white/8 hover:text-foreground"
               onClick={() => {
                 setSearchOpen((prev) => !prev)
                 setSearchQuery('')
+                setMobileMenuOpen(false)
               }}
             >
               {searchOpen ? <X className="size-5" /> : <Search className="size-5" />}
@@ -98,7 +111,7 @@ export default function StoreHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="relative text-muted-foreground hover:text-foreground"
+              className="relative h-10 w-10 rounded-xl text-muted-foreground hover:bg-white/8 hover:text-foreground"
               onClick={openCart}
             >
               <ShoppingBag className="size-5" />
@@ -113,7 +126,7 @@ export default function StoreHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="hidden sm:flex text-muted-foreground hover:text-foreground"
+              className="hidden h-10 w-10 rounded-xl text-muted-foreground hover:bg-white/8 hover:text-foreground sm:flex"
               onClick={toggleView}
               title="Toggle Admin Panel"
             >
@@ -124,8 +137,11 @@ export default function StoreHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden text-muted-foreground hover:text-foreground"
-              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className="h-10 w-10 rounded-xl text-muted-foreground hover:bg-white/8 hover:text-foreground md:hidden"
+              onClick={() => {
+                setMobileMenuOpen((prev) => !prev)
+                setSearchOpen(false)
+              }}
             >
               {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </Button>
@@ -137,29 +153,37 @@ export default function StoreHeader() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden overflow-hidden glass-card border-t border-white/5"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="md:hidden px-4 pb-3"
           >
-            <nav className="flex flex-col px-4 py-4 gap-1">
+            <nav className="overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(160deg,rgba(74,29,120,0.82),rgba(20,14,38,0.94))] p-3 shadow-2xl shadow-black/35 backdrop-blur-2xl">
               {/* Mobile Search */}
-              <form onSubmit={handleSearch} className="px-0 py-2">
+              <form onSubmit={handleSearch} className="pb-3">
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search products..."
-                  className="h-9 border-white/10 bg-white/5 text-sm"
+                  className="h-11 rounded-2xl border-white/12 bg-white/6 text-sm placeholder:text-muted-foreground"
                 />
               </form>
+
+              <div className="mb-3 flex justify-center">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-purple-100/90">
+                  <span className="text-base">✦</span>
+                  <span>New Collection 2025</span>
+                </div>
+              </div>
+
               {/* Mobile Admin Toggle */}
               <button
                 onClick={() => {
                   toggleView()
                   setMobileMenuOpen(false)
                 }}
-                className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg transition-colors"
+                className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm text-purple-50/90 transition-colors hover:bg-white/7 hover:text-white"
               >
                 <Shield className="size-4" />
                 Admin Panel

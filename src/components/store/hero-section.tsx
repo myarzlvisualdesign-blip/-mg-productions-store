@@ -44,7 +44,7 @@ export default function HeroSection() {
   return (
     <section
       id="home"
-      className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden hero-gradient"
+      className="relative flex min-h-[calc(100vh-4.5rem)] w-full items-center justify-center overflow-hidden hero-gradient pt-8 sm:min-h-[calc(100vh-5rem)] sm:pt-10"
     >
       {/* Decorative Floating Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -67,11 +67,11 @@ export default function HeroSection() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center"
+        className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6"
       >
         {/* Badge */}
-        <motion.div variants={itemVariants} className="flex justify-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-purple-500/20 text-sm text-purple-300">
+        <motion.div variants={itemVariants} className="mb-6 flex justify-center sm:mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-white/[0.04] px-4 py-1.5 text-xs text-purple-300 sm:text-sm">
             <Sparkles className="size-4" />
             <span>New Collection 2025</span>
           </div>
@@ -80,7 +80,7 @@ export default function HeroSection() {
         {/* Heading */}
         <motion.h1
           variants={itemVariants}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight"
+          className="text-4xl font-bold leading-[0.95] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
         >
           <span className="text-foreground">Discover Premium</span>
           <br />
@@ -90,7 +90,7 @@ export default function HeroSection() {
         {/* Subtitle */}
         <motion.p
           variants={itemVariants}
-          className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+          className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg md:text-xl"
         >
           Our selection of luxury products is 100% authentic. Start completing your
           stylish new lifestyle.
@@ -99,13 +99,13 @@ export default function HeroSection() {
         {/* CTA Buttons */}
         <motion.div
           variants={itemVariants}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4"
         >
           <motion.button
             whileHover={{ scale: 1.03, boxShadow: '0 0 30px rgba(139, 92, 246, 0.4)' }}
             whileTap={{ scale: 0.97 }}
             onClick={handleScrollToProducts}
-            className="group inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 shadow-lg shadow-purple-500/25"
+            className="group inline-flex min-w-[220px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-purple-500/25 transition-all duration-300 hover:from-purple-500 hover:to-indigo-500 sm:min-w-0"
           >
             Shop Now
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
@@ -115,7 +115,7 @@ export default function HeroSection() {
             whileHover={{ scale: 1.03, boxShadow: '0 0 30px rgba(139, 92, 246, 0.2)' }}
             whileTap={{ scale: 0.97 }}
             onClick={handleScrollToFeatured}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-purple-300 glass-card border border-purple-500/30 hover:border-purple-500/50 transition-all duration-300"
+            className="inline-flex min-w-[220px] items-center justify-center gap-2 rounded-xl border border-purple-500/30 bg-white/[0.03] px-8 py-3.5 font-semibold text-purple-300 transition-all duration-300 hover:border-purple-500/50 sm:min-w-0"
           >
             Explore Collection
           </motion.button>
@@ -124,7 +124,7 @@ export default function HeroSection() {
         {/* Stats Row */}
         <motion.div
           variants={itemVariants}
-          className="mt-16 flex flex-wrap items-center justify-center gap-8 sm:gap-12"
+          className="mt-12 flex flex-wrap items-center justify-center gap-8 sm:mt-16 sm:gap-12"
         >
           {[
             { value: '200+', label: 'Products' },
