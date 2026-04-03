@@ -6,8 +6,16 @@ const DEFAULT_SYSTEM_PROMPT = 'Kamu adalah MG Assistant untuk MG PRODUCTIONS. Ka
 const STOP_WORDS = new Set([
   'apa', 'ada', 'yang', 'dan', 'atau', 'untuk', 'dengan', 'tentang', 'dong', 'nih',
   'ya', 'yaa', 'sih', 'saya', 'aku', 'mau', 'cari', 'coba', 'tolong', 'butuh',
-  'produk', 'barang', 'mg', 'productions', 'info', 'informasi', 'please',
+  'produk', 'barang', 'mg', 'productions', 'info', 'informasi', 'please', 'tersedia',
 ])
+
+const SEARCH_ALIASES: Record<string, string[]> = {
+  kamera: ['camera', 'kamera'],
+  camera: ['camera', 'kamera'],
+  hp: ['smartphone', 'phone', 'hp'],
+  handphone: ['smartphone', 'phone', 'handphone'],
+  laptop: ['laptop', 'notebook'],
+}
 
 function friendlyIntro(name?: string) {
   const assistantName = name?.trim() || 'MG Assistant'
@@ -27,11 +35,17 @@ function formatRupiah(value: number) {
 }
 
 function buildSearchTerms(message: string) {
-  return normalizeText(message)
+  const baseTerms = normalizeText(message)
     .split(' ')
     .map((part) => part.trim())
     .filter((part) => part.length >= 2 && !STOP_WORDS.has(part))
     .slice(0, 5)
+
+  return Array.from(
+    new Set(
+      baseTerms.flatMap((term) => SEARCH_ALIASES[term] || [term])
+    )
+  ).slice(0, 8)
 }
 
 function hasAnyKeyword(message: string, keywords: string[]) {
@@ -162,6 +176,32 @@ export async function POST(request: NextRequest) {
         response: parts.length > 0
           ? `Untuk travel, yang tersedia saat ini ada ${parts.join(' | ')}.`
           : 'Saat ini belum ada layanan travel atau destinasi aktif yang tampil di toko.',
+      })
+    }
+
+    if (hasAnyKeyword(normalized, ['produk apa saja', 'produk tersedia', 'barang tersedia', 'list produk', 'daftar produk'])) {
+      const featuredProducts = await db.product.findMany({
+        orderBy: [
+          { featured: 'desc' },
+          { createdAt: 'desc' },
+        ],
+        take: 6,
+        select: {
+          name: true,
+          category: true,
+          price: true,
+          stock: true,
+        },
+      })
+
+      if (featuredProducts.length === 0) {
+        return NextResponse.json({
+          response: 'Saat ini belum ada produk yang tampil di katalog store. Kalau nanti produk sudah ditambahkan, aku bisa bantu tampilkan daftarnya di sini.',
+        })
+      }
+
+      return NextResponse.json({
+        response: `Produk yang tersedia saat ini antara lain:\n${featuredProducts.map((product) => `- ${product.name} • ${product.category} • ${formatRupiah(product.price)} • ${product.stock > 0 ? `${product.stock} stok` : 'stok habis'}`).join('\n')}\n\nKalau mau, kamu bisa lanjut minta aku carikan kategori atau budget tertentu.`,
       })
     }
 
