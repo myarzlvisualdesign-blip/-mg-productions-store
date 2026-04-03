@@ -1,12 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
 
-function getActiveCounts(grouped: Array<{ active: boolean; _count: { _all: number } }>) {
-  const total = grouped.reduce((sum, item) => sum + item._count._all, 0)
-  const active = grouped.find((item) => item.active)?._count._all ?? 0
-
-  return { total, active }
+type StatsSummaryRow = {
+  totalProducts: number
+  totalOrders: number
+  totalRevenue: number
+  pendingOrders: number
+  deliveredOrders: number
+  uniqueCustomers: number
+  lowStockProducts: number
+  totalStock: number
+  totalPartners: number
+  activePartners: number
+  totalTopUpServices: number
+  activeTopUpServices: number
+  totalTopUpBanners: number
+  activeTopUpBanners: number
+  totalFoodItems: number
+  activeFoodItems: number
+  totalTravelServices: number
+  activeTravelServices: number
+  totalDestinations: number
+  activeDestinations: number
+  totalReferralCodes: number
+  pendingWithdrawals: number
+  referralEnabled: boolean
+  chatbotEnabled: boolean
 }
 
 // ADMIN ONLY — Statistik dashboard
@@ -20,116 +41,76 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Keep queries lightweight for serverless runtimes and Supabase pooler limits.
-    const orderStatusGroups = await db.order.groupBy({
-      by: ['status'],
-      _count: { _all: true },
-    })
-    const uniqueCustomerGroups = await db.order.groupBy({
-      by: ['customerEmail'],
-    })
-    const revenueAggregate = await db.order.aggregate({
-      where: { status: { not: 'cancelled' } },
-      _sum: { total: true },
-    })
-    const lowStockProducts = await db.product.count({
-      where: { stock: { lt: 20 } },
-    })
-    const stockAggregate = await db.product.aggregate({
-      _sum: { stock: true },
-    })
-    const categoryGroups = await db.product.groupBy({
-      by: ['category'],
-      _count: { _all: true },
-    })
-    const partnerGroups = await db.partner.groupBy({
-      by: ['active'],
-      _count: { _all: true },
-    })
-    const topUpServiceGroups = await db.topUpService.groupBy({
-      by: ['active'],
-      _count: { _all: true },
-    })
-    const topUpBannerGroups = await db.topUpBanner.groupBy({
-      by: ['active'],
-      _count: { _all: true },
-    })
-    const foodItemGroups = await db.foodItem.groupBy({
-      by: ['active'],
-      _count: { _all: true },
-    })
-    const travelServiceGroups = await db.travelService.groupBy({
-      by: ['active'],
-      _count: { _all: true },
-    })
-    const destinationGroups = await db.popularDestination.groupBy({
-      by: ['active'],
-      _count: { _all: true },
-    })
-    const referralCodes = await db.referralCode.count()
-    const pendingWithdrawals = await db.referralWithdrawal.count({
-      where: { status: 'pending' },
-    })
-    const referralSettings = await db.referralSettings.findFirst({
-      select: { enabled: true },
-    })
-    const chatbotSettings = await db.chatbotSettings.findFirst({
-      select: { enabled: true },
-    })
+    const [summaryRows, categoryRows] = await Promise.all([
+      db.$queryRaw<StatsSummaryRow[]>(Prisma.sql`
+        SELECT
+          CAST((SELECT COUNT(*) FROM "Product") AS INTEGER) AS "totalProducts",
+          CAST((SELECT COUNT(*) FROM "Order") AS INTEGER) AS "totalOrders",
+          COALESCE((SELECT SUM(total) FROM "Order" WHERE status <> 'cancelled'), 0)::double precision AS "totalRevenue",
+          CAST((SELECT COUNT(*) FROM "Order" WHERE status = 'pending') AS INTEGER) AS "pendingOrders",
+          CAST((SELECT COUNT(*) FROM "Order" WHERE status = 'delivered') AS INTEGER) AS "deliveredOrders",
+          CAST((SELECT COUNT(DISTINCT "customerEmail") FROM "Order") AS INTEGER) AS "uniqueCustomers",
+          CAST((SELECT COUNT(*) FROM "Product" WHERE stock < 20) AS INTEGER) AS "lowStockProducts",
+          COALESCE((SELECT SUM(stock) FROM "Product"), 0)::integer AS "totalStock",
+          CAST((SELECT COUNT(*) FROM "Partner") AS INTEGER) AS "totalPartners",
+          CAST((SELECT COUNT(*) FROM "Partner" WHERE active = true) AS INTEGER) AS "activePartners",
+          CAST((SELECT COUNT(*) FROM "TopUpService") AS INTEGER) AS "totalTopUpServices",
+          CAST((SELECT COUNT(*) FROM "TopUpService" WHERE active = true) AS INTEGER) AS "activeTopUpServices",
+          CAST((SELECT COUNT(*) FROM "TopUpBanner") AS INTEGER) AS "totalTopUpBanners",
+          CAST((SELECT COUNT(*) FROM "TopUpBanner" WHERE active = true) AS INTEGER) AS "activeTopUpBanners",
+          CAST((SELECT COUNT(*) FROM "FoodItem") AS INTEGER) AS "totalFoodItems",
+          CAST((SELECT COUNT(*) FROM "FoodItem" WHERE active = true) AS INTEGER) AS "activeFoodItems",
+          CAST((SELECT COUNT(*) FROM "TravelService") AS INTEGER) AS "totalTravelServices",
+          CAST((SELECT COUNT(*) FROM "TravelService" WHERE active = true) AS INTEGER) AS "activeTravelServices",
+          CAST((SELECT COUNT(*) FROM "PopularDestination") AS INTEGER) AS "totalDestinations",
+          CAST((SELECT COUNT(*) FROM "PopularDestination" WHERE active = true) AS INTEGER) AS "activeDestinations",
+          CAST((SELECT COUNT(*) FROM "ReferralCode") AS INTEGER) AS "totalReferralCodes",
+          CAST((SELECT COUNT(*) FROM "ReferralWithdrawal" WHERE status = 'pending') AS INTEGER) AS "pendingWithdrawals",
+          COALESCE((SELECT enabled FROM "ReferralSettings" LIMIT 1), false) AS "referralEnabled",
+          COALESCE((SELECT enabled FROM "ChatbotSettings" LIMIT 1), false) AS "chatbotEnabled"
+      `),
+      db.$queryRaw<Array<{ category: string; count: number }>>(Prisma.sql`
+        SELECT
+          category,
+          CAST(COUNT(*) AS INTEGER) AS count
+        FROM "Product"
+        GROUP BY category
+      `),
+    ])
 
-    const totalRevenue = revenueAggregate._sum.total ?? 0
-    const totalStock = stockAggregate._sum.stock ?? 0
+    const summary = summaryRows[0]
 
-    const categoryCount = categoryGroups.reduce<Record<string, number>>((acc, item) => {
-      acc[item.category] = item._count._all
+    const categoryCount = categoryRows.reduce<Record<string, number>>((acc, item) => {
+      acc[item.category] = item.count
       return acc
     }, {})
-
-    const totalProducts = categoryGroups.reduce((sum, item) => sum + item._count._all, 0)
-
-    const ordersByStatus = orderStatusGroups.reduce<Record<string, number>>((acc, item) => {
-      acc[item.status] = item._count._all
-      return acc
-    }, {})
-
-    const totalOrders = Object.values(ordersByStatus).reduce((sum, count) => sum + count, 0)
-    const pendingOrders = ordersByStatus.pending ?? 0
-    const deliveredOrders = ordersByStatus.delivered ?? 0
-    const uniqueCustomers = uniqueCustomerGroups.length
-
-    const partners = getActiveCounts(partnerGroups)
-    const topUpServices = getActiveCounts(topUpServiceGroups)
-    const topUpBanners = getActiveCounts(topUpBannerGroups)
-    const foodItems = getActiveCounts(foodItemGroups)
-    const travelServices = getActiveCounts(travelServiceGroups)
-    const destinations = getActiveCounts(destinationGroups)
 
     return NextResponse.json({
-      totalProducts,
-      totalOrders,
-      totalRevenue: Math.round(totalRevenue * 100) / 100,
-      pendingOrders,
-      deliveredOrders,
-      uniqueCustomers,
-      lowStockProducts,
-      totalStock,
+      totalProducts: summary.totalProducts,
+      totalOrders: summary.totalOrders,
+      totalRevenue: Math.round(summary.totalRevenue * 100) / 100,
+      pendingOrders: summary.pendingOrders,
+      deliveredOrders: summary.deliveredOrders,
+      uniqueCustomers: summary.uniqueCustomers,
+      lowStockProducts: summary.lowStockProducts,
+      totalStock: summary.totalStock,
       categoryCount,
-      totalPartners: partners.total,
-      activePartners: partners.active,
-      totalTopUpServices: topUpServices.total,
-      activeTopUpServices: topUpServices.active,
-      totalTopUpBanners: topUpBanners.total,
-      activeTopUpBanners: topUpBanners.active,
-      totalFoodItems: foodItems.total,
-      activeFoodItems: foodItems.active,
-      totalTravelServices: travelServices.total,
-      activeTravelServices: travelServices.active,
-      totalDestinations: destinations.total,
-      activeDestinations: destinations.active,
-      totalReferralCodes: referralCodes,
-      pendingWithdrawals,
-      referralEnabled: referralSettings?.enabled ?? false,
-      chatbotEnabled: chatbotSettings?.enabled ?? false,
+      totalPartners: summary.totalPartners,
+      activePartners: summary.activePartners,
+      totalTopUpServices: summary.totalTopUpServices,
+      activeTopUpServices: summary.activeTopUpServices,
+      totalTopUpBanners: summary.totalTopUpBanners,
+      activeTopUpBanners: summary.activeTopUpBanners,
+      totalFoodItems: summary.totalFoodItems,
+      activeFoodItems: summary.activeFoodItems,
+      totalTravelServices: summary.totalTravelServices,
+      activeTravelServices: summary.activeTravelServices,
+      totalDestinations: summary.totalDestinations,
+      activeDestinations: summary.activeDestinations,
+      totalReferralCodes: summary.totalReferralCodes,
+      pendingWithdrawals: summary.pendingWithdrawals,
+      referralEnabled: summary.referralEnabled,
+      chatbotEnabled: summary.chatbotEnabled,
     })
   } catch (error) {
     console.error('Failed to fetch admin stats:', error)
