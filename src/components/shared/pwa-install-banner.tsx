@@ -15,25 +15,12 @@ interface BeforeInstallPromptEvent extends Event {
 
 // ─── Helpers ────────────────────────────────────────────────────────────
 
-// Check if dismissed within last 7 days
-function isDismissedRecently(): boolean {
-  try {
-    const dismissedAt = localStorage.getItem('mg-pwa-dismissed')
-    if (dismissedAt) {
-      const dismissedTime = parseInt(dismissedAt, 10)
-      const oneWeek = 7 * 24 * 60 * 60 * 1000
-      return Date.now() - dismissedTime < oneWeek
-    }
-  } catch { /* SSR guard */ }
-  return false
-}
-
 function usePWAState() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showBanner, setShowBanner] = useState(false)
   const [appInstalled, setAppInstalled] = useState(false)
-  const [dismissed, setDismissed] = useState(isDismissedRecently)
-  const [showLauncher, setShowLauncher] = useState(isDismissedRecently)
+  const [dismissed, setDismissed] = useState(false)
+  const [showLauncher, setShowLauncher] = useState(false)
 
   const isIOSDevice = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream
   const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
@@ -80,7 +67,11 @@ function usePWAState() {
     setShowBanner(false)
     setShowLauncher(true)
     setDismissed(true)
-    localStorage.setItem('mg-pwa-dismissed', String(Date.now()))
+  }, [])
+
+  const hideBanner = useCallback(() => {
+    setShowBanner(false)
+    setShowLauncher(false)
   }, [])
 
   const reopenBanner = useCallback(() => {
@@ -100,6 +91,7 @@ function usePWAState() {
     isStandalone,
     shouldHide,
     dismiss,
+    hideBanner,
     reopenBanner,
   }
 }
@@ -118,6 +110,7 @@ export default function PWAInstallBanner() {
     isStandalone,
     shouldHide,
     dismiss,
+    hideBanner,
     reopenBanner,
   } = usePWAState()
 
@@ -145,9 +138,9 @@ export default function PWAInstallBanner() {
       return
     }
 
+    hideBanner()
     setGuideOpen(true)
-    reopenBanner()
-  }, [deferredPrompt, handleInstall, isIOSDevice, reopenBanner])
+  }, [deferredPrompt, handleInstall, hideBanner, isIOSDevice])
 
   const showManualInstallHint = !isIOSDevice && !deferredPrompt
   const guideTitle = isIOSDevice ? 'Cara Install di iPhone' : isAndroidDevice ? 'Cara Install di Android' : 'Cara Install di Desktop'
@@ -176,7 +169,7 @@ export default function PWAInstallBanner() {
 
   return (
     <AnimatePresence>
-      {!shouldHide && (
+      {!shouldHide && !guideOpen && (
         <motion.div
           initial={{ opacity: 0, y: 80, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -246,7 +239,10 @@ export default function PWAInstallBanner() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setGuideOpen(true)}
+                      onClick={() => {
+                        hideBanner()
+                        setGuideOpen(true)
+                      }}
                       className="w-full h-10 rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 hover:bg-purple-500/15 transition-all"
                     >
                       Lihat Tutorial Install
@@ -270,7 +266,10 @@ export default function PWAInstallBanner() {
                     </motion.button>
                     <button
                       type="button"
-                      onClick={() => setGuideOpen(true)}
+                      onClick={() => {
+                        hideBanner()
+                        setGuideOpen(true)
+                      }}
                       className="w-full h-10 rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 hover:bg-purple-500/15 transition-all"
                     >
                       Lihat Tutorial Install
@@ -291,7 +290,10 @@ export default function PWAInstallBanner() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setGuideOpen(true)}
+                      onClick={() => {
+                        hideBanner()
+                        setGuideOpen(true)
+                      }}
                       className="w-full h-10 rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 hover:bg-purple-500/15 transition-all"
                     >
                       Lihat Tutorial Install
@@ -327,7 +329,7 @@ export default function PWAInstallBanner() {
         </motion.div>
       )}
 
-      {showLauncher && !appInstalled && !isStandalone && (
+      {showLauncher && !appInstalled && !isStandalone && !guideOpen && (
         <motion.button
           initial={{ opacity: 0, y: 20, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
