@@ -215,7 +215,7 @@ export default function AIChatbot() {
             exit={{ scale: 0, opacity: 0, y: 20 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-24 right-4 sm:bottom-8 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 hover:from-purple-400 hover:to-purple-600 text-white shadow-lg shadow-purple-500/30 flex items-center justify-center group"
+            className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/30 group hover:from-purple-400 hover:to-purple-600 md:bottom-8 md:right-5"
             aria-label="Buka AI Chat"
           >
             {/* Pulse ring */}
@@ -233,7 +233,7 @@ export default function AIChatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-            className="fixed bottom-24 right-4 sm:bottom-8 z-50 w-[calc(100vw-2rem)] sm:w-96 h-[70vh] sm:h-[500px] flex flex-col rounded-2xl overflow-hidden"
+            className="fixed bottom-24 right-4 z-50 flex h-[70vh] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl md:bottom-8 md:right-5 sm:w-96 sm:h-[500px]"
             style={{
               background: 'rgba(10, 6, 18, 0.97)',
               backdropFilter: 'blur(20px)',

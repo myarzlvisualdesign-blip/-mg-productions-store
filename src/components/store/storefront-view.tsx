@@ -57,7 +57,7 @@ function FeaturedProducts() {
     if (partners.length === 0) return
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % partners.length)
-    }, 3000)
+    }, 4500)
     return () => clearInterval(timer)
   }, [partners.length])
 
@@ -91,31 +91,35 @@ function FeaturedProducts() {
           </p>
         </div>
 
-        <div className="flex items-center justify-center gap-4 sm:gap-5 flex-wrap py-2">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap py-2">
           {partners.map((partner, index) => {
             const isActive = index === activeIndex
             const hasLink = !!partner.link
             const avatar = (
-              <div className={`rounded-full transition-all duration-300 ${isActive ? 'p-[3px] bg-gradient-to-br from-purple-400 to-purple-600 shadow-lg shadow-purple-500/25' : 'p-[2px] bg-white/[0.06]'}`}>
-                <div className={`rounded-full overflow-hidden bg-muted/20 transition-all duration-300 ${isActive ? 'w-14 h-14 sm:w-16 sm:h-16' : 'w-10 h-10 sm:w-12 sm:h-12 opacity-50 hover:opacity-80'}`}>
-                  {!imgErrors[partner.id] ? (
-                    <img src={partner.image} alt={partner.name} className="w-full h-full object-cover" onError={() => setImgErrors(p => ({ ...p, [partner.id]: true }))} />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-purple-400/40" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                    </div>
-                  )}
+              <div className="flex h-16 w-16 items-center justify-center sm:h-20 sm:w-20">
+                <div className={`h-16 w-16 rounded-full p-[3px] transition-all duration-300 transform-gpu sm:h-20 sm:w-20 ${isActive ? 'scale-100 bg-gradient-to-br from-purple-400 to-purple-600 shadow-[0_0_28px_rgba(168,85,247,0.35)]' : 'scale-[0.86] bg-white/[0.06]'}`}>
+                  <div className={`h-full w-full rounded-full overflow-hidden bg-muted/20 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-55 hover:opacity-80'}`}>
+                    {!imgErrors[partner.id] ? (
+                      <img src={partner.image} alt={partner.name} className="h-full w-full object-cover" onError={() => setImgErrors(p => ({ ...p, [partner.id]: true }))} />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <svg className="h-4 w-4 text-purple-400/40" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )
 
+            const itemClassName = "relative flex h-16 w-16 shrink-0 items-center justify-center transition-all duration-300 focus:outline-none sm:h-20 sm:w-20"
+
             if (hasLink) {
               return (
-                <a key={partner.id} href={partner.link} target="_blank" rel="noopener noreferrer" onClick={() => setActiveIndex(index)} className="relative flex-shrink-0 transition-all duration-300 focus:outline-none" aria-label={partner.name}>{avatar}</a>
+                <a key={partner.id} href={partner.link} target="_blank" rel="noopener noreferrer" onClick={() => setActiveIndex(index)} className={itemClassName} aria-label={partner.name}>{avatar}</a>
               )
             }
             return (
-              <button key={partner.id} onClick={() => setActiveIndex(index)} className="relative flex-shrink-0 transition-all duration-300 focus:outline-none" aria-label={partner.name}>{avatar}</button>
+              <button key={partner.id} onClick={() => setActiveIndex(index)} className={itemClassName} aria-label={partner.name}>{avatar}</button>
             )
           })}
         </div>
@@ -128,12 +132,14 @@ function FeaturedProducts() {
           ))}
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div key={currentPartner.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="mt-4 sm:mt-5 text-center">
-            <h3 className="text-sm sm:text-lg font-semibold text-foreground leading-tight">{currentPartner.name}</h3>
-            <p className="mt-0.5 text-[11px] sm:text-sm text-muted-foreground line-clamp-1 px-4">{currentPartner.description}</p>
-          </motion.div>
-        </AnimatePresence>
+        <div className="mt-4 min-h-[4.5rem] px-4 text-center sm:mt-5 sm:min-h-[5rem]">
+          <AnimatePresence mode="wait">
+            <motion.div key={currentPartner.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
+              <h3 className="text-sm sm:text-lg font-semibold text-foreground leading-tight">{currentPartner.name}</h3>
+              <p className="mt-0.5 text-[11px] sm:text-sm text-muted-foreground line-clamp-2">{currentPartner.description}</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </section>
   )
@@ -211,11 +217,11 @@ export default function Storefront() {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25, delay: 0.5 }}
           onClick={() => setReferralOpen(true)}
-          className="fixed bottom-40 right-4 sm:bottom-24 z-50 flex items-center gap-2.5 h-12 px-5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/30 text-sm font-semibold"
+          className="fixed bottom-40 right-4 z-50 flex h-12 items-center gap-2.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-5 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 hover:from-purple-500 hover:to-pink-500 md:bottom-8 md:right-24"
           aria-label="Buka Referral Program"
         >
           <Gift className="size-5" />
-          <span className="hidden sm:inline">Referral</span>
+          <span>Referral</span>
         </motion.button>
       )}
     </div>

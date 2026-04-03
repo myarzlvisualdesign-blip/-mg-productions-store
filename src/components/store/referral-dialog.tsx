@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -18,6 +19,7 @@ import {
 import { toast } from 'sonner'
 import { formatRupiah } from '@/lib/utils'
 import ReferralShareSheet from '@/components/store/referral-share-sheet'
+import { cn } from '@/lib/utils'
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -294,7 +296,33 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   // ─── Helpers ─────────────────────────────────────────────────────────
   const balance = myCode ? (myCode.balance ?? myCode.totalReward - (myCode.totalWithdrawn || 0)) : 0
   const minWithdraw = settings?.minWithdraw || 100000
-  const dialogClassName = "!left-1/2 !top-1/2 !grid !w-[calc(100%-1rem)] !max-w-[34rem] !translate-x-[-50%] !translate-y-[-50%] !gap-0 !overflow-hidden rounded-3xl border border-white/10 bg-background/95 p-0 shadow-2xl shadow-black/40 backdrop-blur-xl !max-h-[min(90vh,calc(100dvh-1rem))] sm:!w-[calc(100%-2rem)] lg:!max-w-xl"
+  const dialogClassName = "!left-1/2 !top-1/2 !grid !h-[min(42rem,calc(100dvh-1rem))] !w-[calc(100%-1rem)] !max-w-[34rem] !translate-x-[-50%] !translate-y-[-50%] !gap-0 !overflow-hidden rounded-[1.75rem] border border-white/10 bg-background/95 p-0 shadow-2xl shadow-black/40 backdrop-blur-xl sm:!h-[min(44rem,calc(100dvh-3rem))] sm:!w-[calc(100%-2rem)] lg:!max-w-xl"
+
+  function DialogShell({ children, bodyClassName }: { children: React.ReactNode; bodyClassName?: string }) {
+    return (
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-white/[0.06] bg-background/95 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur sm:px-6 sm:pt-5">
+          <DialogHeader className="text-left">
+            <DialogTitle className="flex items-center gap-2 pr-4 text-lg">
+              <Gift className="size-5 text-purple-400" />
+              Referral Program
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Ajak teman belanja & dapatkan reward!
+            </DialogDescription>
+          </DialogHeader>
+          <DialogClose className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground">
+            <XCircle className="size-4" />
+            <span className="sr-only">Tutup referral</span>
+          </DialogClose>
+        </div>
+
+        <div className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 [-webkit-overflow-scrolling:touch] touch-pan-y sm:px-6 sm:pb-6", bodyClassName)}>
+          {children}
+        </div>
+      </div>
+    )
+  }
 
   const statusLabel = (s: string) => {
     switch (s) {
@@ -310,11 +338,10 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   if (loading) {
     return (
       <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose() }}>
-        <DialogContent className={dialogClassName}>
-          <DialogTitle className="sr-only">Referral Program</DialogTitle>
-          <div className="flex min-h-0 flex-1 items-center justify-center px-4 py-12">
-            <Loader2 className="size-8 text-purple-400 animate-spin" />
-          </div>
+        <DialogContent className={dialogClassName} showCloseButton={false}>
+          <DialogShell bodyClassName="flex items-center justify-center py-12">
+            <Loader2 className="size-8 animate-spin text-purple-400" />
+          </DialogShell>
         </DialogContent>
       </Dialog>
     )
@@ -323,9 +350,8 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   if (settings && !settings.enabled) {
     return (
       <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose() }}>
-        <DialogContent className={dialogClassName}>
-          <DialogTitle className="sr-only">Program Referral</DialogTitle>
-          <div className="flex min-h-0 flex-1 items-center justify-center px-4 py-8">
+        <DialogContent className={dialogClassName} showCloseButton={false}>
+          <DialogShell bodyClassName="flex items-center justify-center py-8">
             <div className="text-center">
             <div className="w-16 h-16 rounded-full bg-muted/20 flex items-center justify-center mx-auto mb-4">
               <Gift className="size-8 text-muted-foreground" />
@@ -334,7 +360,7 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
             <p className="text-sm text-muted-foreground mt-2">Saat ini program referral sedang tidak aktif. Coba lagi nanti!</p>
             <Button onClick={handleClose} className="mt-6 rounded-xl">Tutup</Button>
             </div>
-          </div>
+          </DialogShell>
         </DialogContent>
       </Dialog>
     )
@@ -342,23 +368,9 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose() }}>
-      <DialogContent className={dialogClassName}>
-        <div className="flex min-h-0 flex-1 flex-col">
-          {/* ─── Header ──────────────────────────────────────────────── */}
-          <div className="shrink-0 border-b border-white/[0.06] px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pt-6">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 pr-10 text-lg">
-                <Gift className="size-5 text-purple-400" />
-                Referral Program
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                Ajak teman belanja & dapatkan reward!
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
-            <div className="space-y-4">
+      <DialogContent className={dialogClassName} showCloseButton={false}>
+        <DialogShell>
+          <div className="space-y-4">
               {/* ─── Info Banner ─────────────────────────────────────────── */}
               <div className="rounded-xl border border-purple-500/15 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 p-3">
                 <div className="flex items-start gap-2.5">
@@ -582,9 +594,8 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
           </div>
-        </div>
+        </DialogShell>
       </DialogContent>
 
       {/* Share Sheet */}
