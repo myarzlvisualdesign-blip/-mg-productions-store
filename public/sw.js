@@ -1,5 +1,4 @@
-const STATIC_CACHE = 'mg-productions-static-v1';
-const PAGE_CACHE = 'mg-productions-pages-v1';
+const STATIC_CACHE = 'mg-productions-static-v2';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/offline.html',
@@ -23,7 +22,11 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      const allowedCaches = new Set([STATIC_CACHE, PAGE_CACHE]);
+      if ('navigationPreload' in self.registration) {
+        await self.registration.navigationPreload.enable();
+      }
+
+      const allowedCaches = new Set([STATIC_CACHE]);
       const keys = await caches.keys();
       await Promise.all(
         keys
@@ -63,17 +66,15 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
-        const cache = await caches.open(PAGE_CACHE);
-
         try {
-          const response = await fetch(request);
-          if (response.ok) {
-            cache.put(request, response.clone());
+          const preloadResponse = await event.preloadResponse;
+          if (preloadResponse) {
+            return preloadResponse;
           }
-          return response;
+
+          return await fetch(request, { cache: 'no-store' });
         } catch {
-          const cachedPage = await cache.match(request, { ignoreSearch: true });
-          return cachedPage || caches.match('/offline.html');
+          return (await caches.match('/offline.html')) || Response.error();
         }
       })()
     );
