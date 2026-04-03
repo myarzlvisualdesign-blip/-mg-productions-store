@@ -61,6 +61,7 @@ const DEFAULT_SETTINGS: ChatbotSettings = {
 
 const QUICK_ACTIONS = [
   'Produk apa saja yang tersedia?',
+  'Cari produk kamera',
   'Info layanan Top Up',
   'Info layanan Travel',
 ]
@@ -420,7 +421,7 @@ export default function AIChatbot() {
                 </Button>
               </div>
               <p className="text-[9px] text-muted-foreground/30 text-center mt-1.5">
-                Powered by MG Productions AI
+                Asisten katalog MG PRODUCTIONS
               </p>
             </form>
           </motion.div>

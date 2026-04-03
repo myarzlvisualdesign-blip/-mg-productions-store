@@ -8,11 +8,21 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useCartStore } from '@/store/cart-store'
 import { useViewStore } from '@/store/view-store'
+import { fetchJsonWithRetry } from '@/lib/client-fetch'
+
+interface SearchSuggestion {
+  id: string
+  name: string
+  category: string
+  price: number
+}
 
 export default function StoreHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
+  const [searching, setSearching] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
   const totalItems = useCartStore((s) => s.totalItems())
@@ -22,15 +32,27 @@ export default function StoreHeader() {
   const handleSearch = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault()
-      const el = document.querySelector('#products')
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' })
-        window.dispatchEvent(new CustomEvent('store-search', { detail: searchQuery }))
-      }
+      const query = searchQuery.trim()
+      window.dispatchEvent(
+        new CustomEvent('store-search', {
+          detail: { query, scrollToResults: true },
+        })
+      )
       setSearchOpen(false)
     },
     [searchQuery]
   )
+
+  const handleSuggestionSelect = useCallback((suggestion: SearchSuggestion) => {
+    setSearchQuery(suggestion.name)
+    setSuggestions([])
+    setSearchOpen(false)
+    window.dispatchEvent(
+      new CustomEvent('store-search', {
+        detail: { query: suggestion.name, scrollToResults: true },
+      })
+    )
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,9 +77,100 @@ export default function StoreHeader() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  useEffect(() => {
+    const query = searchQuery.trim()
+    const timeoutId = window.setTimeout(async () => {
+      if (!query) {
+        setSuggestions([])
+        setSearching(false)
+        window.dispatchEvent(
+          new CustomEvent('store-search', {
+            detail: { query: '', scrollToResults: false },
+          })
+        )
+        return
+      }
+
+      setSearching(true)
+      window.dispatchEvent(
+        new CustomEvent('store-search', {
+          detail: { query, scrollToResults: false },
+        })
+      )
+
+      try {
+        const data = await fetchJsonWithRetry<SearchSuggestion[]>(
+          `/api/products?search=${encodeURIComponent(query)}&limit=5`
+        )
+        setSuggestions(Array.isArray(data) ? data : [])
+      } catch {
+        setSuggestions([])
+      } finally {
+        setSearching(false)
+      }
+    }, 180)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [searchQuery])
+
+  const searchPanel = (
+    <div className="space-y-3">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <Input
+          autoFocus
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search products..."
+          className="h-11 rounded-2xl border-white/12 bg-white/6 pl-10 pr-10 text-sm placeholder:text-muted-foreground"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {(searching || suggestions.length > 0) && (
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+          {searching && (
+            <div className="px-4 py-3 text-sm text-muted-foreground">
+              Mencari produk...
+            </div>
+          )}
+
+          {!searching && suggestions.map((suggestion) => (
+            <button
+              key={suggestion.id}
+              type="button"
+              onClick={() => handleSuggestionSelect(suggestion)}
+              className="flex w-full items-center justify-between gap-3 border-b border-white/6 px-4 py-3 text-left last:border-b-0 hover:bg-white/6"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-foreground">
+                  {suggestion.name}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {suggestion.category}
+                </p>
+              </div>
+              <span className="shrink-0 text-xs font-semibold text-purple-300">
+                Rp{suggestion.price.toLocaleString('id-ID')}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <header
-      className={`store-header fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${scrolled || mobileMenuOpen ? 'scrolled' : ''}`}
+      className={`store-header fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${scrolled || mobileMenuOpen || searchOpen ? 'scrolled' : ''}`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-[72px] items-center justify-between gap-3 sm:h-20">
@@ -77,19 +190,15 @@ export default function StoreHeader() {
               {searchOpen && (
                 <motion.form
                   initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 200, opacity: 1 }}
+                  animate={{ width: 260, opacity: 1 }}
                   exit={{ width: 0, opacity: 0 }}
                   transition={{ duration: 0.25, ease: 'easeInOut' }}
                   onSubmit={handleSearch}
-                  className="hidden sm:flex items-center overflow-hidden"
+                  className="relative hidden overflow-visible sm:flex sm:items-center"
                 >
-                  <Input
-                    autoFocus
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search products..."
-                    className="h-9 border-white/10 bg-white/5 text-sm"
-                  />
+                  <div className="w-full">
+                    {searchPanel}
+                  </div>
                 </motion.form>
               )}
             </AnimatePresence>
@@ -160,16 +269,6 @@ export default function StoreHeader() {
             className="md:hidden px-4 pb-3"
           >
             <nav className="overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(160deg,rgba(74,29,120,0.82),rgba(20,14,38,0.94))] p-3 shadow-2xl shadow-black/35 backdrop-blur-2xl">
-              {/* Mobile Search */}
-              <form onSubmit={handleSearch} className="pb-3">
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search products..."
-                  className="h-11 rounded-2xl border-white/12 bg-white/6 text-sm placeholder:text-muted-foreground"
-                />
-              </form>
-
               <div className="mb-3 flex justify-center">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-purple-100/90">
                   <span className="text-base">✦</span>
@@ -189,6 +288,25 @@ export default function StoreHeader() {
                 Admin Panel
               </button>
             </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {searchOpen && !mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="px-4 pb-3 sm:hidden"
+          >
+            <form
+              onSubmit={handleSearch}
+              className="overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(160deg,rgba(53,24,92,0.88),rgba(18,12,34,0.95))] p-3 shadow-2xl shadow-black/35 backdrop-blur-2xl"
+            >
+              {searchPanel}
+            </form>
           </motion.div>
         )}
       </AnimatePresence>

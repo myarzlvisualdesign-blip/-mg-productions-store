@@ -11,6 +11,7 @@ import ProductCard, { type Product } from './product-card'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 
 const ITEMS_PER_PAGE = 16
+type StoreSearchDetail = string | { query: string; scrollToResults?: boolean }
 
 const gridVariants = {
   hidden: { opacity: 0 },
@@ -114,9 +115,14 @@ export default function ProductGrid() {
   // Listen for search events from header
   useEffect(() => {
     const handler = (e: Event) => {
-      const query = (e as CustomEvent).detail as string
-      if (query) {
-        setSearchQuery(query)
+      const detail = (e as CustomEvent<StoreSearchDetail>).detail
+      const query = typeof detail === 'string' ? detail : detail?.query ?? ''
+      const shouldScroll = typeof detail === 'object' && detail?.scrollToResults
+
+      setSearchQuery(query)
+
+      if (shouldScroll) {
+        document.querySelector('#products')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     }
     window.addEventListener('store-search', handler)

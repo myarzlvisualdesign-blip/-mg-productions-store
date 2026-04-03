@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
 import { publicJson } from '@/lib/public-api'
@@ -11,8 +12,13 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const featured = searchParams.get('featured')
     const search = searchParams.get('search')
+    const limitParam = searchParams.get('limit')
 
-    const where: Record<string, unknown> = {}
+    const where: Prisma.ProductWhereInput = {}
+    const parsedLimit = limitParam ? Number.parseInt(limitParam, 10) : Number.NaN
+    const take = Number.isFinite(parsedLimit)
+      ? Math.min(Math.max(parsedLimit, 1), 24)
+      : undefined
 
     if (category && category !== 'All') {
       where.category = category
@@ -22,14 +28,16 @@ export async function GET(request: NextRequest) {
     }
     if (search) {
       where.OR = [
-        { name: { contains: search } },
-        { description: { contains: search } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { category: { contains: search, mode: 'insensitive' } },
       ]
     }
 
     const products = await db.product.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take,
     })
 
     return publicJson(products.map((product) => ({

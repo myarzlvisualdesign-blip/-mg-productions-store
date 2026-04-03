@@ -1,36 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
 import { db } from '@/lib/db'
 
-// In-memory conversation store (per sessionId)
-const conversations = new Map<string, Array<{ role: string; content: string }>>()
+const DEFAULT_SYSTEM_PROMPT = 'Kamu adalah MG Assistant untuk MG PRODUCTIONS. Kamu hanya membantu pertanyaan seputar produk, pencarian barang, checkout, top up, food, travel, referral, promo, dan fitur toko. Jika pertanyaan di luar topik toko, arahkan kembali ke layanan MG PRODUCTIONS.'
 
-let zaiInstance: Awaited<ReturnType<typeof ZAI.create>> | null = null
+const STOP_WORDS = new Set([
+  'apa', 'ada', 'yang', 'dan', 'atau', 'untuk', 'dengan', 'tentang', 'dong', 'nih',
+  'ya', 'yaa', 'sih', 'saya', 'aku', 'mau', 'cari', 'coba', 'tolong', 'butuh',
+  'produk', 'barang', 'mg', 'productions', 'info', 'informasi', 'please',
+])
 
-async function getZAI() {
-  if (!zaiInstance) {
-    zaiInstance = await ZAI.create()
-  }
-  return zaiInstance
+function normalizeText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
-const MAX_HISTORY = 20 // Keep last 20 messages
+function formatRupiah(value: number) {
+  return `Rp${Math.round(value).toLocaleString('id-ID')}`
+}
 
-const DEFAULT_SYSTEM_PROMPT = 'Kamu adalah MG Assistant, customer service AI dari MG PRODUCTIONS. Kamu ramah, profesional, dan membantu pelanggan dengan informasi tentang produk, layanan top-up, makanan, travel, dan promo. Jawab dalam Bahasa Indonesia yang santai dan mudah dipahami. Jika ditanya hal di luar produk MG PRODUCTIONS, arahkan kembali ke layanan yang tersedia.'
+function buildSearchTerms(message: string) {
+  return normalizeText(message)
+    .split(' ')
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 2 && !STOP_WORDS.has(part))
+    .slice(0, 5)
+}
+
+function hasAnyKeyword(message: string, keywords: string[]) {
+  return keywords.some((keyword) => message.includes(keyword))
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { message, sessionId = 'default' } = body
+    const message = typeof body?.message === 'string' ? body.message.trim() : ''
 
-    if (!message || typeof message !== 'string') {
+    if (!message) {
       return NextResponse.json(
         { error: 'Message wajib diisi' },
         { status: 400 }
       )
     }
 
-    // Check if chatbot is enabled
     const settings = await db.chatbotSettings.findFirst()
     if (settings && !settings.enabled) {
       return NextResponse.json(
@@ -39,57 +53,170 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get system prompt from settings or use default
-    const systemPrompt = settings?.systemPrompt || DEFAULT_SYSTEM_PROMPT
+    const normalized = normalizeText(message)
+    const searchTerms = buildSearchTerms(message)
+    const activeReferralSettings = await db.referralSettings.findFirst({
+      select: { enabled: true, minOrderAmount: true, refereeReward: true },
+    })
 
-    const zai = await getZAI()
-
-    // Get or create conversation history
-    let history = conversations.get(sessionId) || [
-      { role: 'assistant', content: systemPrompt }
-    ]
-
-    // Add user message
-    history.push({ role: 'user', content: message })
-
-    // Trim old messages if exceeding limit (keep system prompt)
-    if (history.length > MAX_HISTORY) {
-      history = [
-        history[0],
-        ...history.slice(-(MAX_HISTORY - 1))
-      ]
-    }
-
-    // Get completion with retry logic
-    let aiResponse: string
-    try {
-      const completion = await zai.chat.completions.create({
-        messages: history as Array<{ role: 'user' | 'assistant'; content: string }>,
-        thinking: { type: 'disabled' }
+    if (hasAnyKeyword(normalized, ['halo', 'hai', 'hello', 'pagi', 'siang', 'malam'])) {
+      return NextResponse.json({
+        response: `${settings?.welcomeMessage || 'Halo!'} Saya bantu seputar produk, checkout, top up, food, travel, dan referral MG PRODUCTIONS. Kamu bisa tanya produk yang tersedia atau cari barang tertentu.`,
       })
-      aiResponse = completion.choices[0]?.message?.content || 'Maaf, saya sedang mengalami gangguan. Silakan coba lagi.'
-    } catch (aiError) {
-      console.error('AI completion error, retrying...', aiError)
-      // Retry once
-      try {
-        const completion = await zai.chat.completions.create({
-          messages: history as Array<{ role: 'user' | 'assistant'; content: string }>,
-          thinking: { type: 'disabled' }
-        })
-        aiResponse = completion.choices[0]?.message?.content || 'Maaf, saya sedang mengalami gangguan. Silakan coba lagi.'
-      } catch {
-        aiResponse = 'Maaf, terjadi kesalahan saat memproses pesan. Silakan coba lagi dalam beberapa saat.'
-      }
     }
 
-    // Add AI response to history
-    history.push({ role: 'assistant', content: aiResponse })
+    if (hasAnyKeyword(normalized, ['checkout', 'bayar', 'pembayaran', 'order', 'pesan', 'keranjang', 'cart'])) {
+      return NextResponse.json({
+        response: 'Untuk belanja, pilih produk lalu masukkan ke keranjang. Setelah itu lanjut checkout dari cart. Jika produk punya tombol Visit, produk itu akan diarahkan ke link eksternal. Untuk kebutuhan khusus atau kendala pembayaran, hubungi admin toko.',
+      })
+    }
 
-    // Save updated history
-    conversations.set(sessionId, history)
+    if (hasAnyKeyword(normalized, ['referral', 'kode promo', 'promo', 'diskon'])) {
+      if (activeReferralSettings?.enabled) {
+        return NextResponse.json({
+          response: `Program referral sedang aktif. Minimum order untuk benefit referral adalah ${formatRupiah(activeReferralSettings.minOrderAmount)} dan reward pelanggan baru saat memakai kode referral adalah ${formatRupiah(activeReferralSettings.refereeReward)}.`,
+        })
+      }
+
+      return NextResponse.json({
+        response: 'Saat ini fitur referral belum aktif. Kamu tetap bisa belanja produk, top up, food, dan travel seperti biasa di MG PRODUCTIONS.',
+      })
+    }
+
+    if (hasAnyKeyword(normalized, ['topup', 'top up', 'diamond', 'koin', 'game', 'voucher'])) {
+      const services = await db.topUpService.findMany({
+        where: { active: true },
+        orderBy: { order: 'asc' },
+        take: 5,
+        select: { name: true, subtitle: true },
+      })
+
+      if (services.length === 0) {
+        return NextResponse.json({
+          response: 'Saat ini belum ada layanan top up yang aktif. Coba cek lagi nanti atau hubungi admin toko.',
+        })
+      }
+
+      const summary = services
+        .map((service) => service.subtitle ? `${service.name} (${service.subtitle})` : service.name)
+        .join(', ')
+
+      return NextResponse.json({
+        response: `Layanan Top Up yang tersedia saat ini antara lain: ${summary}. Kalau kamu mau, sebutkan game atau layanan yang dicari biar saya bantu arahkan.`,
+      })
+    }
+
+    if (hasAnyKeyword(normalized, ['food', 'makan', 'minum', 'drink', 'menu', 'kuliner'])) {
+      const items = await db.foodItem.findMany({
+        where: { active: true },
+        orderBy: { order: 'asc' },
+        take: 5,
+        select: { name: true, subtitle: true },
+      })
+
+      if (items.length === 0) {
+        return NextResponse.json({
+          response: 'Saat ini belum ada menu food & drink yang aktif di toko.',
+        })
+      }
+
+      return NextResponse.json({
+        response: `Menu food & drink yang aktif saat ini: ${items.map((item) => item.subtitle ? `${item.name} (${item.subtitle})` : item.name).join(', ')}.`,
+      })
+    }
+
+    if (hasAnyKeyword(normalized, ['travel', 'wisata', 'liburan', 'destinasi', 'trip'])) {
+      const [services, destinations] = await Promise.all([
+        db.travelService.findMany({
+          where: { active: true },
+          orderBy: { order: 'asc' },
+          take: 4,
+          select: { name: true, subtitle: true },
+        }),
+        db.popularDestination.findMany({
+          where: { active: true },
+          orderBy: { order: 'asc' },
+          take: 4,
+          select: { name: true, subtitle: true },
+        }),
+      ])
+
+      const parts: string[] = []
+      if (services.length > 0) {
+        parts.push(`layanan travel: ${services.map((item) => item.subtitle ? `${item.name} (${item.subtitle})` : item.name).join(', ')}`)
+      }
+      if (destinations.length > 0) {
+        parts.push(`destinasi populer: ${destinations.map((item) => item.subtitle ? `${item.name} (${item.subtitle})` : item.name).join(', ')}`)
+      }
+
+      return NextResponse.json({
+        response: parts.length > 0
+          ? `Yang tersedia saat ini ada ${parts.join(' | ')}.`
+          : 'Saat ini belum ada layanan travel atau destinasi aktif yang tampil di toko.',
+      })
+    }
+
+    const products = await db.product.findMany({
+      where: searchTerms.length > 0
+        ? {
+            OR: searchTerms.flatMap((term) => ([
+              { name: { contains: term, mode: 'insensitive' } },
+              { description: { contains: term, mode: 'insensitive' } },
+              { category: { contains: term, mode: 'insensitive' } },
+            ])),
+          }
+        : undefined,
+      orderBy: [
+        { featured: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: 5,
+      select: {
+        name: true,
+        category: true,
+        price: true,
+        stock: true,
+      },
+    })
+
+    if (products.length > 0) {
+      const lines = products.map((product) => {
+        const stockNote = product.stock > 0 ? `${product.stock} stok` : 'stok habis'
+        return `- ${product.name} • ${product.category} • ${formatRupiah(product.price)} • ${stockNote}`
+      })
+
+      return NextResponse.json({
+        response: `Saya temukan beberapa produk yang relevan:\n${lines.join('\n')}\n\nKalau mau, sebutkan nama atau kategori yang lebih spesifik supaya saya saring lagi.`,
+      })
+    }
+
+    if (hasAnyKeyword(normalized, ['produk', 'catalog', 'katalog', 'tersedia', 'available', 'rekomendasi'])) {
+      const featuredProducts = await db.product.findMany({
+        orderBy: [
+          { featured: 'desc' },
+          { createdAt: 'desc' },
+        ],
+        take: 5,
+        select: {
+          name: true,
+          category: true,
+          price: true,
+        },
+      })
+
+      if (featuredProducts.length === 0) {
+        return NextResponse.json({
+          response: 'Saat ini belum ada produk yang tampil di katalog.',
+        })
+      }
+
+      return NextResponse.json({
+        response: `Beberapa produk yang tersedia saat ini: ${featuredProducts.map((product) => `${product.name} (${product.category}, ${formatRupiah(product.price)})`).join(', ')}.`,
+      })
+    }
 
     return NextResponse.json({
-      response: aiResponse,
+      response: `Saya fokus bantu pertanyaan seputar e-commerce MG PRODUCTIONS saja: produk, pencarian barang, cart, checkout, top up, food, travel, dan referral. Kalau kamu cari barang tertentu, sebutkan nama atau kategorinya ya.`,
     })
   } catch (error) {
     console.error('Chatbot API error:', error)
@@ -98,4 +225,12 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+export function GET() {
+  return NextResponse.json({
+    status: 'ok',
+    mode: 'catalog-assistant',
+    prompt: DEFAULT_SYSTEM_PROMPT,
+  })
 }
