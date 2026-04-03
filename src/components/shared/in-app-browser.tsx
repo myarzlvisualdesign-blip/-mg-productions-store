@@ -67,7 +67,7 @@ export default function InAppBrowser({ url, title, open, onClose }: InAppBrowser
             initial={{ y: -56 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' as const }}
-            className="shrink-0 glass-card border-b border-white/[0.06] px-3 py-2"
+            className="shrink-0 glass-card border-b border-white/[0.06] px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]"
           >
             <div className="flex items-center gap-2">
               {/* Close button */}
