@@ -5,12 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useViewStore } from '@/store/view-store'
 import { useAuthStore } from '@/store/auth-store'
 import dynamic from 'next/dynamic'
+import PWARegister from '@/components/shared/pwa-register'
 
 const Storefront = dynamic(() => import('@/components/store/storefront-view'), { ssr: false })
 const AdminDashboard = dynamic(() => import('@/components/admin/admin-dashboard'), { ssr: false })
 const AdminLoginDialog = dynamic(() => import('@/components/shared/admin-login-dialog'), { ssr: false })
 const PWAInstallBanner = dynamic(() => import('@/components/shared/pwa-install-banner'), { ssr: false })
-const PWARegister = dynamic(() => import('@/components/shared/pwa-register'), { ssr: false })
 
 // ─── Main Page with Auth Gate ──────────────────────────────────────────
 
@@ -62,12 +62,12 @@ export default function HomePage() {
 
   return (
     <>
+      <PWARegister />
       <AnimatePresence mode="wait">
         <motion.div key={viewMode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
           {viewMode === 'store' ? <Storefront /> : <AdminDashboard />}
         </motion.div>
       </AnimatePresence>
-      {viewMode === 'store' && <PWARegister />}
       {viewMode === 'store' && <PWAInstallBanner />}
       <AdminLoginDialog open={loginDialogOpen} onClose={handleLoginClose} />
     </>

@@ -50,6 +50,16 @@ function usePWAState() {
     }).__mgDeferredPrompt ?? null
   }, [])
 
+  const clearCachedPrompt = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      ;(window as typeof window & {
+        __mgDeferredPrompt?: BeforeInstallPromptEvent | null
+      }).__mgDeferredPrompt = null
+    }
+
+    setDeferredPrompt(null)
+  }, [])
+
   const waitForInstallPrompt = useCallback((timeoutMs = 6000) => {
     if (typeof window === 'undefined') {
       return Promise.resolve<BeforeInstallPromptEvent | null>(null)
@@ -128,20 +138,14 @@ function usePWAState() {
 
   useEffect(() => {
     const handler = () => {
-      if (typeof window !== 'undefined') {
-        ;(window as typeof window & {
-          __mgDeferredPrompt?: BeforeInstallPromptEvent | null
-        }).__mgDeferredPrompt = null
-      }
-
-      setDeferredPrompt(null)
+      clearCachedPrompt()
       setShowBanner(false)
       setShowLauncher(true)
       setDismissed(false)
     }
     window.addEventListener('appinstalled', handler)
     return () => window.removeEventListener('appinstalled', handler)
-  }, [setDeferredPrompt])
+  }, [clearCachedPrompt])
 
   useEffect(() => {
     if (!stateHydrated || isStandalone) return
@@ -220,6 +224,7 @@ function usePWAState() {
     shouldHide,
     stateHydrated,
     waitForInstallPrompt,
+    clearCachedPrompt,
     dismiss,
     hideBanner,
     reopenBanner,
@@ -244,6 +249,7 @@ export default function PWAInstallBanner() {
     shouldHide,
     stateHydrated,
     waitForInstallPrompt,
+    clearCachedPrompt,
     dismiss,
     hideBanner,
     reopenBanner,
@@ -322,17 +328,20 @@ export default function PWAInstallBanner() {
 
       await promptEvent.prompt()
       const { outcome } = await promptEvent.userChoice
-      setDeferredPrompt(null)
+      clearCachedPrompt()
 
       if (outcome === 'accepted') {
         return
       }
 
       dismiss()
+    } catch {
+      clearCachedPrompt()
+      openGuide()
     } finally {
       setPreparingInstall(false)
     }
-  }, [deferredPrompt, dismiss, openGuide, setDeferredPrompt, waitForInstallPrompt])
+  }, [clearCachedPrompt, deferredPrompt, dismiss, openGuide, waitForInstallPrompt])
 
   const handlePrimaryAction = useCallback(() => {
     if (isIOSDevice) {

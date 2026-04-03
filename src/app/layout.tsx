@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import dynamic from "next/dynamic";
+import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "sonner";
 import SplashWrapper from "@/components/shared/splash-wrapper";
@@ -51,7 +52,32 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className="dark" suppressHydrationWarning>
-      <head />
+      <head>
+        <Script id="mg-pwa-prompt-cache" strategy="beforeInteractive">
+          {`
+            (() => {
+              if (typeof window === 'undefined') return;
+
+              const promptWindow = window;
+              const readyEventName = 'mg-beforeinstallprompt-ready';
+
+              if (promptWindow.__mgPwaPromptBootstrapInstalled) return;
+              promptWindow.__mgPwaPromptBootstrapInstalled = true;
+              promptWindow.__mgDeferredPrompt = promptWindow.__mgDeferredPrompt ?? null;
+
+              window.addEventListener('beforeinstallprompt', (event) => {
+                event.preventDefault();
+                promptWindow.__mgDeferredPrompt = event;
+                window.dispatchEvent(new CustomEvent(readyEventName));
+              });
+
+              window.addEventListener('appinstalled', () => {
+                promptWindow.__mgDeferredPrompt = null;
+              });
+            })();
+          `}
+        </Script>
+      </head>
       <body className="font-sans antialiased">
         <SplashWrapper>{children}</SplashWrapper>
         <Toaster
