@@ -11,7 +11,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
-    "postinstall": "npm run db:generate && node scripts/patch-radix.cjs"
+    "postinstall": "npm run db:generate"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
