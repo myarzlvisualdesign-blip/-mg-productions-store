@@ -21,11 +21,11 @@ const tabs: { id: BottomTab; label: string; icon: typeof ShoppingBag }[] = [
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]"
+      className="store-bottom-nav fixed left-0 right-0 z-50"
       aria-label="Bottom navigation"
     >
       <div className="mx-auto max-w-lg">
-        <div className="mx-2 sm:mx-3 mb-2 rounded-2xl glass-card border border-white/[0.08] shadow-2xl shadow-black/40">
+        <div className="mx-2 rounded-2xl glass-card border border-white/[0.08] shadow-2xl shadow-black/40 sm:mx-3 md:mb-2">
           <div className="flex items-center justify-around py-1.5 px-1">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id

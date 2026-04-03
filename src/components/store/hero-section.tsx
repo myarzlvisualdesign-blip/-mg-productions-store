@@ -44,7 +44,7 @@ export default function HeroSection() {
   return (
     <section
       id="home"
-      className="relative flex min-h-[calc(100vh-4.5rem)] w-full items-center justify-center overflow-hidden hero-gradient pt-8 sm:min-h-[calc(100vh-5rem)] sm:pt-10"
+      className="store-hero-section hero-gradient relative flex w-full items-center justify-center overflow-hidden"
     >
       {/* Decorative Floating Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -70,7 +70,7 @@ export default function HeroSection() {
         className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6"
       >
         {/* Badge */}
-        <motion.div variants={itemVariants} className="mb-6 flex justify-center sm:mb-8">
+        <motion.div variants={itemVariants} className="mb-5 flex justify-center sm:mb-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-white/[0.04] px-4 py-1.5 text-xs text-purple-300 sm:text-sm">
             <Sparkles className="size-4" />
             <span>New Collection 2025</span>
@@ -90,7 +90,7 @@ export default function HeroSection() {
         {/* Subtitle */}
         <motion.p
           variants={itemVariants}
-          className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg md:text-xl"
+          className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg md:text-xl"
         >
           Our selection of luxury products is 100% authentic. Start completing your
           stylish new lifestyle.
@@ -99,7 +99,7 @@ export default function HeroSection() {
         {/* CTA Buttons */}
         <motion.div
           variants={itemVariants}
-          className="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4"
+          className="mt-7 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4"
         >
           <motion.button
             whileHover={{ scale: 1.03, boxShadow: '0 0 30px rgba(139, 92, 246, 0.4)' }}
@@ -124,7 +124,7 @@ export default function HeroSection() {
         {/* Stats Row */}
         <motion.div
           variants={itemVariants}
-          className="mt-12 flex flex-wrap items-center justify-center gap-8 sm:mt-16 sm:gap-12"
+          className="mt-10 flex flex-wrap items-center justify-center gap-8 sm:mt-16 sm:gap-12"
         >
           {[
             { value: '200+', label: 'Products' },

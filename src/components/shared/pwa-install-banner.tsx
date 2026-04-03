@@ -218,7 +218,7 @@ export default function PWAInstallBanner() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 80, scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 350, damping: 30, delay: 0.1 }}
-          className="fixed bottom-24 left-4 right-4 z-[70] overflow-hidden rounded-2xl sm:bottom-24 sm:left-auto sm:right-4 sm:w-[380px]"
+          className="store-install-banner fixed left-4 right-4 z-[70] overflow-hidden rounded-2xl md:bottom-6 md:left-auto md:right-4 md:w-[380px]"
           style={{
             background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(20, 10, 30, 0.98) 40%, rgba(20, 10, 30, 0.98) 100%)',
             backdropFilter: 'blur(24px)',
@@ -379,7 +379,7 @@ export default function PWAInstallBanner() {
           exit={{ opacity: 0, y: 20, scale: 0.92 }}
           transition={{ type: 'spring', stiffness: 340, damping: 28 }}
           onClick={handleLauncherClick}
-          className="fixed bottom-[calc(env(safe-area-inset-bottom)+5.75rem)] left-4 z-[68] inline-flex h-12 w-12 items-center justify-center rounded-full border border-purple-400/25 bg-[rgba(18,12,34,0.92)] text-purple-100 shadow-lg shadow-purple-500/20 backdrop-blur-xl md:bottom-8"
+          className="store-floating-button fixed left-4 z-[68] inline-flex h-12 w-12 items-center justify-center rounded-full border border-purple-400/25 bg-[rgba(18,12,34,0.92)] text-purple-100 shadow-lg shadow-purple-500/20 backdrop-blur-xl md:bottom-8"
           aria-label="Buka instal aplikasi"
         >
           <Download className="size-4 text-purple-300" />
@@ -387,7 +387,7 @@ export default function PWAInstallBanner() {
       )}
 
       <Dialog open={guideOpen} onOpenChange={handleGuideOpenChange}>
-        <DialogContent className="top-auto bottom-[max(1rem,env(safe-area-inset-bottom))] translate-y-0 max-h-[min(78vh,680px)] max-w-[calc(100%-1.5rem)] overflow-hidden rounded-3xl border border-purple-400/15 bg-[rgba(12,8,22,0.98)] p-0 text-foreground shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:top-[50%] sm:bottom-auto sm:max-w-lg sm:-translate-y-1/2" showCloseButton={false}>
+        <DialogContent className="store-install-dialog top-auto translate-y-0 max-h-[min(78vh,680px)] max-w-[calc(100%-1.5rem)] overflow-hidden rounded-3xl border border-purple-400/15 bg-[rgba(12,8,22,0.98)] p-0 text-foreground shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:top-[50%] sm:bottom-auto sm:max-w-lg sm:-translate-y-1/2" showCloseButton={false}>
           <div className="shrink-0 border-b border-white/[0.06] bg-[linear-gradient(180deg,rgba(124,58,237,0.22),rgba(18,12,34,0.94))] px-5 py-5">
             <button
               type="button"
