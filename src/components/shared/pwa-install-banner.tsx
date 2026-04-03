@@ -125,7 +125,7 @@ export default function PWAInstallBanner() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 80, scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 350, damping: 30, delay: 0.1 }}
-        className="fixed bottom-24 sm:bottom-8 left-4 right-4 sm:left-auto sm:right-4 sm:w-[380px] z-[60] rounded-2xl overflow-hidden"
+        className="fixed bottom-24 left-4 right-4 z-[70] overflow-hidden rounded-2xl sm:bottom-24 sm:left-auto sm:right-4 sm:w-[380px]"
         style={{
           background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(20, 10, 30, 0.98) 40%, rgba(20, 10, 30, 0.98) 100%)',
           backdropFilter: 'blur(24px)',
@@ -169,7 +169,7 @@ export default function PWAInstallBanner() {
                 <Sparkles className="size-3.5 text-purple-400 shrink-0" />
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed mb-2.5">
-                Akses lebih cepat & langsung dari home screen kamu. Tanpa buka browser!
+                Simpan aplikasi ke home screen atau desktop supaya akses toko lebih cepat dan terasa seperti app.
               </p>
 
               {/* Install Button */}
@@ -222,7 +222,7 @@ export default function PWAInstallBanner() {
                 <div className="w-px h-3 bg-white/10" />
                 <div className="flex items-center gap-1 text-[9px] text-muted-foreground/50">
                   <Download className="size-3" />
-                  <span>Offline Ready</span>
+                  <span>Installable</span>
                 </div>
               </div>
             </div>

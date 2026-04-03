@@ -27,8 +27,14 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "MG PRODUCTIONS — Premium E-Commerce",
   description: "Discover premium products curated for modern living. Shop electronics, fashion, home goods and more.",
+  manifest: "/manifest.json",
   keywords: ["e-commerce", "premium", "shopping", "MG PRODUCTIONS", "modern"],
   authors: [{ name: "MG PRODUCTIONS Team" }],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "MG PRODUCTIONS",
+  },
   icons: {
     icon: [
       { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },

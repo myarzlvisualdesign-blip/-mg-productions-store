@@ -26,6 +26,8 @@ import DestinationManager from '@/components/admin/destination-manager'
 import TopUpBannerManager from '@/components/admin/topup-banner-manager'
 import ChatbotSettings from '@/components/admin/chatbot-settings'
 import ReferralManager from '@/components/admin/referral-manager'
+import PWAInstallBanner from '@/components/shared/pwa-install-banner'
+import PWARegister from '@/components/shared/pwa-register'
 import type { Product } from '@/components/admin/inventory-table'
 import type { Partner } from '@/components/admin/partner-form'
 
@@ -270,6 +272,8 @@ export default function HomePage() {
           {viewMode === 'store' ? <Storefront /> : <AdminDashboard />}
         </motion.div>
       </AnimatePresence>
+      {viewMode === 'store' && <PWARegister />}
+      {viewMode === 'store' && <PWAInstallBanner />}
       <AdminLoginDialog open={loginDialogOpen} onClose={handleLoginClose} />
     </>
   )
