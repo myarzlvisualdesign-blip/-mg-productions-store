@@ -294,6 +294,7 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   // ─── Helpers ─────────────────────────────────────────────────────────
   const balance = myCode ? (myCode.balance ?? myCode.totalReward - (myCode.totalWithdrawn || 0)) : 0
   const minWithdraw = settings?.minWithdraw || 100000
+  const dialogClassName = "!left-0 !right-0 !top-0 !bottom-0 !grid !h-[100dvh] !max-h-[100dvh] !w-full !max-w-none !translate-x-0 !translate-y-0 rounded-none border-x-0 border-b-0 border-white/10 bg-background/95 p-0 backdrop-blur-xl sm:!top-[50%] sm:!right-auto sm:!bottom-auto sm:!left-[50%] sm:!h-[min(92vh,calc(100dvh-1.5rem))] sm:!max-h-[calc(100dvh-1.5rem)] sm:!max-w-md sm:!translate-x-[-50%] sm:!translate-y-[-50%] sm:rounded-2xl sm:border"
 
   const statusLabel = (s: string) => {
     switch (s) {
@@ -309,9 +310,9 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   if (loading) {
     return (
       <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose() }}>
-        <DialogContent className="sm:max-w-md bg-background/95 backdrop-blur-xl border-white/10">
+        <DialogContent className={dialogClassName}>
           <DialogTitle className="sr-only">Referral Program</DialogTitle>
-          <div className="flex items-center justify-center py-12">
+          <div className="flex min-h-0 flex-1 items-center justify-center px-4 py-12">
             <Loader2 className="size-8 text-purple-400 animate-spin" />
           </div>
         </DialogContent>
@@ -322,15 +323,17 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   if (settings && !settings.enabled) {
     return (
       <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose() }}>
-        <DialogContent className="sm:max-w-md bg-background/95 backdrop-blur-xl border-white/10">
+        <DialogContent className={dialogClassName}>
           <DialogTitle className="sr-only">Program Referral</DialogTitle>
-          <div className="text-center py-8">
+          <div className="flex min-h-0 flex-1 items-center justify-center px-4 py-8">
+            <div className="text-center">
             <div className="w-16 h-16 rounded-full bg-muted/20 flex items-center justify-center mx-auto mb-4">
               <Gift className="size-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold">Program Referral</h3>
             <p className="text-sm text-muted-foreground mt-2">Saat ini program referral sedang tidak aktif. Coba lagi nanti!</p>
             <Button onClick={handleClose} className="mt-6 rounded-xl">Tutup</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -339,7 +342,7 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose() }}>
-      <DialogContent className="flex h-[min(92vh,calc(100dvh-1rem))] max-h-[calc(100dvh-1rem)] flex-col overflow-hidden border-white/10 bg-background/95 p-0 backdrop-blur-xl sm:max-w-md">
+      <DialogContent className={dialogClassName}>
         <div className="flex min-h-0 flex-1 flex-col">
           {/* ─── Header ──────────────────────────────────────────────── */}
           <div className="shrink-0 border-b border-white/[0.06] px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pt-6">
@@ -354,7 +357,7 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
             </DialogHeader>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
             <div className="space-y-4">
               {/* ─── Info Banner ─────────────────────────────────────────── */}
               <div className="rounded-xl border border-purple-500/15 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 p-3">
