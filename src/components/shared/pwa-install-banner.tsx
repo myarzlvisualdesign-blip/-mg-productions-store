@@ -35,6 +35,7 @@ function usePWAState() {
   const [showLauncher, setShowLauncher] = useState(isDismissedRecently)
 
   const isIOSDevice = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream
+  const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
   const isStandalone = typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as unknown as { standalone?: boolean }).standalone === true)
 
   const shouldHide = isStandalone || appInstalled || !showBanner || dismissed
@@ -93,6 +94,7 @@ function usePWAState() {
     showBanner,
     showLauncher,
     appInstalled,
+    isAndroidDevice,
     isIOSDevice,
     isStandalone,
     shouldHide,
@@ -109,6 +111,7 @@ export default function PWAInstallBanner() {
     setDeferredPrompt,
     showLauncher,
     appInstalled,
+    isAndroidDevice,
     isIOSDevice,
     isStandalone,
     shouldHide,
@@ -234,7 +237,15 @@ export default function PWAInstallBanner() {
                 ) : (
                   <div className="space-y-2">
                     <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-3 text-[11px] leading-relaxed text-muted-foreground">
-                      Di browser desktop, buka menu browser lalu pilih <span className="font-semibold text-purple-200">Install App</span>, <span className="font-semibold text-purple-200">Add to Dock</span>, atau <span className="font-semibold text-purple-200">Create Shortcut</span>.
+                      {isAndroidDevice ? (
+                        <>
+                          Di Android, kalau prompt belum muncul otomatis, buka menu browser lalu pilih <span className="font-semibold text-purple-200">Install app</span> atau <span className="font-semibold text-purple-200">Tambahkan ke layar utama</span>.
+                        </>
+                      ) : (
+                        <>
+                          Di browser desktop, buka menu browser lalu pilih <span className="font-semibold text-purple-200">Install App</span>, <span className="font-semibold text-purple-200">Add to Dock</span>, atau <span className="font-semibold text-purple-200">Create Shortcut</span>.
+                        </>
+                      )}
                     </div>
                     <button
                       onClick={dismiss}

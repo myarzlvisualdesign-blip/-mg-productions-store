@@ -1,6 +1,7 @@
 {
   "name": "MG PRODUCTIONS",
   "short_name": "MG Prod",
+  "id": "/",
   "description": "Premium E-Commerce — Belanja produk pilihan terbaik untuk gaya hidup modern",
   "start_url": "/",
   "display": "standalone",
