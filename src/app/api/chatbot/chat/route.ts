@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { getCanonicalChatbotSettings } from '@/lib/chatbot-settings'
 
 const DEFAULT_SYSTEM_PROMPT = 'Kamu adalah MG Assistant untuk MG PRODUCTIONS. Kamu hanya membantu pertanyaan seputar produk, pencarian barang, checkout, top up, food, travel, referral, promo, dan fitur toko. Jika pertanyaan di luar topik toko, arahkan kembali ke layanan MG PRODUCTIONS.'
 
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const settings = await db.chatbotSettings.findFirst()
+    const settings = await getCanonicalChatbotSettings()
     if (settings && !settings.enabled) {
       return NextResponse.json(
         { error: 'Chatbot is currently disabled' },

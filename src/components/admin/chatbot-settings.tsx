@@ -129,6 +129,17 @@ export default function ChatbotSettings() {
         throw new Error(err.error || 'Gagal menyimpan')
       }
 
+      const updated = (await res.json()) as Partial<ChatbotConfig>
+      setConfig((prev) => prev ? {
+        ...prev,
+        id: updated.id || prev.id,
+        name: updated.name || prev.name,
+        avatar: updated.avatar || '',
+        welcomeMessage: updated.welcomeMessage || '',
+        systemPrompt: updated.systemPrompt || '',
+        enabled: updated.enabled ?? prev.enabled,
+      } : prev)
+
       broadcastLiveSync('chatbot-settings')
       toast.success('Pengaturan chatbot berhasil disimpan!')
     } catch (err) {

@@ -2,25 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth'
 import { publicJson } from '@/lib/public-api'
+import {
+  getCanonicalChatbotSettings,
+  toPublicChatbotSettings,
+} from '@/lib/chatbot-settings'
 
 // PUBLIC GET — Fetch chatbot settings (excluding systemPrompt for safety)
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    let settings = await db.chatbotSettings.findFirst()
+    const settings = await getCanonicalChatbotSettings()
+    const { authorized } = requireAdmin(request)
 
-    // Create default settings if none exist
-    if (!settings) {
-      settings = await db.chatbotSettings.create({ data: {} })
-    }
-
-    // Return only safe fields (exclude systemPrompt from public access)
-    return publicJson({
-      id: settings.id,
-      name: settings.name,
-      avatar: settings.avatar,
-      welcomeMessage: settings.welcomeMessage,
-      enabled: settings.enabled,
-    })
+    return publicJson(
+      toPublicChatbotSettings(settings, {
+        includeSystemPrompt: authorized,
+      })
+    )
   } catch {
     return NextResponse.json(
       { error: 'Gagal mengambil pengaturan chatbot' },
@@ -43,11 +40,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const { name, avatar, welcomeMessage, systemPrompt, enabled } = body
 
-    // Get or create settings record
-    let settings = await db.chatbotSettings.findFirst()
-    if (!settings) {
-      settings = await db.chatbotSettings.create({ data: {} })
-    }
+    const settings = await getCanonicalChatbotSettings()
 
     // Build update payload with only provided fields
     const updateData: Record<string, unknown> = {}
@@ -63,14 +56,11 @@ export async function PUT(request: NextRequest) {
       data: updateData,
     })
 
-    return NextResponse.json({
-      id: updated.id,
-      name: updated.name,
-      avatar: updated.avatar,
-      welcomeMessage: updated.welcomeMessage,
-      systemPrompt: updated.systemPrompt,
-      enabled: updated.enabled,
-    })
+    return NextResponse.json(
+      toPublicChatbotSettings(updated, {
+        includeSystemPrompt: true,
+      })
+    )
   } catch {
     return NextResponse.json(
       { error: 'Gagal memperbarui pengaturan chatbot' },
