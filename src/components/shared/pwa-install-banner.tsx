@@ -18,7 +18,6 @@ interface BeforeInstallPromptEvent extends Event {
 function usePWAState() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showBanner, setShowBanner] = useState(false)
-  const [appInstalled, setAppInstalled] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const [showLauncher, setShowLauncher] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
@@ -31,12 +30,10 @@ function usePWAState() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.removeItem('mg-pwa-installed')
-
     setStateHydrated(true)
   }, [])
 
-  const shouldHide = isStandalone || appInstalled || !showBanner || dismissed
+  const shouldHide = isStandalone || !showBanner || dismissed
 
   // Universal fallback: show banner after delay on any non-installed browser.
   useEffect(() => {
@@ -67,13 +64,37 @@ function usePWAState() {
   // App installed event
   useEffect(() => {
     const handler = () => {
-      setAppInstalled(true)
-      setShowBanner(false)
+      if (typeof window !== 'undefined' && !window.matchMedia('(display-mode: standalone)').matches) {
+        setShowBanner(true)
+      }
       setShowLauncher(false)
+      setDismissed(false)
     }
     window.addEventListener('appinstalled', handler)
     return () => window.removeEventListener('appinstalled', handler)
   }, [])
+
+  useEffect(() => {
+    if (!stateHydrated || isStandalone) return
+
+    const reopen = () => {
+      if (document.visibilityState === 'hidden') return
+
+      setDismissed(false)
+      setShowLauncher(false)
+      setShowBanner(true)
+    }
+
+    window.addEventListener('pageshow', reopen)
+    window.addEventListener('focus', reopen)
+    document.addEventListener('visibilitychange', reopen)
+
+    return () => {
+      window.removeEventListener('pageshow', reopen)
+      window.removeEventListener('focus', reopen)
+      document.removeEventListener('visibilitychange', reopen)
+    }
+  }, [isStandalone, stateHydrated])
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -141,7 +162,6 @@ function usePWAState() {
     setDeferredPrompt,
     showBanner,
     showLauncher,
-    appInstalled,
     chatOpen,
     referralOpen,
     isAndroidDevice,
@@ -164,7 +184,6 @@ export default function PWAInstallBanner() {
     deferredPrompt,
     setDeferredPrompt,
     showLauncher,
-    appInstalled,
     chatOpen,
     referralOpen,
     isAndroidDevice,
@@ -201,7 +220,6 @@ export default function PWAInstallBanner() {
     reopenBanner()
   }, [reopenBanner])
 
-  const showManualInstallHint = !isIOSDevice && !deferredPrompt
   const guideTitle = isIOSDevice ? 'Cara Install di iPhone' : isAndroidDevice ? 'Cara Install di Android' : 'Cara Install di Desktop'
   const guideDescription = isIOSDevice
     ? 'Ikuti langkah ini di Safari agar MG PRODUCTIONS masuk ke Home Screen.'
@@ -229,10 +247,16 @@ export default function PWAInstallBanner() {
   const handleGuideOpenChange = useCallback((open: boolean) => {
     setGuideOpen(open)
 
-    if (!open && !appInstalled && !isStandalone) {
+    if (!open && !isStandalone) {
       showDownloadLauncher()
     }
-  }, [appInstalled, isStandalone, showDownloadLauncher])
+  }, [isStandalone, showDownloadLauncher])
+
+  const tutorialCopy = isIOSDevice
+    ? 'iPhone tetap perlu langkah manual. Setelah tekan Install Sekarang, ikuti tutorial Safari untuk Tambahkan ke Layar Utama.'
+    : isAndroidDevice
+      ? 'Android bisa install langsung jika prompt muncul. Kalau belum muncul, buka tutorial lalu pilih Install app atau Tambahkan ke layar utama.'
+      : 'Desktop bisa install lewat menu browser. Kalau prompt belum muncul, buka tutorial lalu pilih Install App, Add to Dock, atau Create Shortcut.'
 
   return (
     <AnimatePresence>
@@ -242,7 +266,7 @@ export default function PWAInstallBanner() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 80, scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 350, damping: 30, delay: 0.1 }}
-          className="store-install-banner fixed left-1/2 z-[70] w-[min(calc(100vw-1.25rem),22.75rem)] -translate-x-1/2 overflow-hidden rounded-[1.55rem] md:bottom-6 md:left-auto md:right-4 md:w-[21rem] md:translate-x-0"
+          className="store-install-banner fixed left-1/2 z-[70] w-[min(calc(100vw-1.5rem),18.75rem)] -translate-x-1/2 overflow-hidden rounded-[1.3rem] md:bottom-6 md:left-auto md:right-4 md:w-[20.5rem] md:translate-x-0"
           style={{
             background: 'linear-gradient(180deg, rgba(50, 25, 77, 0.96) 0%, rgba(31, 16, 49, 0.98) 48%, rgba(24, 12, 37, 0.99) 100%)',
             backdropFilter: 'blur(24px)',
@@ -255,113 +279,71 @@ export default function PWAInstallBanner() {
           {/* Close button */}
           <button
             onClick={dismiss}
-            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+            className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
             aria-label="Tutup banner"
           >
-            <X className="size-3.5" />
+            <X className="size-3" />
           </button>
 
-          <div className="px-3.5 py-3.5 sm:px-4 sm:py-4">
-            <div className="flex items-start gap-3">
+          <div className="px-3 py-3 sm:px-4 sm:py-3.5">
+            <div className="flex items-start gap-2.75">
               {/* App Icon */}
               <div className="relative mt-0.5 shrink-0">
-                <div className="flex h-[2.95rem] w-[2.95rem] items-center justify-center rounded-[1.15rem] bg-gradient-to-br from-purple-600 to-fuchsia-500 shadow-lg shadow-purple-500/30 sm:h-[3.15rem] sm:w-[3.15rem]">
+                <div className="flex h-[2.65rem] w-[2.65rem] items-center justify-center rounded-[0.95rem] bg-gradient-to-br from-purple-600 to-fuchsia-500 shadow-lg shadow-purple-500/30 sm:h-[2.8rem] sm:w-[2.8rem]">
                   <img
                     src="/logo-sm.png"
                     alt="MG PRODUCTIONS"
-                    className="h-8 w-8 rounded-lg object-contain sm:h-[2.15rem] sm:w-[2.15rem]"
+                    className="h-6 w-6 rounded-lg object-contain sm:h-7 sm:w-7"
                   />
                 </div>
-                <div className="absolute -bottom-1 -right-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[8px] font-bold text-white shadow-md">
+                <div className="absolute -bottom-1 -right-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[7px] font-bold text-white shadow-md">
                   FREE
                 </div>
               </div>
 
-              <div className="min-w-0 flex-1 pt-0.5">
-                <div className="mb-1 flex items-center gap-1.5">
-                  <h3 className="text-[14px] font-bold tracking-tight text-foreground sm:text-[15px]">Install MG PRODUCTIONS</h3>
+              <div className="min-w-0 flex-1 pt-0.5 pr-7">
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <h3 className="text-[12.5px] font-bold tracking-tight text-foreground sm:text-[14px]">Install MG PRODUCTIONS</h3>
                   <Sparkles className="size-3 shrink-0 text-purple-300" />
                 </div>
-                <p className="mb-3 max-w-[16rem] text-[10px] leading-relaxed text-white/58 sm:text-[11px]">
+                <p className="mb-2.5 max-w-[13rem] text-[10px] leading-relaxed text-white/58 sm:max-w-[14.75rem]">
                   Simpan aplikasi ke home screen atau desktop supaya akses toko lebih cepat dan terasa seperti app.
                 </p>
 
-                {isIOSDevice ? (
-                  <div className="space-y-2.5">
-                    <motion.button
-                      whileTap={{ scale: 0.97 }}
-                      type="button"
-                      onClick={() => {
+                <div className="space-y-2">
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    type="button"
+                    onClick={() => {
+                      if (isIOSDevice) {
                         hideBanner()
                         setGuideOpen(true)
-                      }}
-                      className="flex h-[2.95rem] w-full items-center justify-center gap-2 rounded-[1.15rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[14px] font-semibold text-white shadow-[0_14px_28px_rgba(168,85,247,0.26)] transition-all hover:brightness-110"
-                    >
-                      <ArrowDownToLine className="size-4" />
-                      Install Sekarang
-                    </motion.button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        hideBanner()
-                        setGuideOpen(true)
-                      }}
-                      className="h-[2.85rem] w-full rounded-[1.1rem] border border-purple-400/18 bg-white/[0.03] text-[14px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
-                    >
-                      Lihat Tutorial Install
-                    </button>
-                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-[10px] leading-relaxed text-muted-foreground sm:text-[11px]">
-                      iPhone tetap perlu langkah manual. Setelah tekan <span className="font-semibold text-purple-200">Install Sekarang</span>, ikuti tutorial Safari untuk <span className="font-semibold text-purple-200">Tambahkan ke Layar Utama</span>.
-                    </div>
-                  </div>
-                ) : deferredPrompt ? (
-                  <div className="space-y-2.5">
-                    <motion.button
-                      whileTap={{ scale: 0.97 }}
-                      onClick={handleInstall}
-                      className="flex h-[2.95rem] w-full items-center justify-center gap-2 rounded-[1.15rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[14px] font-semibold text-white shadow-[0_14px_28px_rgba(168,85,247,0.26)] transition-all hover:brightness-110"
-                    >
-                      <Download className="size-4" />
-                      Install Sekarang
-                    </motion.button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        hideBanner()
-                        setGuideOpen(true)
-                      }}
-                      className="h-[2.85rem] w-full rounded-[1.1rem] border border-purple-400/18 bg-white/[0.03] text-[14px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
-                    >
-                      Lihat Tutorial Install
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2.5">
-                    <div className="rounded-[1.1rem] border border-white/[0.06] bg-white/[0.03] px-3 py-2.5 text-[10px] leading-relaxed text-white/62 sm:text-[11px]">
-                      {isAndroidDevice ? (
-                        <>
-                          Di Android, kalau prompt belum muncul otomatis, buka menu browser lalu pilih <span className="font-semibold text-purple-200">Install app</span> atau <span className="font-semibold text-purple-200">Tambahkan ke layar utama</span>.
-                        </>
-                      ) : (
-                        <>
-                          Di browser desktop, buka menu browser lalu pilih <span className="font-semibold text-purple-200">Install App</span>, <span className="font-semibold text-purple-200">Add to Dock</span>, atau <span className="font-semibold text-purple-200">Create Shortcut</span>.
-                        </>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        hideBanner()
-                        setGuideOpen(true)
-                      }}
-                      className="h-[2.85rem] w-full rounded-[1.1rem] border border-purple-400/18 bg-white/[0.03] text-[14px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
-                    >
-                      Lihat Tutorial Install
-                    </button>
-                  </div>
-                )}
+                        return
+                      }
 
-                <div className="mt-3 flex items-center justify-center gap-2.5 sm:gap-3">
+                      void handleInstall()
+                    }}
+                    className="flex h-[2.55rem] w-full items-center justify-center gap-2 rounded-[1rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[12.5px] font-semibold text-white shadow-[0_12px_24px_rgba(168,85,247,0.22)] transition-all hover:brightness-110"
+                  >
+                    {isIOSDevice ? <ArrowDownToLine className="size-4" /> : <Download className="size-4" />}
+                    Install Sekarang
+                  </motion.button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      hideBanner()
+                      setGuideOpen(true)
+                    }}
+                    className="h-[2.5rem] w-full rounded-[1rem] border border-purple-400/18 bg-white/[0.03] text-[12.5px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
+                  >
+                    Lihat Tutorial Install
+                  </button>
+                  <div className="rounded-[1rem] border border-white/[0.06] bg-white/[0.03] px-2.5 py-2 text-[10px] leading-relaxed text-white/68">
+                    {tutorialCopy}
+                  </div>
+                </div>
+
+                <div className="mt-2.5 flex items-center justify-center gap-2.5 sm:gap-3">
                   <div className="flex items-center gap-1 text-[9px] text-white/35">
                     <Monitor className="size-3" />
                     <span>Android & iOS</span>
@@ -374,7 +356,7 @@ export default function PWAInstallBanner() {
                   <div className="h-3 w-px bg-white/10" />
                   <div className="flex items-center gap-1 text-[9px] text-white/35">
                     <Download className="size-3" />
-                    <span>{showManualInstallHint ? 'Install Guide' : 'Installable'}</span>
+                    <span>Installable</span>
                   </div>
                 </div>
               </div>
@@ -383,7 +365,7 @@ export default function PWAInstallBanner() {
         </motion.div>
       )}
 
-      {stateHydrated && showLauncher && !appInstalled && !isStandalone && !guideOpen && !chatOpen && !referralOpen && (
+      {stateHydrated && showLauncher && !isStandalone && !guideOpen && !chatOpen && !referralOpen && (
         <motion.button
           initial={{ opacity: 0, y: 20, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
