@@ -13,6 +13,8 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
 }
 
+const PROMPT_READY_EVENT = 'mg-beforeinstallprompt-ready'
+
 // ─── Helpers ────────────────────────────────────────────────────────────
 
 function usePWAState() {
@@ -40,30 +42,61 @@ function usePWAState() {
     setShowBanner(true)
   }, [])
 
+  const getCachedPrompt = useCallback(() => {
+    if (typeof window === 'undefined') return null
+
+    return (window as typeof window & {
+      __mgDeferredPrompt?: BeforeInstallPromptEvent | null
+    }).__mgDeferredPrompt ?? null
+  }, [])
+
   const waitForInstallPrompt = useCallback((timeoutMs = 1800) => {
     if (typeof window === 'undefined') {
       return Promise.resolve<BeforeInstallPromptEvent | null>(null)
     }
 
+    const cachedPrompt = getCachedPrompt()
+    if (cachedPrompt) {
+      setDeferredPrompt(cachedPrompt)
+      return Promise.resolve(cachedPrompt)
+    }
+
     return new Promise<BeforeInstallPromptEvent | null>((resolve) => {
+      const cleanup = () => {
+        window.removeEventListener(PROMPT_READY_EVENT, handlePromptReady as EventListener)
+        window.removeEventListener('beforeinstallprompt', handlePromptReady as EventListener)
+      }
+
       const timeout = window.setTimeout(() => {
-        window.removeEventListener('beforeinstallprompt', handler as EventListener)
+        cleanup()
         resolve(null)
       }, timeoutMs)
 
-      const handler = (event: Event) => {
-        event.preventDefault()
-        const promptEvent = event as BeforeInstallPromptEvent
+      const handlePromptReady = (event?: Event) => {
+        const promptEvent = event?.type === 'beforeinstallprompt'
+          ? (event as BeforeInstallPromptEvent)
+          : getCachedPrompt()
+
+        if (!promptEvent) return
+
+        if (event?.type === 'beforeinstallprompt') {
+          event.preventDefault()
+          ;(window as typeof window & {
+            __mgDeferredPrompt?: BeforeInstallPromptEvent | null
+          }).__mgDeferredPrompt = promptEvent
+        }
+
         window.clearTimeout(timeout)
         setDeferredPrompt(promptEvent)
         revealBanner()
-        window.removeEventListener('beforeinstallprompt', handler as EventListener)
+        cleanup()
         resolve(promptEvent)
       }
 
-      window.addEventListener('beforeinstallprompt', handler as EventListener, { once: true })
+      window.addEventListener(PROMPT_READY_EVENT, handlePromptReady as EventListener, { once: true })
+      window.addEventListener('beforeinstallprompt', handlePromptReady as EventListener, { once: true })
     })
-  }, [revealBanner])
+  }, [getCachedPrompt, revealBanner])
 
   // Universal fallback: show banner after delay on any browser session outside standalone.
   useEffect(() => {
@@ -75,21 +108,23 @@ function usePWAState() {
     return () => clearTimeout(timer)
   }, [dismissed, isStandalone, revealBanner, stateHydrated])
 
-  // Android: capture beforeinstallprompt event
   useEffect(() => {
     if (!stateHydrated || isStandalone || isIOSDevice || dismissed) return
 
-    const handler = (e: Event) => {
-      e.preventDefault()
-      setDeferredPrompt(e as BeforeInstallPromptEvent)
-      setTimeout(() => {
+    const syncPromptState = () => {
+      const promptEvent = getCachedPrompt()
+      if (!promptEvent) return
+
+      setDeferredPrompt(promptEvent)
+      window.setTimeout(() => {
         revealBanner()
       }, 1200)
     }
 
-    window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
-  }, [dismissed, isIOSDevice, isStandalone, revealBanner, stateHydrated])
+    syncPromptState()
+    window.addEventListener(PROMPT_READY_EVENT, syncPromptState as EventListener)
+    return () => window.removeEventListener(PROMPT_READY_EVENT, syncPromptState as EventListener)
+  }, [dismissed, getCachedPrompt, isIOSDevice, isStandalone, revealBanner, stateHydrated])
 
   // App installed event
   useEffect(() => {
