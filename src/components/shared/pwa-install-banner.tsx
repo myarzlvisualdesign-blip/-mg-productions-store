@@ -344,8 +344,8 @@ export default function PWAInstallBanner() {
       )}
 
       <Dialog open={guideOpen} onOpenChange={setGuideOpen}>
-        <DialogContent className="max-w-[calc(100%-1.5rem)] overflow-hidden rounded-3xl border border-purple-400/15 bg-[rgba(12,8,22,0.98)] p-0 text-foreground shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:max-w-lg" showCloseButton={false}>
-          <div className="border-b border-white/[0.06] bg-[linear-gradient(180deg,rgba(124,58,237,0.22),rgba(18,12,34,0.94))] px-5 py-5">
+        <DialogContent className="top-auto bottom-[max(1rem,env(safe-area-inset-bottom))] translate-y-0 max-h-[min(78vh,680px)] max-w-[calc(100%-1.5rem)] overflow-hidden rounded-3xl border border-purple-400/15 bg-[rgba(12,8,22,0.98)] p-0 text-foreground shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:top-[50%] sm:bottom-auto sm:max-w-lg sm:-translate-y-1/2" showCloseButton={false}>
+          <div className="shrink-0 border-b border-white/[0.06] bg-[linear-gradient(180deg,rgba(124,58,237,0.22),rgba(18,12,34,0.94))] px-5 py-5">
             <button
               type="button"
               onClick={() => setGuideOpen(false)}
@@ -362,7 +362,8 @@ export default function PWAInstallBanner() {
             </DialogHeader>
           </div>
 
-          <div className="space-y-3 px-5 py-5">
+          <div className="max-h-[calc(min(78vh,680px)-8.5rem)] overflow-y-auto overscroll-contain px-5 py-5 [-webkit-overflow-scrolling:touch]">
+            <div className="space-y-3">
             {guideSteps.map((step, index) => {
               const Icon = step.icon
               return (
@@ -388,6 +389,7 @@ export default function PWAInstallBanner() {
                 : isAndroidDevice
                   ? 'Catatan: di Android yang mendukung PWA, tombol Install Sekarang akan langsung memicu prompt install. Kalau prompt tidak muncul, gunakan tutorial di atas.'
                   : 'Catatan: nama menu install di desktop bisa sedikit berbeda tergantung browser yang dipakai user.'}
+            </div>
             </div>
           </div>
         </DialogContent>
