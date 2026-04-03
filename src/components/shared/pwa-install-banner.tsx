@@ -237,7 +237,7 @@ export default function PWAInstallBanner() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 80, scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 350, damping: 30, delay: 0.1 }}
-          className="store-install-banner fixed left-4 right-4 z-[70] overflow-hidden rounded-2xl md:bottom-6 md:left-auto md:right-4 md:w-[380px]"
+          className="store-install-banner fixed left-1/2 z-[70] w-[min(calc(100vw-1.5rem),24rem)] -translate-x-1/2 overflow-hidden rounded-2xl md:bottom-6 md:left-auto md:right-4 md:w-[22rem] md:translate-x-0"
           style={{
             background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(20, 10, 30, 0.98) 40%, rgba(20, 10, 30, 0.98) 100%)',
             backdropFilter: 'blur(24px)',
@@ -251,21 +251,21 @@ export default function PWAInstallBanner() {
           {/* Close button */}
           <button
             onClick={dismiss}
-            className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
             aria-label="Tutup banner"
           >
             <X className="size-3.5" />
           </button>
 
-          <div className="px-5 py-4">
-            <div className="flex items-start gap-4">
+          <div className="px-4 py-3.5 sm:px-5 sm:py-4">
+            <div className="flex items-start gap-3">
               {/* App Icon */}
               <div className="relative shrink-0 mt-0.5">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-purple-400 shadow-lg shadow-purple-500/30 sm:h-14 sm:w-14">
                   <img
                     src="/logo-sm.png"
                     alt="MG PRODUCTIONS"
-                    className="w-11 h-11 rounded-xl object-cover"
+                    className="h-9 w-9 rounded-xl object-cover sm:h-11 sm:w-11"
                   />
                 </div>
                 <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
@@ -275,10 +275,10 @@ export default function PWAInstallBanner() {
 
               <div className="flex-1 min-w-0 pt-1">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <h3 className="text-sm font-bold text-foreground">Install MG PRODUCTIONS</h3>
+                  <h3 className="text-[13px] font-bold text-foreground sm:text-sm">Install MG PRODUCTIONS</h3>
                   <Sparkles className="size-3.5 text-purple-400 shrink-0" />
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed mb-2.5">
+                <p className="mb-2.5 text-[10px] leading-relaxed text-muted-foreground sm:text-[11px]">
                   Simpan aplikasi ke home screen atau desktop supaya akses toko lebih cepat dan terasa seperti app.
                 </p>
 
@@ -291,7 +291,7 @@ export default function PWAInstallBanner() {
                         hideBanner()
                         setGuideOpen(true)
                       }}
-                      className="w-full h-11 rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 text-white font-semibold text-sm shadow-lg shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
+                      className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition-all hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 sm:h-11"
                     >
                       <ArrowDownToLine className="size-4" />
                       Install Sekarang
@@ -302,16 +302,16 @@ export default function PWAInstallBanner() {
                         hideBanner()
                         setGuideOpen(true)
                       }}
-                      className="w-full h-10 rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 hover:bg-purple-500/15 transition-all"
+                      className="h-9 w-full rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 transition-all hover:bg-purple-500/15 sm:h-10"
                     >
                       Lihat Tutorial Install
                     </button>
-                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-3 text-[11px] leading-relaxed text-muted-foreground">
+                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-[10px] leading-relaxed text-muted-foreground sm:text-[11px]">
                       iPhone tetap perlu langkah manual. Setelah tekan <span className="font-semibold text-purple-200">Install Sekarang</span>, ikuti tutorial Safari untuk <span className="font-semibold text-purple-200">Tambahkan ke Layar Utama</span>.
                     </div>
                     <button
                       onClick={dismiss}
-                      className="w-full h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/[0.06] text-xs text-muted-foreground hover:text-foreground transition-all font-medium"
+                      className="h-9 w-full rounded-xl border border-white/[0.06] bg-white/5 text-xs font-medium text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground sm:h-10"
                     >
                       Mengerti
                     </button>
@@ -321,7 +321,7 @@ export default function PWAInstallBanner() {
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={handleInstall}
-                      className="w-full h-11 rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 text-white font-semibold text-sm shadow-lg shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
+                      className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition-all hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 sm:h-11"
                     >
                       <Download className="size-4" />
                       Install Sekarang
@@ -332,14 +332,14 @@ export default function PWAInstallBanner() {
                         hideBanner()
                         setGuideOpen(true)
                       }}
-                      className="w-full h-10 rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 hover:bg-purple-500/15 transition-all"
+                      className="h-9 w-full rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 transition-all hover:bg-purple-500/15 sm:h-10"
                     >
                       Lihat Tutorial Install
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-3 text-[11px] leading-relaxed text-muted-foreground">
+                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-[10px] leading-relaxed text-muted-foreground sm:text-[11px]">
                       {isAndroidDevice ? (
                         <>
                           Di Android, kalau prompt belum muncul otomatis, buka menu browser lalu pilih <span className="font-semibold text-purple-200">Install app</span> atau <span className="font-semibold text-purple-200">Tambahkan ke layar utama</span>.
@@ -356,20 +356,20 @@ export default function PWAInstallBanner() {
                         hideBanner()
                         setGuideOpen(true)
                       }}
-                      className="w-full h-10 rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 hover:bg-purple-500/15 transition-all"
+                      className="h-9 w-full rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 transition-all hover:bg-purple-500/15 sm:h-10"
                     >
                       Lihat Tutorial Install
                     </button>
                     <button
                       onClick={dismiss}
-                      className="w-full h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/[0.06] text-xs text-muted-foreground hover:text-foreground transition-all font-medium"
+                      className="h-9 w-full rounded-xl border border-white/[0.06] bg-white/5 text-xs font-medium text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground sm:h-10"
                     >
                       Mengerti
                     </button>
                   </div>
                 )}
 
-                <div className="flex items-center justify-center gap-3 mt-3">
+                <div className="mt-2.5 flex items-center justify-center gap-2.5 sm:mt-3 sm:gap-3">
                   <div className="flex items-center gap-1 text-[9px] text-muted-foreground/50">
                     <Monitor className="size-3" />
                     <span>Android & iOS</span>
