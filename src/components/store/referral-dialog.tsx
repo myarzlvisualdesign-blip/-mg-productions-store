@@ -294,7 +294,7 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   // ─── Helpers ─────────────────────────────────────────────────────────
   const balance = myCode ? (myCode.balance ?? myCode.totalReward - (myCode.totalWithdrawn || 0)) : 0
   const minWithdraw = settings?.minWithdraw || 100000
-  const dialogClassName = "!left-0 !right-0 !top-0 !bottom-0 !grid !h-[100dvh] !max-h-[100dvh] !w-full !max-w-none !translate-x-0 !translate-y-0 rounded-none border-x-0 border-b-0 border-white/10 bg-background/95 p-0 backdrop-blur-xl sm:!top-[50%] sm:!right-auto sm:!bottom-auto sm:!left-[50%] sm:!h-[min(92vh,calc(100dvh-1.5rem))] sm:!max-h-[calc(100dvh-1.5rem)] sm:!max-w-md sm:!translate-x-[-50%] sm:!translate-y-[-50%] sm:rounded-2xl sm:border"
+  const dialogClassName = "!left-1/2 !top-1/2 !grid !w-[calc(100%-1rem)] !max-w-[34rem] !translate-x-[-50%] !translate-y-[-50%] !gap-0 !overflow-hidden rounded-3xl border border-white/10 bg-background/95 p-0 shadow-2xl shadow-black/40 backdrop-blur-xl !max-h-[min(90vh,calc(100dvh-1rem))] sm:!w-[calc(100%-2rem)] lg:!max-w-xl"
 
   const statusLabel = (s: string) => {
     switch (s) {
