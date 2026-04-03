@@ -1,11 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Banknote, ShoppingCart, Package, Users } from 'lucide-react'
 import { formatRupiah } from '@/lib/utils'
 import { useViewStore } from '@/store/view-store'
-import { adminFetchJson } from '@/lib/admin-fetch'
 
 interface StatsData {
   totalProducts: number
@@ -13,6 +11,7 @@ interface StatsData {
   totalRevenue: number
   pendingOrders: number
   deliveredOrders: number
+  uniqueCustomers: number
   lowStockProducts: number
   totalStock: number
   categoryCount: Record<string, number>
@@ -34,10 +33,6 @@ interface StatsData {
   chatbotEnabled: boolean
 }
 
-interface OrdersData {
-  customerEmail: string
-}
-
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -51,41 +46,8 @@ const item = {
   show: { opacity: 1, y: 0 },
 }
 
-export default function StatsCards() {
-  const [stats, setStats] = useState<StatsData | null>(null)
-  const [orders, setOrders] = useState<OrdersData[]>([])
-  const [loading, setLoading] = useState(true)
+export default function StatsCards({ stats }: { stats: StatsData }) {
   const { setAdminTab } = useViewStore()
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [statsData, ordersData] = await Promise.all([
-          adminFetchJson<StatsData>('/api/stats'),
-          adminFetchJson<OrdersData[]>('/api/orders'),
-        ])
-        setStats(statsData)
-        setOrders(ordersData)
-      } catch (err) {
-        console.error('Failed to fetch stats:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [])
-
-  const uniqueCustomers = new Set(orders.map((o) => o.customerEmail)).size
-
-  if (loading || !stats) {
-    return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-36 rounded-2xl glass-card animate-pulse" />
-        ))}
-      </div>
-    )
-  }
 
   const cards = [
     {
@@ -121,7 +83,7 @@ export default function StatsCards() {
     },
     {
       title: 'Customers',
-      value: `${uniqueCustomers} total`,
+      value: `${stats.uniqueCustomers} total`,
       subtitle: 'unique email addresses',
       icon: Users,
       accent: 'from-pink-500/20 to-pink-600/10',

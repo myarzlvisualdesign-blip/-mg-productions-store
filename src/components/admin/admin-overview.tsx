@@ -25,6 +25,7 @@ interface StatsData {
   totalRevenue: number
   pendingOrders: number
   deliveredOrders: number
+  uniqueCustomers: number
   lowStockProducts: number
   totalStock: number
   categoryCount: Record<string, number>
@@ -242,7 +243,7 @@ export default function AdminOverview() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <motion.div custom={0} variants={sectionVariants} initial="hidden" animate="show">
-        <StatsCards />
+        <StatsCards stats={stats} />
       </motion.div>
 
       {/* Charts Row */}
