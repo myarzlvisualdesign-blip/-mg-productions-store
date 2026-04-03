@@ -22,6 +22,7 @@ function usePWAState() {
   const [dismissed, setDismissed] = useState(false)
   const [showLauncher, setShowLauncher] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
+  const [referralOpen, setReferralOpen] = useState(false)
 
   const isIOSDevice = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream
   const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
@@ -74,6 +75,17 @@ function usePWAState() {
     return () => window.removeEventListener('mg-chat-visibility', handler as EventListener)
   }, [])
 
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const customEvent = event as CustomEvent<{ open?: boolean }>
+      setReferralOpen(Boolean(customEvent.detail?.open))
+    }
+
+    window.addEventListener('mg-referral-visibility', handler as EventListener)
+    return () =>
+      window.removeEventListener('mg-referral-visibility', handler as EventListener)
+  }, [])
+
   const dismiss = useCallback(() => {
     setShowBanner(false)
     setShowLauncher(true)
@@ -104,6 +116,7 @@ function usePWAState() {
     showLauncher,
     appInstalled,
     chatOpen,
+    referralOpen,
     isAndroidDevice,
     isIOSDevice,
     isStandalone,
@@ -125,6 +138,7 @@ export default function PWAInstallBanner() {
     showLauncher,
     appInstalled,
     chatOpen,
+    referralOpen,
     isAndroidDevice,
     isIOSDevice,
     isStandalone,
@@ -198,7 +212,7 @@ export default function PWAInstallBanner() {
 
   return (
     <AnimatePresence>
-      {!shouldHide && !guideOpen && !chatOpen && (
+      {!shouldHide && !guideOpen && !chatOpen && !referralOpen && (
         <motion.div
           initial={{ opacity: 0, y: 80, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -358,7 +372,7 @@ export default function PWAInstallBanner() {
         </motion.div>
       )}
 
-      {showLauncher && !appInstalled && !isStandalone && !guideOpen && !chatOpen && (
+      {showLauncher && !appInstalled && !isStandalone && !guideOpen && !chatOpen && !referralOpen && (
         <motion.button
           initial={{ opacity: 0, y: 20, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}

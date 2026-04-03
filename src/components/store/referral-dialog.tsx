@@ -92,6 +92,22 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
   const [wdLoading, setWdLoading] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
 
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('mg-referral-visibility', {
+        detail: { open },
+      })
+    )
+
+    return () => {
+      window.dispatchEvent(
+        new CustomEvent('mg-referral-visibility', {
+          detail: { open: false },
+        })
+      )
+    }
+  }, [open])
+
   // ─── Fetch settings & check existing code ────────────────────────────
   useEffect(() => {
     if (!open) return

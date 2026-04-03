@@ -11,6 +11,10 @@ function getSafeFolder(folder: string) {
   return folder.replace(/[^a-zA-Z0-9_-]/g, '') || 'products'
 }
 
+function toDataUrl(fileType: string, buffer: Buffer) {
+  return `data:${fileType};base64,${buffer.toString('base64')}`
+}
+
 export async function POST(request: NextRequest) {
   const { authorized } = requireAdmin(request)
   if (!authorized) {
@@ -63,10 +67,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (process.env.VERCEL) {
-      return NextResponse.json(
-        { error: 'Upload storage belum dikonfigurasi. Tambahkan BLOB_READ_WRITE_TOKEN di Vercel.' },
-        { status: 500 }
-      )
+      return NextResponse.json({
+        url: toDataUrl(file.type, buffer),
+        storage: 'inline',
+      })
     }
 
     const uploadDir = join(process.cwd(), 'public', 'uploads', safeFolder)
