@@ -13,8 +13,6 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
 }
 
-const PWA_INSTALLED_KEY = 'mg-pwa-installed'
-
 // ─── Helpers ────────────────────────────────────────────────────────────
 
 function usePWAState() {
@@ -31,18 +29,9 @@ function usePWAState() {
   const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
   const isStandalone = typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as unknown as { standalone?: boolean }).standalone === true)
 
-  const persistInstalledState = useCallback(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(PWA_INSTALLED_KEY, '1')
-  }, [])
-
   useEffect(() => {
     if (typeof window === 'undefined') return
-
-    const isInstalled = window.localStorage.getItem(PWA_INSTALLED_KEY) === '1'
-    if (isInstalled) {
-      setAppInstalled(true)
-    }
+    window.localStorage.removeItem('mg-pwa-installed')
 
     setStateHydrated(true)
   }, [])
@@ -51,17 +40,17 @@ function usePWAState() {
 
   // Universal fallback: show banner after delay on any non-installed browser.
   useEffect(() => {
-    if (!stateHydrated || isStandalone || dismissed || appInstalled) return
+    if (!stateHydrated || isStandalone || dismissed) return
 
     const timer = setTimeout(() => {
       setShowBanner(true)
     }, 1800)
     return () => clearTimeout(timer)
-  }, [appInstalled, dismissed, isStandalone, stateHydrated])
+  }, [dismissed, isStandalone, stateHydrated])
 
   // Android: capture beforeinstallprompt event
   useEffect(() => {
-    if (!stateHydrated || isStandalone || isIOSDevice || dismissed || appInstalled) return
+    if (!stateHydrated || isStandalone || isIOSDevice || dismissed) return
 
     const handler = (e: Event) => {
       e.preventDefault()
@@ -73,7 +62,7 @@ function usePWAState() {
 
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
-  }, [appInstalled, dismissed, isIOSDevice, isStandalone, stateHydrated])
+  }, [dismissed, isIOSDevice, isStandalone, stateHydrated])
 
   // App installed event
   useEffect(() => {
@@ -81,11 +70,10 @@ function usePWAState() {
       setAppInstalled(true)
       setShowBanner(false)
       setShowLauncher(false)
-      persistInstalledState()
     }
     window.addEventListener('appinstalled', handler)
     return () => window.removeEventListener('appinstalled', handler)
-  }, [persistInstalledState])
+  }, [])
 
   useEffect(() => {
     const handler = (event: Event) => {
