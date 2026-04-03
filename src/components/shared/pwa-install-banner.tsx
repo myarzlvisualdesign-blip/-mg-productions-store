@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Download, X, Smartphone, Monitor, ArrowDownToLine, Sparkles } from 'lucide-react'
+import { Download, X, Smartphone, Monitor, ArrowDownToLine, Sparkles, Chrome, Share2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ function usePWAState() {
 // ─── Component ─────────────────────────────────────────────────────────
 
 export default function PWAInstallBanner() {
+  const [guideOpen, setGuideOpen] = useState(false)
   const {
     deferredPrompt,
     setDeferredPrompt,
@@ -143,10 +145,34 @@ export default function PWAInstallBanner() {
       return
     }
 
+    setGuideOpen(true)
     reopenBanner()
   }, [deferredPrompt, handleInstall, isIOSDevice, reopenBanner])
 
   const showManualInstallHint = !isIOSDevice && !deferredPrompt
+  const guideTitle = isIOSDevice ? 'Cara Install di iPhone' : isAndroidDevice ? 'Cara Install di Android' : 'Cara Install di Desktop'
+  const guideDescription = isIOSDevice
+    ? 'Ikuti langkah ini di Safari agar MG PRODUCTIONS masuk ke Home Screen.'
+    : isAndroidDevice
+      ? 'Kalau tombol install otomatis tidak muncul, ikuti langkah ini di browser Android.'
+      : 'Gunakan menu browser desktop untuk memasang MG PRODUCTIONS sebagai app.'
+  const guideSteps = isIOSDevice
+    ? [
+        { title: 'Buka website di Safari', description: 'Pastikan halaman dibuka lewat Safari, bukan browser lain atau in-app browser.', icon: Smartphone },
+        { title: 'Tekan tombol Share', description: 'Cari ikon bagikan di bagian bawah Safari.', icon: Share2 },
+        { title: 'Pilih Add to Home Screen', description: 'Tekan Tambahkan ke Layar Utama, lalu konfirmasi Add.', icon: ArrowDownToLine },
+      ]
+    : isAndroidDevice
+      ? [
+          { title: 'Buka website di Chrome', description: 'Pastikan akses dari Chrome atau browser Android yang mendukung PWA.', icon: Chrome },
+          { title: 'Tekan menu browser', description: 'Cari menu titik tiga di kanan atas browser.', icon: Monitor },
+          { title: 'Pilih Install app', description: 'Kalau tidak ada, cari Tambahkan ke layar utama lalu konfirmasi Install.', icon: Download },
+        ]
+      : [
+          { title: 'Buka menu browser', description: 'Di Chrome, Edge, atau browser desktop lain cari menu utama browser.', icon: Monitor },
+          { title: 'Pilih Install App', description: 'Di beberapa browser namanya bisa Add to Dock atau Create Shortcut.', icon: Download },
+          { title: 'Simpan dan buka', description: 'Setelah dipasang, MG PRODUCTIONS akan muncul seperti aplikasi biasa.', icon: Sparkles },
+        ]
 
   return (
     <AnimatePresence>
@@ -219,6 +245,13 @@ export default function PWAInstallBanner() {
                       </div>
                     </div>
                     <button
+                      type="button"
+                      onClick={() => setGuideOpen(true)}
+                      className="w-full h-10 rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 hover:bg-purple-500/15 transition-all"
+                    >
+                      Lihat Tutorial Install
+                    </button>
+                    <button
                       onClick={dismiss}
                       className="w-full h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/[0.06] text-xs text-muted-foreground hover:text-foreground transition-all font-medium"
                     >
@@ -226,14 +259,23 @@ export default function PWAInstallBanner() {
                     </button>
                   </div>
                 ) : deferredPrompt ? (
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={handleInstall}
-                    className="w-full h-11 rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 text-white font-semibold text-sm shadow-lg shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
-                  >
-                    <Download className="size-4" />
-                    Install Sekarang
-                  </motion.button>
+                  <div className="space-y-2">
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleInstall}
+                      className="w-full h-11 rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 text-white font-semibold text-sm shadow-lg shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Download className="size-4" />
+                      Install Sekarang
+                    </motion.button>
+                    <button
+                      type="button"
+                      onClick={() => setGuideOpen(true)}
+                      className="w-full h-10 rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 hover:bg-purple-500/15 transition-all"
+                    >
+                      Lihat Tutorial Install
+                    </button>
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-3 text-[11px] leading-relaxed text-muted-foreground">
@@ -247,6 +289,13 @@ export default function PWAInstallBanner() {
                         </>
                       )}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setGuideOpen(true)}
+                      className="w-full h-10 rounded-xl border border-purple-400/18 bg-purple-500/10 text-xs font-medium text-purple-100 hover:bg-purple-500/15 transition-all"
+                    >
+                      Lihat Tutorial Install
+                    </button>
                     <button
                       onClick={dismiss}
                       className="w-full h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/[0.06] text-xs text-muted-foreground hover:text-foreground transition-all font-medium"
@@ -291,6 +340,56 @@ export default function PWAInstallBanner() {
           <Download className="size-4 text-purple-300" />
         </motion.button>
       )}
+
+      <Dialog open={guideOpen} onOpenChange={setGuideOpen}>
+        <DialogContent className="max-w-[calc(100%-1.5rem)] overflow-hidden rounded-3xl border border-purple-400/15 bg-[rgba(12,8,22,0.98)] p-0 text-foreground shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:max-w-lg" showCloseButton={false}>
+          <div className="border-b border-white/[0.06] bg-[linear-gradient(180deg,rgba(124,58,237,0.22),rgba(18,12,34,0.94))] px-5 py-5">
+            <button
+              type="button"
+              onClick={() => setGuideOpen(false)}
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+              aria-label="Tutup tutorial install"
+            >
+              <X className="size-4" />
+            </button>
+            <DialogHeader className="text-left">
+              <DialogTitle className="text-xl font-bold">{guideTitle}</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground">
+                {guideDescription}
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="space-y-3 px-5 py-5">
+            {guideSteps.map((step, index) => {
+              const Icon = step.icon
+              return (
+                <div key={step.title} className="flex gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-purple-500/15 text-purple-200">
+                    <Icon className="size-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">
+                      {index + 1}. {step.title}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+
+            <div className="rounded-2xl border border-purple-400/15 bg-purple-500/8 px-4 py-3 text-xs leading-relaxed text-purple-100/90">
+              {isIOSDevice
+                ? 'Catatan: iPhone memang tidak mengizinkan website menambahkan aplikasi ke Home Screen secara otomatis. User tetap perlu menekan tombol Add sendiri.'
+                : isAndroidDevice
+                  ? 'Catatan: di Android yang mendukung PWA, tombol Install Sekarang akan langsung memicu prompt install. Kalau prompt tidak muncul, gunakan tutorial di atas.'
+                  : 'Catatan: nama menu install di desktop bisa sedikit berbeda tergantung browser yang dipakai user.'}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AnimatePresence>
   )
 }
