@@ -80,6 +80,12 @@ function usePWAState() {
     setShowBanner(true)
   }, [])
 
+  const showDownloadLauncher = useCallback(() => {
+    setDismissed(true)
+    setShowBanner(false)
+    setShowLauncher(true)
+  }, [])
+
   return {
     deferredPrompt,
     setDeferredPrompt,
@@ -93,6 +99,7 @@ function usePWAState() {
     dismiss,
     hideBanner,
     reopenBanner,
+    showDownloadLauncher,
   }
 }
 
@@ -112,6 +119,7 @@ export default function PWAInstallBanner() {
     dismiss,
     hideBanner,
     reopenBanner,
+    showDownloadLauncher,
   } = usePWAState()
 
   // ─── Handle install click (Android) ─────────────────────────────────
@@ -166,6 +174,14 @@ export default function PWAInstallBanner() {
           { title: 'Pilih Install App', description: 'Di beberapa browser namanya bisa Add to Dock atau Create Shortcut.', icon: Download },
           { title: 'Simpan dan buka', description: 'Setelah dipasang, MG PRODUCTIONS akan muncul seperti aplikasi biasa.', icon: Sparkles },
         ]
+
+  const handleGuideOpenChange = useCallback((open: boolean) => {
+    setGuideOpen(open)
+
+    if (!open && !appInstalled && !isStandalone) {
+      showDownloadLauncher()
+    }
+  }, [appInstalled, isStandalone, showDownloadLauncher])
 
   return (
     <AnimatePresence>
@@ -343,12 +359,12 @@ export default function PWAInstallBanner() {
         </motion.button>
       )}
 
-      <Dialog open={guideOpen} onOpenChange={setGuideOpen}>
+      <Dialog open={guideOpen} onOpenChange={handleGuideOpenChange}>
         <DialogContent className="top-auto bottom-[max(1rem,env(safe-area-inset-bottom))] translate-y-0 max-h-[min(78vh,680px)] max-w-[calc(100%-1.5rem)] overflow-hidden rounded-3xl border border-purple-400/15 bg-[rgba(12,8,22,0.98)] p-0 text-foreground shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:top-[50%] sm:bottom-auto sm:max-w-lg sm:-translate-y-1/2" showCloseButton={false}>
           <div className="shrink-0 border-b border-white/[0.06] bg-[linear-gradient(180deg,rgba(124,58,237,0.22),rgba(18,12,34,0.94))] px-5 py-5">
             <button
               type="button"
-              onClick={() => setGuideOpen(false)}
+              onClick={() => handleGuideOpenChange(false)}
               className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
               aria-label="Tutup tutorial install"
             >
