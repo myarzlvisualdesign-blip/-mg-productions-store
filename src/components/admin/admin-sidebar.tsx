@@ -65,7 +65,7 @@ export default function AdminSidebar() {
         initial={false}
         animate={{ width: expanded ? 256 : 64 }}
         transition={{ duration: 0.3, ease: [0.25, 0.8, 0.25, 1] }}
-        className="fixed left-0 top-0 z-40 flex h-screen flex-col glass-card border-r border-white/[0.06]"
+        className="admin-sidebar fixed left-0 top-0 z-40 flex h-screen flex-col glass-card border-r border-white/[0.06]"
       >
         {/* Top: Logo + Toggle */}
         <div

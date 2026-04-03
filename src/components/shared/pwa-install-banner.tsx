@@ -107,6 +107,7 @@ function usePWAState() {
 export default function PWAInstallBanner() {
   const {
     deferredPrompt,
+    setDeferredPrompt,
     showLauncher,
     appInstalled,
     isIOSDevice,
@@ -118,16 +119,30 @@ export default function PWAInstallBanner() {
 
   // ─── Handle install click (Android) ─────────────────────────────────
   const handleInstall = useCallback(async () => {
-    if (!deferredPrompt) return
+    if (!deferredPrompt) {
+      reopenBanner()
+      return
+    }
 
     await deferredPrompt.prompt()
     const { outcome } = await deferredPrompt.userChoice
+    setDeferredPrompt(null)
+
     if (outcome === 'accepted') {
-      // appinstalled event will handle state
+      return
     }
 
     dismiss()
-  }, [deferredPrompt, dismiss])
+  }, [deferredPrompt, dismiss, reopenBanner, setDeferredPrompt])
+
+  const handleLauncherClick = useCallback(() => {
+    if (!isIOSDevice && deferredPrompt) {
+      void handleInstall()
+      return
+    }
+
+    reopenBanner()
+  }, [deferredPrompt, handleInstall, isIOSDevice, reopenBanner])
 
   return (
     <AnimatePresence>
@@ -245,8 +260,8 @@ export default function PWAInstallBanner() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.92 }}
           transition={{ type: 'spring', stiffness: 340, damping: 28 }}
-          onClick={reopenBanner}
-          className="fixed bottom-24 left-4 z-[68] inline-flex h-11 items-center gap-2 rounded-full border border-purple-400/25 bg-[rgba(18,12,34,0.92)] px-4 text-sm font-semibold text-purple-100 shadow-lg shadow-purple-500/20 backdrop-blur-xl sm:bottom-24"
+          onClick={handleLauncherClick}
+          className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-4 z-[68] inline-flex h-11 items-center gap-2 rounded-full border border-purple-400/25 bg-[rgba(18,12,34,0.92)] px-4 text-sm font-semibold text-purple-100 shadow-lg shadow-purple-500/20 backdrop-blur-xl sm:bottom-24"
           aria-label="Buka instal aplikasi"
         >
           <Download className="size-4 text-purple-300" />

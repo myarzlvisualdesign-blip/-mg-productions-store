@@ -171,6 +171,14 @@
   padding-top: 4.5rem;
 }
 
+.admin-shell {
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  height: 100vh;
+}
+
 @media (max-width: 768px) {
   .storefront-main {
     padding-top: 4.5rem;
@@ -218,6 +226,15 @@
 
   .storefront-main {
     padding-top: calc(4.5rem + max(env(safe-area-inset-top), 0.5rem));
+  }
+
+  .admin-sidebar {
+    top: max(env(safe-area-inset-top), 0.5rem);
+    height: calc(100dvh - max(env(safe-area-inset-top), 0.5rem));
+  }
+
+  .admin-main {
+    padding-top: max(env(safe-area-inset-top), 0.5rem);
   }
 }
 

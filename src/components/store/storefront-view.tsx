@@ -217,7 +217,7 @@ export default function Storefront() {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25, delay: 0.5 }}
           onClick={() => setReferralOpen(true)}
-          className="fixed bottom-40 right-4 z-50 flex h-12 items-center gap-2.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-5 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 hover:from-purple-500 hover:to-pink-500 md:bottom-8 md:right-24"
+          className="fixed bottom-[calc(env(safe-area-inset-bottom)+8.25rem)] right-4 z-50 flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-4 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 hover:from-purple-500 hover:to-pink-500 md:bottom-8 md:right-24 md:h-12 md:gap-2.5 md:px-5"
           aria-label="Buka Referral Program"
         >
           <Gift className="size-5" />

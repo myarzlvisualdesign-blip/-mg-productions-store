@@ -103,10 +103,10 @@ function AdminDashboard() {
   const showForm = editProduct !== null || editPartner !== null
 
   return (
-    <div className="flex min-h-screen">
+    <div className="admin-shell flex min-h-screen">
       <AdminSidebar />
-      <main className="flex-1 ml-16 md:ml-64 transition-all duration-300">
-        <div className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 glass-card border-b border-white/[0.06]">
+      <main className="admin-main flex-1 ml-16 md:ml-64 transition-all duration-300">
+        <div className="admin-topbar sticky top-0 z-30 flex items-center justify-between px-4 py-3 glass-card border-b border-white/[0.06] sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-sm text-muted-foreground">
