@@ -242,7 +242,7 @@ export default function PWAInstallBanner() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 80, scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 350, damping: 30, delay: 0.1 }}
-          className="store-install-banner fixed left-1/2 z-[70] w-[min(calc(100vw-1rem),25.5rem)] -translate-x-1/2 overflow-hidden rounded-[1.7rem] md:bottom-6 md:left-auto md:right-4 md:w-[23rem] md:translate-x-0"
+          className="store-install-banner fixed left-1/2 z-[70] w-[min(calc(100vw-1.25rem),22.75rem)] -translate-x-1/2 overflow-hidden rounded-[1.55rem] md:bottom-6 md:left-auto md:right-4 md:w-[21rem] md:translate-x-0"
           style={{
             background: 'linear-gradient(180deg, rgba(50, 25, 77, 0.96) 0%, rgba(31, 16, 49, 0.98) 48%, rgba(24, 12, 37, 0.99) 100%)',
             backdropFilter: 'blur(24px)',
@@ -261,15 +261,15 @@ export default function PWAInstallBanner() {
             <X className="size-3.5" />
           </button>
 
-          <div className="px-4 py-4 sm:px-5 sm:py-4.5">
-            <div className="flex items-start gap-3.5">
+          <div className="px-3.5 py-3.5 sm:px-4 sm:py-4">
+            <div className="flex items-start gap-3">
               {/* App Icon */}
               <div className="relative mt-0.5 shrink-0">
-                <div className="flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-[1.35rem] bg-gradient-to-br from-purple-600 to-fuchsia-500 shadow-lg shadow-purple-500/30 sm:h-14 sm:w-14">
+                <div className="flex h-[2.95rem] w-[2.95rem] items-center justify-center rounded-[1.15rem] bg-gradient-to-br from-purple-600 to-fuchsia-500 shadow-lg shadow-purple-500/30 sm:h-[3.15rem] sm:w-[3.15rem]">
                   <img
                     src="/logo-sm.png"
                     alt="MG PRODUCTIONS"
-                    className="h-9 w-9 rounded-xl object-contain sm:h-10 sm:w-10"
+                    className="h-8 w-8 rounded-lg object-contain sm:h-[2.15rem] sm:w-[2.15rem]"
                   />
                 </div>
                 <div className="absolute -bottom-1 -right-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[8px] font-bold text-white shadow-md">
@@ -279,15 +279,15 @@ export default function PWAInstallBanner() {
 
               <div className="min-w-0 flex-1 pt-0.5">
                 <div className="mb-1 flex items-center gap-1.5">
-                  <h3 className="text-[15px] font-bold tracking-tight text-foreground sm:text-base">Install MG PRODUCTIONS</h3>
-                  <Sparkles className="size-3.5 shrink-0 text-purple-300" />
+                  <h3 className="text-[14px] font-bold tracking-tight text-foreground sm:text-[15px]">Install MG PRODUCTIONS</h3>
+                  <Sparkles className="size-3 shrink-0 text-purple-300" />
                 </div>
-                <p className="mb-3.5 max-w-[18.5rem] text-[11px] leading-relaxed text-white/58">
+                <p className="mb-3 max-w-[16rem] text-[10px] leading-relaxed text-white/58 sm:text-[11px]">
                   Simpan aplikasi ke home screen atau desktop supaya akses toko lebih cepat dan terasa seperti app.
                 </p>
 
                 {isIOSDevice ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       type="button"
@@ -295,7 +295,7 @@ export default function PWAInstallBanner() {
                         hideBanner()
                         setGuideOpen(true)
                       }}
-                      className="flex h-[3.35rem] w-full items-center justify-center gap-2 rounded-[1.3rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(168,85,247,0.26)] transition-all hover:brightness-110"
+                      className="flex h-[2.95rem] w-full items-center justify-center gap-2 rounded-[1.15rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[14px] font-semibold text-white shadow-[0_14px_28px_rgba(168,85,247,0.26)] transition-all hover:brightness-110"
                     >
                       <ArrowDownToLine className="size-4" />
                       Install Sekarang
@@ -306,7 +306,7 @@ export default function PWAInstallBanner() {
                         hideBanner()
                         setGuideOpen(true)
                       }}
-                      className="h-[3.2rem] w-full rounded-[1.25rem] border border-purple-400/18 bg-white/[0.03] text-[15px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
+                      className="h-[2.85rem] w-full rounded-[1.1rem] border border-purple-400/18 bg-white/[0.03] text-[14px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
                     >
                       Lihat Tutorial Install
                     </button>
@@ -315,11 +315,11 @@ export default function PWAInstallBanner() {
                     </div>
                   </div>
                 ) : deferredPrompt ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={handleInstall}
-                      className="flex h-[3.35rem] w-full items-center justify-center gap-2 rounded-[1.3rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(168,85,247,0.26)] transition-all hover:brightness-110"
+                      className="flex h-[2.95rem] w-full items-center justify-center gap-2 rounded-[1.15rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[14px] font-semibold text-white shadow-[0_14px_28px_rgba(168,85,247,0.26)] transition-all hover:brightness-110"
                     >
                       <Download className="size-4" />
                       Install Sekarang
@@ -330,14 +330,14 @@ export default function PWAInstallBanner() {
                         hideBanner()
                         setGuideOpen(true)
                       }}
-                      className="h-[3.2rem] w-full rounded-[1.25rem] border border-purple-400/18 bg-white/[0.03] text-[15px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
+                      className="h-[2.85rem] w-full rounded-[1.1rem] border border-purple-400/18 bg-white/[0.03] text-[14px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
                     >
                       Lihat Tutorial Install
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="rounded-[1.25rem] border border-white/[0.06] bg-white/[0.03] px-3.5 py-3 text-[11px] leading-relaxed text-white/62">
+                  <div className="space-y-2.5">
+                    <div className="rounded-[1.1rem] border border-white/[0.06] bg-white/[0.03] px-3 py-2.5 text-[10px] leading-relaxed text-white/62 sm:text-[11px]">
                       {isAndroidDevice ? (
                         <>
                           Di Android, kalau prompt belum muncul otomatis, buka menu browser lalu pilih <span className="font-semibold text-purple-200">Install app</span> atau <span className="font-semibold text-purple-200">Tambahkan ke layar utama</span>.
@@ -354,25 +354,25 @@ export default function PWAInstallBanner() {
                         hideBanner()
                         setGuideOpen(true)
                       }}
-                      className="h-[3.2rem] w-full rounded-[1.25rem] border border-purple-400/18 bg-white/[0.03] text-[15px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
+                      className="h-[2.85rem] w-full rounded-[1.1rem] border border-purple-400/18 bg-white/[0.03] text-[14px] font-medium text-white/88 transition-all hover:bg-white/[0.05]"
                     >
                       Lihat Tutorial Install
                     </button>
                   </div>
                 )}
 
-                <div className="mt-3.5 flex items-center justify-center gap-2.5 sm:gap-3">
-                  <div className="flex items-center gap-1 text-[10px] text-white/35">
+                <div className="mt-3 flex items-center justify-center gap-2.5 sm:gap-3">
+                  <div className="flex items-center gap-1 text-[9px] text-white/35">
                     <Monitor className="size-3" />
                     <span>Android & iOS</span>
                   </div>
                   <div className="h-3 w-px bg-white/10" />
-                  <div className="flex items-center gap-1 text-[10px] text-white/35">
+                  <div className="flex items-center gap-1 text-[9px] text-white/35">
                     <Smartphone className="size-3" />
                     <span>Gratis</span>
                   </div>
                   <div className="h-3 w-px bg-white/10" />
-                  <div className="flex items-center gap-1 text-[10px] text-white/35">
+                  <div className="flex items-center gap-1 text-[9px] text-white/35">
                     <Download className="size-3" />
                     <span>{showManualInstallHint ? 'Install Guide' : 'Installable'}</span>
                   </div>
