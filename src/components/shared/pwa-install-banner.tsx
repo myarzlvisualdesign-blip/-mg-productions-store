@@ -96,6 +96,23 @@ function usePWAState() {
       window.removeEventListener('mg-referral-visibility', handler as EventListener)
   }, [])
 
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const customEvent = event as CustomEvent<{ activeTab?: string }>
+
+      if (customEvent.detail?.activeTab !== 'store' || isStandalone) {
+        return
+      }
+
+      setDismissed(false)
+      setShowLauncher(false)
+      setShowBanner(true)
+    }
+
+    window.addEventListener('mg-store-tab-change', handler as EventListener)
+    return () => window.removeEventListener('mg-store-tab-change', handler as EventListener)
+  }, [isStandalone])
+
   const dismiss = useCallback(() => {
     setShowBanner(false)
     setShowLauncher(true)

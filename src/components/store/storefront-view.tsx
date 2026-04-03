@@ -177,6 +177,14 @@ export default function Storefront() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
 
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('mg-store-tab-change', {
+        detail: { activeTab },
+      })
+    )
+  }, [activeTab])
+
   // ─── Capture ?ref= from URL and store it ──────────────────────────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
