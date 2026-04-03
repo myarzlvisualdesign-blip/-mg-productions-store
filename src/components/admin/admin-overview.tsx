@@ -154,24 +154,48 @@ export default function AdminOverview() {
   const [stats, setStats] = useState<StatsData | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [ordersLoading, setOrdersLoading] = useState(true)
   const { setAdminTab } = useViewStore()
 
   useEffect(() => {
-    async function fetchData() {
+    let cancelled = false
+
+    async function fetchStats() {
       try {
-        const [statsData, ordersData] = await Promise.all([
-          adminFetchJson<StatsData>('/api/stats'),
-          adminFetchJson<Order[]>('/api/orders'),
-        ])
-        setStats(statsData)
-        setOrders(ordersData)
+        const statsData = await adminFetchJson<StatsData>('/api/stats')
+        if (!cancelled) {
+          setStats(statsData)
+        }
       } catch (err) {
-        console.error('Failed to fetch overview data:', err)
+        console.error('Failed to fetch overview stats:', err)
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    fetchData()
+
+    async function fetchRecentOrders() {
+      try {
+        const ordersData = await adminFetchJson<Order[]>('/api/orders?limit=5')
+        if (!cancelled) {
+          setOrders(ordersData)
+        }
+      } catch (err) {
+        console.error('Failed to fetch recent orders:', err)
+      } finally {
+        if (!cancelled) {
+          setOrdersLoading(false)
+        }
+      }
+    }
+
+    void fetchStats()
+    void fetchRecentOrders()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // Prepare orders-by-status data for bar chart
@@ -235,6 +259,17 @@ export default function AdminOverview() {
           <div className="h-80 rounded-2xl glass-card animate-pulse" />
           <div className="h-80 rounded-2xl glass-card animate-pulse" />
         </div>
+      </div>
+    )
+  }
+
+  if (!stats) {
+    return (
+      <div className="glass-card rounded-2xl p-6">
+        <h3 className="text-base font-semibold text-foreground">Overview belum tersedia</h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ringkasan dashboard gagal dimuat. Muat ulang halaman admin untuk mencoba lagi.
+        </p>
       </div>
     )
   }
@@ -429,7 +464,13 @@ export default function AdminOverview() {
               </tr>
             </thead>
             <tbody>
-              {recentOrders.length === 0 ? (
+              {ordersLoading ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                    Memuat recent orders...
+                  </td>
+                </tr>
+              ) : recentOrders.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
                     No recent orders

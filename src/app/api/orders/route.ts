@@ -47,8 +47,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const limitParam = request.nextUrl.searchParams.get('limit')
+    const parsedLimit = limitParam ? Number.parseInt(limitParam, 10) : Number.NaN
+    const take = Number.isFinite(parsedLimit)
+      ? Math.min(Math.max(parsedLimit, 1), 100)
+      : undefined
+
     const orders = await db.order.findMany({
       orderBy: { createdAt: 'desc' },
+      take,
     })
 
     return NextResponse.json(orders)
