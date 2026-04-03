@@ -126,16 +126,15 @@ function usePWAState() {
     return () => window.removeEventListener(PROMPT_READY_EVENT, syncPromptState as EventListener)
   }, [dismissed, getCachedPrompt, isIOSDevice, isStandalone, revealBanner, stateHydrated])
 
-  // App installed event
   useEffect(() => {
     const handler = () => {
-      if (typeof window !== 'undefined' && !window.matchMedia('(display-mode: standalone)').matches) {
-        revealBanner()
-      }
+      setShowBanner(false)
+      setShowLauncher(false)
+      setDismissed(true)
     }
     window.addEventListener('appinstalled', handler)
     return () => window.removeEventListener('appinstalled', handler)
-  }, [revealBanner])
+  }, [])
 
   useEffect(() => {
     if (!stateHydrated || isStandalone) return
@@ -179,21 +178,6 @@ function usePWAState() {
     return () =>
       window.removeEventListener('mg-referral-visibility', handler as EventListener)
   }, [])
-
-  useEffect(() => {
-    const handler = (event: Event) => {
-      const customEvent = event as CustomEvent<{ activeTab?: string }>
-
-      if (customEvent.detail?.activeTab !== 'store' || isStandalone) {
-        return
-      }
-
-      revealBanner()
-    }
-
-    window.addEventListener('mg-store-tab-change', handler as EventListener)
-    return () => window.removeEventListener('mg-store-tab-change', handler as EventListener)
-  }, [isStandalone, revealBanner])
 
   const dismiss = useCallback(() => {
     setShowBanner(false)
@@ -240,6 +224,7 @@ function usePWAState() {
 
 export default function PWAInstallBanner() {
   const [guideOpen, setGuideOpen] = useState(false)
+  const [preparingInstall, setPreparingInstall] = useState(false)
   const {
     deferredPrompt,
     setDeferredPrompt,
@@ -308,33 +293,38 @@ export default function PWAInstallBanner() {
 
   // ─── Handle install click (Android/Desktop Chromium) ───────────────
   const handleInstall = useCallback(async () => {
+    setPreparingInstall(true)
     let promptEvent = deferredPrompt
 
-    if (!promptEvent && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      try {
-        await navigator.serviceWorker.register('/sw.js', { scope: '/' })
-        await navigator.serviceWorker.ready
-      } catch {
-        // Keep flowing to the fallback below.
+    try {
+      if (!promptEvent && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          await navigator.serviceWorker.ready
+        } catch {
+          // Keep flowing to the fallback below.
+        }
+
+        promptEvent = await waitForInstallPrompt(6000)
       }
 
-      promptEvent = await waitForInstallPrompt(6000)
+      if (!promptEvent) {
+        openGuide()
+        return
+      }
+
+      await promptEvent.prompt()
+      const { outcome } = await promptEvent.userChoice
+      setDeferredPrompt(null)
+
+      if (outcome === 'accepted') {
+        return
+      }
+
+      dismiss()
+    } finally {
+      setPreparingInstall(false)
     }
-
-    if (!promptEvent) {
-      openGuide()
-      return
-    }
-
-    await promptEvent.prompt()
-    const { outcome } = await promptEvent.userChoice
-    setDeferredPrompt(null)
-
-    if (outcome === 'accepted') {
-      return
-    }
-
-    dismiss()
   }, [deferredPrompt, dismiss, openGuide, setDeferredPrompt, waitForInstallPrompt])
 
   const handlePrimaryAction = useCallback(() => {
@@ -403,10 +393,11 @@ export default function PWAInstallBanner() {
                     whileTap={{ scale: 0.97 }}
                     type="button"
                     onClick={handlePrimaryAction}
-                    className="flex h-[2.55rem] w-full items-center justify-center gap-2 rounded-[1rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[12.5px] font-semibold text-white shadow-[0_12px_24px_rgba(168,85,247,0.22)] transition-all hover:brightness-110"
+                    disabled={preparingInstall}
+                    className="flex h-[2.55rem] w-full items-center justify-center gap-2 rounded-[1rem] bg-gradient-to-r from-[#9325ff] via-[#cb3cff] to-[#ff4ba1] text-[12.5px] font-semibold text-white shadow-[0_12px_24px_rgba(168,85,247,0.22)] transition-all hover:brightness-110 disabled:cursor-wait disabled:opacity-85"
                   >
                     {isIOSDevice ? <ArrowDownToLine className="size-4" /> : <Download className="size-4" />}
-                    Install Sekarang
+                    {preparingInstall ? 'Menyiapkan Install...' : 'Install Sekarang'}
                   </motion.button>
                   <button
                     type="button"
