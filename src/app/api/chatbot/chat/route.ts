@@ -9,6 +9,11 @@ const STOP_WORDS = new Set([
   'produk', 'barang', 'mg', 'productions', 'info', 'informasi', 'please',
 ])
 
+function friendlyIntro(name?: string) {
+  const assistantName = name?.trim() || 'MG Assistant'
+  return `Haii, aku ${assistantName}. Aku siap bantu kamu seputar e-commerce MG PRODUCTIONS, mulai dari cari produk, checkout, promo, referral, top up, food, sampai travel.`
+}
+
 function normalizeText(value: string) {
   return value
     .toLowerCase()
@@ -61,25 +66,25 @@ export async function POST(request: NextRequest) {
 
     if (hasAnyKeyword(normalized, ['halo', 'hai', 'hello', 'pagi', 'siang', 'malam'])) {
       return NextResponse.json({
-        response: `${settings?.welcomeMessage || 'Halo!'} Saya bantu seputar produk, checkout, top up, food, travel, dan referral MG PRODUCTIONS. Kamu bisa tanya produk yang tersedia atau cari barang tertentu.`,
+        response: `${friendlyIntro(settings?.name)} Kalau kamu mau, langsung bilang aja mau cari produk apa atau butuh info layanan yang mana.`,
       })
     }
 
     if (hasAnyKeyword(normalized, ['checkout', 'bayar', 'pembayaran', 'order', 'pesan', 'keranjang', 'cart'])) {
       return NextResponse.json({
-        response: 'Untuk belanja, pilih produk lalu masukkan ke keranjang. Setelah itu lanjut checkout dari cart. Jika produk punya tombol Visit, produk itu akan diarahkan ke link eksternal. Untuk kebutuhan khusus atau kendala pembayaran, hubungi admin toko.',
+        response: 'Siapp. Untuk belanja, pilih produk lalu masukkan ke keranjang. Setelah itu lanjut checkout dari cart. Kalau produk punya tombol Visit, berarti produk itu diarahkan ke link eksternal. Kalau ada kendala pembayaran atau order, admin toko bisa bantu lanjut.',
       })
     }
 
     if (hasAnyKeyword(normalized, ['referral', 'kode promo', 'promo', 'diskon'])) {
       if (activeReferralSettings?.enabled) {
         return NextResponse.json({
-          response: `Program referral sedang aktif. Minimum order untuk benefit referral adalah ${formatRupiah(activeReferralSettings.minOrderAmount)} dan reward pelanggan baru saat memakai kode referral adalah ${formatRupiah(activeReferralSettings.refereeReward)}.`,
+          response: `Program referral lagi aktif yaa. Minimum order untuk benefit referral adalah ${formatRupiah(activeReferralSettings.minOrderAmount)}, dan pelanggan baru yang pakai kode referral bisa dapat reward ${formatRupiah(activeReferralSettings.refereeReward)}.`,
         })
       }
 
       return NextResponse.json({
-        response: 'Saat ini fitur referral belum aktif. Kamu tetap bisa belanja produk, top up, food, dan travel seperti biasa di MG PRODUCTIONS.',
+        response: 'Saat ini fitur referral belum aktif, tapi kamu tetap bisa belanja produk, top up, food, dan travel seperti biasa di MG PRODUCTIONS.',
       })
     }
 
@@ -93,7 +98,7 @@ export async function POST(request: NextRequest) {
 
       if (services.length === 0) {
         return NextResponse.json({
-          response: 'Saat ini belum ada layanan top up yang aktif. Coba cek lagi nanti atau hubungi admin toko.',
+          response: 'Saat ini belum ada layanan top up yang aktif. Coba cek lagi nanti ya, atau kalau mau saya bisa bantu arahkan ke layanan toko lain yang tersedia.',
         })
       }
 
@@ -102,7 +107,7 @@ export async function POST(request: NextRequest) {
         .join(', ')
 
       return NextResponse.json({
-        response: `Layanan Top Up yang tersedia saat ini antara lain: ${summary}. Kalau kamu mau, sebutkan game atau layanan yang dicari biar saya bantu arahkan.`,
+        response: `Untuk top up, yang tersedia saat ini antara lain: ${summary}. Kalau kamu mau, sebutkan game atau layanan yang dicari biar aku bantu arahkan lebih spesifik.`,
       })
     }
 
@@ -121,7 +126,7 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({
-        response: `Menu food & drink yang aktif saat ini: ${items.map((item) => item.subtitle ? `${item.name} (${item.subtitle})` : item.name).join(', ')}.`,
+        response: `Menu food & drink yang aktif saat ini: ${items.map((item) => item.subtitle ? `${item.name} (${item.subtitle})` : item.name).join(', ')}. Kalau mau, aku juga bisa bantu pilihkan yang paling cocok.`,
       })
     }
 
@@ -151,7 +156,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         response: parts.length > 0
-          ? `Yang tersedia saat ini ada ${parts.join(' | ')}.`
+          ? `Untuk travel, yang tersedia saat ini ada ${parts.join(' | ')}.`
           : 'Saat ini belum ada layanan travel atau destinasi aktif yang tampil di toko.',
       })
     }
@@ -186,7 +191,7 @@ export async function POST(request: NextRequest) {
       })
 
       return NextResponse.json({
-        response: `Saya temukan beberapa produk yang relevan:\n${lines.join('\n')}\n\nKalau mau, sebutkan nama atau kategori yang lebih spesifik supaya saya saring lagi.`,
+        response: `Aku temukan beberapa produk yang relevan buat kamu:\n${lines.join('\n')}\n\nKalau mau, sebutkan nama, kategori, atau budget yang lebih spesifik supaya aku saring lagi.`,
       })
     }
 
@@ -211,12 +216,12 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({
-        response: `Beberapa produk yang tersedia saat ini: ${featuredProducts.map((product) => `${product.name} (${product.category}, ${formatRupiah(product.price)})`).join(', ')}.`,
+        response: `Beberapa produk yang tersedia saat ini: ${featuredProducts.map((product) => `${product.name} (${product.category}, ${formatRupiah(product.price)})`).join(', ')}. Kalau kamu mau cari tipe tertentu, tinggal sebutkan aja ya.`,
       })
     }
 
     return NextResponse.json({
-      response: `Saya fokus bantu pertanyaan seputar e-commerce MG PRODUCTIONS saja: produk, pencarian barang, cart, checkout, top up, food, travel, dan referral. Kalau kamu cari barang tertentu, sebutkan nama atau kategorinya ya.`,
+      response: `${friendlyIntro(settings?.name)} Aku fokus bantu pertanyaan seputar produk, pencarian barang, cart, checkout, top up, food, travel, promo, dan referral. Kalau kamu cari barang tertentu, sebutkan nama atau kategorinya ya.`,
     })
   } catch (error) {
     console.error('Chatbot API error:', error)

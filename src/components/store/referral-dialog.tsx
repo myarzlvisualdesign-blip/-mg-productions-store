@@ -339,241 +339,249 @@ export default function ReferralDialog({ open, onClose }: ReferralDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose() }}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md bg-background/95 backdrop-blur-xl border-white/10">
-        {/* ─── Header ──────────────────────────────────────────────── */}
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            <Gift className="size-5 text-purple-400" />
-            Referral Program
-          </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Ajak teman belanja & dapatkan reward!
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="flex h-[min(92vh,calc(100dvh-1rem))] max-h-[calc(100dvh-1rem)] flex-col overflow-hidden border-white/10 bg-background/95 p-0 backdrop-blur-xl sm:max-w-md">
+        <div className="flex min-h-0 flex-1 flex-col">
+          {/* ─── Header ──────────────────────────────────────────────── */}
+          <div className="shrink-0 border-b border-white/[0.06] px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pt-6">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 pr-10 text-lg">
+                <Gift className="size-5 text-purple-400" />
+                Referral Program
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Ajak teman belanja & dapatkan reward!
+              </DialogDescription>
+            </DialogHeader>
+          </div>
 
-        {/* ─── Info Banner ─────────────────────────────────────────── */}
-        <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/15">
-          <div className="flex items-start gap-2.5">
-            <Sparkles className="size-4 text-purple-400 shrink-0 mt-0.5" />
-            <div className="text-xs text-muted-foreground leading-relaxed">
-              <p className="font-medium text-foreground">Berlaku untuk Produk Store & Travel</p>
-              <p className="mt-0.5">
-                Referrer dapat <span className="text-purple-400 font-semibold">{formatRupiah(settings?.referrerReward || 50000)}</span> •
-                Referee diskon <span className="text-purple-400 font-semibold">{formatRupiah(settings?.refereeReward || 25000)}</span>
-              </p>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
+            <div className="space-y-4">
+              {/* ─── Info Banner ─────────────────────────────────────────── */}
+              <div className="rounded-xl border border-purple-500/15 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 p-3">
+                <div className="flex items-start gap-2.5">
+                  <Sparkles className="mt-0.5 size-4 shrink-0 text-purple-400" />
+                  <div className="text-xs leading-relaxed text-muted-foreground">
+                    <p className="font-medium text-foreground">Berlaku untuk Produk Store & Travel</p>
+                    <p className="mt-0.5">
+                      Referrer dapat <span className="font-semibold text-purple-400">{formatRupiah(settings?.referrerReward || 50000)}</span> •
+                      Referee diskon <span className="font-semibold text-purple-400">{formatRupiah(settings?.refereeReward || 25000)}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ─── Tab Switcher ────────────────────────────────────────── */}
+              <div className="flex gap-1 rounded-xl border border-white/[0.06] bg-white/[0.03] p-1">
+                <button
+                  onClick={() => setActiveTab('my-code')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all ${
+                    activeTab === 'my-code' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                  }`}
+                >
+                  <Tag className="size-3" /> Kode Saya
+                </button>
+                <button
+                  onClick={() => setActiveTab('use-code')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all ${
+                    activeTab === 'use-code' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                  }`}
+                >
+                  <Gift className="size-3" /> Pakai Kode
+                </button>
+                {myCode && (
+                  <button
+                    onClick={() => setActiveTab('withdraw')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all ${
+                      activeTab === 'withdraw' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                    }`}
+                  >
+                    <Landmark className="size-3" /> Tarik Dana
+                  </button>
+                )}
+              </div>
+
+              {/* ─── Tab Content ─────────────────────────────────────────── */}
+              <AnimatePresence mode="wait">
+                {activeTab === 'my-code' && (
+                  <motion.div key="my-code" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
+                    {myCode ? (
+                      <div className="space-y-4">
+                  {/* Code Display Card */}
+                        <div className="rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-600/15 to-indigo-600/10 p-5 text-center">
+                          <p className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground/60">Kode Referral Kamu</p>
+                          <code className="gradient-text text-2xl font-mono font-bold tracking-wider sm:text-3xl">{myCode.code}</code>
+                          <div className="mt-4 flex items-center justify-center gap-2">
+                            <Button size="sm" onClick={handleCopyCode} className="gap-1.5 rounded-lg border border-white/10 bg-white/10 text-xs hover:bg-white/15">
+                              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                              {copied ? 'Disalin!' : 'Salin'}
+                            </Button>
+                            <Button size="sm" onClick={handleShare} className="gap-1.5 rounded-lg bg-purple-600 text-xs text-white hover:bg-purple-500">
+                              <Share2 className="size-3.5" />
+                              Bagikan
+                            </Button>
+                          </div>
+                        </div>
+
+                  {/* Stats */}
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="glass-card rounded-xl p-3 text-center">
+                            <Users className="mx-auto mb-1 size-4 text-purple-400" />
+                            <p className="text-base font-bold text-foreground">{myCode.totalUsed}</p>
+                            <p className="text-[9px] text-muted-foreground">Dipakai</p>
+                          </div>
+                          <div className="glass-card rounded-xl p-3 text-center">
+                            <Wallet className="mx-auto mb-1 size-4 text-emerald-400" />
+                            <p className="text-base font-bold text-foreground">{formatRupiah(myCode.totalReward)}</p>
+                            <p className="text-[9px] text-muted-foreground">Total</p>
+                          </div>
+                          <div className="glass-card rounded-xl border-emerald-500/15 p-3 text-center">
+                            <Landmark className="mx-auto mb-1 size-4 text-amber-400" />
+                            <p className="text-base font-bold text-emerald-400">{formatRupiah(balance)}</p>
+                            <p className="text-[9px] text-muted-foreground">Saldo</p>
+                          </div>
+                        </div>
+
+                        <p className="text-center text-[10px] leading-relaxed text-muted-foreground/60">
+                          Bagikan kode ke teman. Setiap teman belanja <span className="text-foreground">Store</span> atau <span className="text-foreground">Travel</span>, kamu dapat {formatRupiah(settings?.referrerReward || 50000)}!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/10">
+                            <Tag className="size-8 text-purple-400" />
+                          </div>
+                          <p className="text-sm text-muted-foreground">Buat kode referral dan mulai dapatkan reward!</p>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="ref-name" className="text-sm">Nama Lengkap</Label>
+                            <Input id="ref-name" value={ownerName} onChange={(e) => { setOwnerName(e.target.value); setFormErrors((p) => ({ ...p, name: undefined })) }} placeholder="John Doe" className={`h-10 rounded-xl border-white/[0.06] bg-white/[0.03] text-sm focus:border-purple-500/30 ${formErrors.name ? 'border-red-500/50' : ''}`} />
+                            {formErrors.name && <p className="text-[10px] text-red-400">{formErrors.name}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="ref-email" className="text-sm">Email</Label>
+                            <Input id="ref-email" type="email" value={ownerEmail} onChange={(e) => { setOwnerEmail(e.target.value); setFormErrors((p) => ({ ...p, email: undefined })) }} placeholder="john@example.com" className={`h-10 rounded-xl border-white/[0.06] bg-white/[0.03] text-sm focus:border-purple-500/30 ${formErrors.email ? 'border-red-500/50' : ''}`} />
+                            {formErrors.email && <p className="text-[10px] text-red-400">{formErrors.email}</p>}
+                          </div>
+                        </div>
+                        <Button onClick={handleCreateCode} disabled={creating} className="h-11 w-full rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-white shadow-lg shadow-purple-500/20 hover:from-purple-500 hover:to-indigo-500">
+                          {creating ? <><Loader2 className="mr-2 size-4 animate-spin" />Membuat...</> : <>Buat Kode Referral <ChevronRight className="ml-1 size-4" /></>}
+                        </Button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
+                {activeTab === 'use-code' && (
+                  <motion.div key="use-code" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
+                          <Gift className="size-8 text-emerald-400" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Punya kode referral? Masukkan untuk dapatkan diskon!</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Input value={inputCode} onChange={(e) => { setInputCode(e.target.value.toUpperCase()); setAppliedResult(null) }} placeholder="Contoh: MG-A3K9X2" className="h-10 flex-1 rounded-xl border-white/[0.06] bg-white/[0.03] text-sm font-mono uppercase focus:border-purple-500/30" maxLength={12} autoComplete="off" />
+                        <Button onClick={handleApplyCode} disabled={applying || !inputCode.trim()} className="h-10 shrink-0 rounded-xl bg-purple-600 px-5 text-white hover:bg-purple-500">
+                          {applying ? <Loader2 className="size-4 animate-spin" /> : 'Terapkan'}
+                        </Button>
+                      </div>
+                      <AnimatePresence>
+                        {appliedResult && (
+                          <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`rounded-xl p-3 text-xs leading-relaxed ${appliedResult.success ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-300' : 'border border-red-500/20 bg-red-500/10 text-red-300'}`}>
+                            {appliedResult.message}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      {!appliedResult && (
+                        <p className="text-center text-[10px] text-muted-foreground/60">
+                          Berlaku untuk <span className="text-foreground">Store</span> & <span className="text-foreground">Travel</span> dengan min. {formatRupiah(settings?.minOrderAmount || 100000)}.
+                        </p>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
+                {activeTab === 'withdraw' && myCode && (
+                  <motion.div key="withdraw" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
+                    <div className="space-y-4">
+                {/* Balance Card */}
+                      <div className="rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-600/15 to-emerald-400/5 p-4 text-center">
+                        <p className="mb-1 text-[10px] uppercase tracking-widest text-muted-foreground/60">Saldo Tersedia</p>
+                        <p className="text-2xl font-bold text-emerald-400">{formatRupiah(balance)}</p>
+                        {balance < minWithdraw && (
+                          <p className="mt-1 text-[10px] text-amber-400">
+                            Belum mencapai minimum pencairan {formatRupiah(minWithdraw)}
+                          </p>
+                        )}
+                      </div>
+
+                {/* Withdrawal Form */}
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Jumlah Pencairan (Rp)</Label>
+                          <Input type="number" value={wdAmount} onChange={(e) => setWdAmount(e.target.value)} placeholder={String(minWithdraw)} className="h-10 rounded-xl border-white/[0.06] bg-white/[0.03] text-sm focus:border-purple-500/30" min={0} />
+                        </div>
+                        <Separator className="bg-white/[0.04]" />
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Nama Bank</Label>
+                          <Input value={wdBank} onChange={(e) => setWdBank(e.target.value)} placeholder="BCA, Mandiri, BNI, BRI, dll" className="h-10 rounded-xl border-white/[0.06] bg-white/[0.03] text-sm focus:border-purple-500/30" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Nomor Rekening</Label>
+                          <Input value={wdAccount} onChange={(e) => setWdAccount(e.target.value)} placeholder="1234567890" className="h-10 rounded-xl border-white/[0.06] bg-white/[0.03] text-sm font-mono focus:border-purple-500/30" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Nama Pemilik Rekening</Label>
+                          <Input value={wdHolder} onChange={(e) => setWdHolder(e.target.value)} placeholder="Nama sesuai buku rekening" className="h-10 rounded-xl border-white/[0.06] bg-white/[0.03] text-sm focus:border-purple-500/30" />
+                        </div>
+                      </div>
+
+                      <Button onClick={handleWithdraw} disabled={wdSubmitting || balance < minWithdraw} className="h-11 w-full rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 font-semibold text-white shadow-lg shadow-emerald-500/20 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40">
+                        {wdSubmitting ? <><Loader2 className="mr-2 size-4 animate-spin" />Mengajukan...</> : <><ArrowDownToLine className="mr-2 size-4" />Ajukan Pencairan</>}
+                      </Button>
+
+                      <p className="text-center text-[9px] text-muted-foreground/50">
+                        Min. pencairan {formatRupiah(minWithdraw)} • Proses 1x24 jam
+                      </p>
+
+                {/* History */}
+                      <Separator className="bg-white/[0.04]" />
+                      <p className="text-xs font-medium text-muted-foreground">Riwayat Pencairan</p>
+
+                      {wdLoading ? (
+                        <div className="flex items-center justify-center py-6">
+                          <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : wdHistory.length === 0 ? (
+                        <p className="py-4 text-center text-[11px] text-muted-foreground/50">Belum ada riwayat pencairan</p>
+                      ) : (
+                        <div className="max-h-48 space-y-2 overflow-y-auto">
+                          {wdHistory.map((wd) => (
+                            <div key={wd.id} className="flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.02] p-2.5">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs font-semibold text-foreground">{formatRupiah(wd.amount)}</p>
+                                  {statusLabel(wd.status)}
+                                </div>
+                                <p className="mt-0.5 truncate text-[10px] text-muted-foreground/60">{wd.bankName} • {wd.bankAccount}</p>
+                              </div>
+                              <p className="ml-2 shrink-0 text-[9px] text-muted-foreground/40">
+                                {new Date(wd.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
-
-        {/* ─── Tab Switcher ────────────────────────────────────────── */}
-        <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <button
-            onClick={() => setActiveTab('my-code')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all ${
-              activeTab === 'my-code' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-            }`}
-          >
-            <Tag className="size-3" /> Kode Saya
-          </button>
-          <button
-            onClick={() => setActiveTab('use-code')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all ${
-              activeTab === 'use-code' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-            }`}
-          >
-            <Gift className="size-3" /> Pakai Kode
-          </button>
-          {myCode && (
-            <button
-              onClick={() => setActiveTab('withdraw')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all ${
-                activeTab === 'withdraw' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-              }`}
-            >
-              <Landmark className="size-3" /> Tarik Dana
-            </button>
-          )}
-        </div>
-
-        {/* ─── Tab Content ─────────────────────────────────────────── */}
-        <AnimatePresence mode="wait">
-          {activeTab === 'my-code' && (
-            <motion.div key="my-code" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-              {myCode ? (
-                <div className="space-y-4">
-                  {/* Code Display Card */}
-                  <div className="text-center p-5 rounded-xl bg-gradient-to-br from-purple-600/15 to-indigo-600/10 border border-purple-500/20">
-                    <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest mb-2">Kode Referral Kamu</p>
-                    <code className="text-2xl sm:text-3xl font-mono font-bold gradient-text tracking-wider">{myCode.code}</code>
-                    <div className="flex items-center justify-center gap-2 mt-4">
-                      <Button size="sm" onClick={handleCopyCode} className="gap-1.5 rounded-lg text-xs bg-white/10 hover:bg-white/15 border border-white/10">
-                        {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                        {copied ? 'Disalin!' : 'Salin'}
-                      </Button>
-                      <Button size="sm" onClick={handleShare} className="gap-1.5 rounded-lg text-xs bg-purple-600 hover:bg-purple-500 text-white">
-                        <Share2 className="size-3.5" />
-                        Bagikan
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="p-3 rounded-xl glass-card text-center">
-                      <Users className="size-4 text-purple-400 mx-auto mb-1" />
-                      <p className="text-base font-bold text-foreground">{myCode.totalUsed}</p>
-                      <p className="text-[9px] text-muted-foreground">Dipakai</p>
-                    </div>
-                    <div className="p-3 rounded-xl glass-card text-center">
-                      <Wallet className="size-4 text-emerald-400 mx-auto mb-1" />
-                      <p className="text-base font-bold text-foreground">{formatRupiah(myCode.totalReward)}</p>
-                      <p className="text-[9px] text-muted-foreground">Total</p>
-                    </div>
-                    <div className="p-3 rounded-xl glass-card text-center border-emerald-500/15">
-                      <Landmark className="size-4 text-amber-400 mx-auto mb-1" />
-                      <p className="text-base font-bold text-emerald-400">{formatRupiah(balance)}</p>
-                      <p className="text-[9px] text-muted-foreground">Saldo</p>
-                    </div>
-                  </div>
-
-                  <p className="text-[10px] text-muted-foreground/60 text-center leading-relaxed">
-                    Bagikan kode ke teman. Setiap teman belanja <span className="text-foreground">Store</span> atau <span className="text-foreground">Travel</span>, kamu dapat {formatRupiah(settings?.referrerReward || 50000)}!
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-3">
-                      <Tag className="size-8 text-purple-400" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">Buat kode referral dan mulai dapatkan reward!</p>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="ref-name" className="text-sm">Nama Lengkap</Label>
-                      <Input id="ref-name" value={ownerName} onChange={(e) => { setOwnerName(e.target.value); setFormErrors((p) => ({ ...p, name: undefined })) }} placeholder="John Doe" className={`h-10 bg-white/[0.03] border-white/[0.06] focus:border-purple-500/30 rounded-xl text-sm ${formErrors.name ? 'border-red-500/50' : ''}`} />
-                      {formErrors.name && <p className="text-[10px] text-red-400">{formErrors.name}</p>}
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="ref-email" className="text-sm">Email</Label>
-                      <Input id="ref-email" type="email" value={ownerEmail} onChange={(e) => { setOwnerEmail(e.target.value); setFormErrors((p) => ({ ...p, email: undefined })) }} placeholder="john@example.com" className={`h-10 bg-white/[0.03] border-white/[0.06] focus:border-purple-500/30 rounded-xl text-sm ${formErrors.email ? 'border-red-500/50' : ''}`} />
-                      {formErrors.email && <p className="text-[10px] text-red-400">{formErrors.email}</p>}
-                    </div>
-                  </div>
-                  <Button onClick={handleCreateCode} disabled={creating} className="w-full h-11 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/20">
-                    {creating ? <><Loader2 className="size-4 animate-spin mr-2" />Membuat...</> : <>Buat Kode Referral <ChevronRight className="size-4 ml-1" /></>}
-                  </Button>
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {activeTab === 'use-code' && (
-            <motion.div key="use-code" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
-              <div className="space-y-4">
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
-                    <Gift className="size-8 text-emerald-400" />
-                  </div>
-                  <p className="text-sm text-muted-foreground">Punya kode referral? Masukkan untuk dapatkan diskon!</p>
-                </div>
-                <div className="flex gap-2">
-                  <Input value={inputCode} onChange={(e) => { setInputCode(e.target.value.toUpperCase()); setAppliedResult(null) }} placeholder="Contoh: MG-A3K9X2" className="flex-1 h-10 bg-white/[0.03] border-white/[0.06] focus:border-purple-500/30 rounded-xl text-sm font-mono uppercase" maxLength={12} autoComplete="off" />
-                  <Button onClick={handleApplyCode} disabled={applying || !inputCode.trim()} className="h-10 px-5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl shrink-0">
-                    {applying ? <Loader2 className="size-4 animate-spin" /> : 'Terapkan'}
-                  </Button>
-                </div>
-                <AnimatePresence>
-                  {appliedResult && (
-                    <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`p-3 rounded-xl text-xs leading-relaxed ${appliedResult.success ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300' : 'bg-red-500/10 border border-red-500/20 text-red-300'}`}>
-                      {appliedResult.message}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                {!appliedResult && (
-                  <p className="text-[10px] text-muted-foreground/60 text-center">
-                    Berlaku untuk <span className="text-foreground">Store</span> & <span className="text-foreground">Travel</span> dengan min. {formatRupiah(settings?.minOrderAmount || 100000)}.
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          {activeTab === 'withdraw' && myCode && (
-            <motion.div key="withdraw" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
-              <div className="space-y-4">
-                {/* Balance Card */}
-                <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-600/15 to-emerald-400/5 border border-emerald-500/20 text-center">
-                  <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest mb-1">Saldo Tersedia</p>
-                  <p className="text-2xl font-bold text-emerald-400">{formatRupiah(balance)}</p>
-                  {balance < minWithdraw && (
-                    <p className="text-[10px] text-amber-400 mt-1">
-                      Belum mencapai minimum pencairan {formatRupiah(minWithdraw)}
-                    </p>
-                  )}
-                </div>
-
-                {/* Withdrawal Form */}
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Jumlah Pencairan (Rp)</Label>
-                    <Input type="number" value={wdAmount} onChange={(e) => setWdAmount(e.target.value)} placeholder={String(minWithdraw)} className="h-10 bg-white/[0.03] border-white/[0.06] focus:border-purple-500/30 rounded-xl text-sm" min={0} />
-                  </div>
-                  <Separator className="bg-white/[0.04]" />
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Nama Bank</Label>
-                    <Input value={wdBank} onChange={(e) => setWdBank(e.target.value)} placeholder="BCA, Mandiri, BNI, BRI, dll" className="h-10 bg-white/[0.03] border-white/[0.06] focus:border-purple-500/30 rounded-xl text-sm" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Nomor Rekening</Label>
-                    <Input value={wdAccount} onChange={(e) => setWdAccount(e.target.value)} placeholder="1234567890" className="h-10 bg-white/[0.03] border-white/[0.06] focus:border-purple-500/30 rounded-xl text-sm font-mono" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Nama Pemilik Rekening</Label>
-                    <Input value={wdHolder} onChange={(e) => setWdHolder(e.target.value)} placeholder="Nama sesuai buku rekening" className="h-10 bg-white/[0.03] border-white/[0.06] focus:border-purple-500/30 rounded-xl text-sm" />
-                  </div>
-                </div>
-
-                <Button onClick={handleWithdraw} disabled={wdSubmitting || balance < minWithdraw} className="w-full h-11 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/20 disabled:opacity-40">
-                  {wdSubmitting ? <><Loader2 className="size-4 animate-spin mr-2" />Mengajukan...</> : <><ArrowDownToLine className="size-4 mr-2" />Ajukan Pencairan</>}
-                </Button>
-
-                <p className="text-[9px] text-muted-foreground/50 text-center">
-                  Min. pencairan {formatRupiah(minWithdraw)} • Proses 1x24 jam
-                </p>
-
-                {/* History */}
-                <Separator className="bg-white/[0.04]" />
-                <p className="text-xs font-medium text-muted-foreground">Riwayat Pencairan</p>
-
-                {wdLoading ? (
-                  <div className="flex items-center justify-center py-6">
-                    <Loader2 className="size-5 text-muted-foreground animate-spin" />
-                  </div>
-                ) : wdHistory.length === 0 ? (
-                  <p className="text-[11px] text-muted-foreground/50 text-center py-4">Belum ada riwayat pencairan</p>
-                ) : (
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {wdHistory.map((wd) => (
-                      <div key={wd.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-xs font-semibold text-foreground">{formatRupiah(wd.amount)}</p>
-                            {statusLabel(wd.status)}
-                          </div>
-                          <p className="text-[10px] text-muted-foreground/60 mt-0.5 truncate">{wd.bankName} • {wd.bankAccount}</p>
-                        </div>
-                        <p className="text-[9px] text-muted-foreground/40 shrink-0 ml-2">
-                          {new Date(wd.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </DialogContent>
 
       {/* Share Sheet */}
