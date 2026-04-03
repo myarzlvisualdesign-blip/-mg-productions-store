@@ -58,8 +58,10 @@
   --store-bottom-nav-height: 5rem;
   --store-bottom-nav-offset: calc(var(--store-safe-bottom) + 0.625rem);
   --store-floating-bottom: calc(var(--store-bottom-nav-offset) + var(--store-bottom-nav-height) + 0.75rem);
+  --store-floating-stack-gap: 1rem;
+  --store-secondary-floating-bottom: calc(var(--store-floating-bottom) + 4.5rem + var(--store-floating-stack-gap));
   --store-banner-bottom: calc(var(--store-bottom-nav-offset) + var(--store-bottom-nav-height) + 1rem);
-  --store-content-bottom-padding: calc(var(--store-floating-bottom) + 3.75rem);
+  --store-content-bottom-padding: calc(var(--store-secondary-floating-bottom) + 3.75rem);
   --store-footer-bottom-padding: calc(var(--store-bottom-nav-height) + var(--store-bottom-nav-offset) + 1rem);
   --store-dialog-bottom: calc(var(--store-safe-bottom) + 1rem);
   --store-hero-min-height: calc(100svh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset));
@@ -199,6 +201,10 @@
   bottom: var(--store-floating-bottom);
 }
 
+.store-floating-button-secondary {
+  bottom: var(--store-secondary-floating-bottom);
+}
+
 .store-floating-panel {
   bottom: var(--store-floating-bottom);
   max-height: calc(100svh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-floating-bottom) - 1rem);
@@ -274,6 +280,7 @@
     --store-bottom-nav-height: 0px;
     --store-bottom-nav-offset: 0px;
     --store-floating-bottom: 2rem;
+    --store-secondary-floating-bottom: 7.5rem;
     --store-banner-bottom: 1.5rem;
     --store-content-bottom-padding: 5rem;
     --store-footer-bottom-padding: 0px;
@@ -306,8 +313,9 @@
     --store-header-top-padding: max(var(--store-safe-top), 0.5rem);
     --store-bottom-nav-offset: calc(var(--store-safe-bottom) + 0.875rem);
     --store-floating-bottom: calc(var(--store-bottom-nav-offset) + var(--store-bottom-nav-height) + 0.875rem);
+    --store-secondary-floating-bottom: calc(var(--store-floating-bottom) + 4.5rem + var(--store-floating-stack-gap));
     --store-banner-bottom: calc(var(--store-bottom-nav-offset) + var(--store-bottom-nav-height) + 1.125rem);
-    --store-content-bottom-padding: calc(var(--store-floating-bottom) + 4rem);
+    --store-content-bottom-padding: calc(var(--store-secondary-floating-bottom) + 4rem);
     --store-footer-bottom-padding: calc(var(--store-bottom-nav-height) + var(--store-bottom-nav-offset) + 1.25rem);
     --store-dialog-bottom: calc(var(--store-safe-bottom) + 1rem);
     --store-hero-min-height: calc(100svh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset));
@@ -334,6 +342,7 @@
     --store-bottom-nav-height: 0px;
     --store-bottom-nav-offset: 0px;
     --store-floating-bottom: 2rem;
+    --store-secondary-floating-bottom: 7.5rem;
     --store-banner-bottom: 1.5rem;
     --store-content-bottom-padding: 5rem;
     --store-footer-bottom-padding: 0px;

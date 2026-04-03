@@ -73,11 +73,11 @@ export default function AdminSidebar() {
             expanded ? 'gap-3 px-4' : 'justify-center px-3'
           }`}
         >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 overflow-hidden">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 overflow-hidden">
             <img
               src="/logo-sm.png"
               alt="MG"
-              className="h-6 w-auto object-contain rounded"
+              className="h-7 w-auto object-contain rounded"
             />
           </div>
 
