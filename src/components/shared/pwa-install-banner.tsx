@@ -13,6 +13,10 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
 }
 
+const PWA_UI_STATE_KEY = 'mg-pwa-ui-state'
+
+type PwaUiState = 'banner' | 'launcher' | 'installed'
+
 // ─── Helpers ────────────────────────────────────────────────────────────
 
 function usePWAState() {
@@ -23,36 +27,60 @@ function usePWAState() {
   const [showLauncher, setShowLauncher] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [referralOpen, setReferralOpen] = useState(false)
+  const [stateHydrated, setStateHydrated] = useState(false)
 
   const isIOSDevice = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream
   const isAndroidDevice = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
   const isStandalone = typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as unknown as { standalone?: boolean }).standalone === true)
 
+  const persistUiState = useCallback((state: PwaUiState) => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(PWA_UI_STATE_KEY, state)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const savedState = window.localStorage.getItem(PWA_UI_STATE_KEY) as PwaUiState | null
+    if (savedState === 'installed') {
+      setAppInstalled(true)
+    } else if (savedState === 'launcher') {
+      setDismissed(true)
+      setShowLauncher(true)
+    }
+
+    setStateHydrated(true)
+  }, [])
+
   const shouldHide = isStandalone || appInstalled || !showBanner || dismissed
 
   // Universal fallback: show banner after delay on any non-installed browser.
   useEffect(() => {
-    if (isStandalone || dismissed) return
+    if (!stateHydrated || isStandalone || dismissed || appInstalled) return
 
     const timer = setTimeout(() => {
       setShowBanner(true)
+      persistUiState('banner')
     }, 4000)
     return () => clearTimeout(timer)
-  }, [isStandalone, dismissed])
+  }, [appInstalled, dismissed, isStandalone, persistUiState, stateHydrated])
 
   // Android: capture beforeinstallprompt event
   useEffect(() => {
-    if (isStandalone || isIOSDevice || dismissed) return
+    if (!stateHydrated || isStandalone || isIOSDevice || dismissed || appInstalled) return
 
     const handler = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
-      setTimeout(() => setShowBanner(true), 3000)
+      setTimeout(() => {
+        setShowBanner(true)
+        persistUiState('banner')
+      }, 3000)
     }
 
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
-  }, [isStandalone, isIOSDevice, dismissed])
+  }, [appInstalled, dismissed, isIOSDevice, isStandalone, persistUiState, stateHydrated])
 
   // App installed event
   useEffect(() => {
@@ -60,10 +88,11 @@ function usePWAState() {
       setAppInstalled(true)
       setShowBanner(false)
       setShowLauncher(false)
+      persistUiState('installed')
     }
     window.addEventListener('appinstalled', handler)
     return () => window.removeEventListener('appinstalled', handler)
-  }, [])
+  }, [persistUiState])
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -90,7 +119,8 @@ function usePWAState() {
     setShowBanner(false)
     setShowLauncher(true)
     setDismissed(true)
-  }, [])
+    persistUiState('launcher')
+  }, [persistUiState])
 
   const hideBanner = useCallback(() => {
     setShowBanner(false)
@@ -101,13 +131,15 @@ function usePWAState() {
     setDismissed(false)
     setShowLauncher(false)
     setShowBanner(true)
-  }, [])
+    persistUiState('banner')
+  }, [persistUiState])
 
   const showDownloadLauncher = useCallback(() => {
     setDismissed(true)
     setShowBanner(false)
     setShowLauncher(true)
-  }, [])
+    persistUiState('launcher')
+  }, [persistUiState])
 
   return {
     deferredPrompt,
@@ -121,6 +153,7 @@ function usePWAState() {
     isIOSDevice,
     isStandalone,
     shouldHide,
+    stateHydrated,
     dismiss,
     hideBanner,
     reopenBanner,
@@ -143,6 +176,7 @@ export default function PWAInstallBanner() {
     isIOSDevice,
     isStandalone,
     shouldHide,
+    stateHydrated,
     dismiss,
     hideBanner,
     reopenBanner,
@@ -212,7 +246,7 @@ export default function PWAInstallBanner() {
 
   return (
     <AnimatePresence>
-      {!shouldHide && !guideOpen && !chatOpen && !referralOpen && (
+      {stateHydrated && !shouldHide && !guideOpen && !chatOpen && !referralOpen && (
         <motion.div
           initial={{ opacity: 0, y: 80, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -372,7 +406,7 @@ export default function PWAInstallBanner() {
         </motion.div>
       )}
 
-      {showLauncher && !appInstalled && !isStandalone && !guideOpen && !chatOpen && !referralOpen && (
+      {stateHydrated && showLauncher && !appInstalled && !isStandalone && !guideOpen && !chatOpen && !referralOpen && (
         <motion.button
           initial={{ opacity: 0, y: 20, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}

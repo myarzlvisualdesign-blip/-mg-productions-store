@@ -84,7 +84,7 @@ function FeaturedProducts() {
 
   if (loading) {
     return (
-      <section className="py-8 sm:py-14">
+      <section className="py-6 sm:py-14">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <div className="h-6 w-40 animate-pulse rounded-lg bg-white/5 mb-6 mx-auto" />
           <div className="flex items-center justify-center gap-3">
@@ -101,7 +101,7 @@ function FeaturedProducts() {
   const currentPartner = partners[activeIndex]
 
   return (
-    <section id="featured" className="py-8 sm:py-14">
+    <section id="featured" className="py-6 sm:py-14">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <div className="text-center mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-3xl font-bold">
@@ -198,9 +198,9 @@ export default function Storefront() {
   }, [])
 
   return (
-    <div className="flex min-h-svh flex-col">
+    <div className="min-h-svh">
       <StoreHeader />
-      <main className="storefront-main flex-1">
+      <main className="storefront-main">
         <AnimatePresence mode="wait">
           {activeTab === 'store' && (
             <motion.div key="tab-store" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
@@ -238,7 +238,7 @@ export default function Storefront() {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25, delay: 0.5 }}
           onClick={() => setReferralOpen(true)}
-          className="store-floating-button-secondary fixed right-4 z-50 flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-4 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 hover:from-purple-500 hover:to-pink-500 md:bottom-28 md:right-5 md:h-12 md:gap-2.5 md:px-5"
+          className="store-floating-button-secondary fixed right-4 z-50 flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-4 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 hover:from-purple-500 hover:to-pink-500 md:right-5 md:h-12 md:gap-2.5 md:px-5"
           aria-label="Buka Referral Program"
         >
           <Gift className="size-5" />

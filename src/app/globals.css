@@ -57,14 +57,16 @@
   --store-header-height: 4.5rem;
   --store-bottom-nav-height: 5rem;
   --store-bottom-nav-offset: calc(var(--store-safe-bottom) + 0.625rem);
+  --store-chat-button-size: 3.5rem;
+  --store-referral-button-height: 2.75rem;
   --store-floating-bottom: calc(var(--store-bottom-nav-offset) + var(--store-bottom-nav-height) + 0.75rem);
-  --store-floating-stack-gap: 1rem;
-  --store-secondary-floating-bottom: calc(var(--store-floating-bottom) + 4.5rem + var(--store-floating-stack-gap));
+  --store-floating-stack-gap: 0.625rem;
+  --store-secondary-floating-bottom: calc(var(--store-floating-bottom) + var(--store-chat-button-size) + var(--store-floating-stack-gap));
   --store-banner-bottom: calc(var(--store-bottom-nav-offset) + var(--store-bottom-nav-height) + 1rem);
-  --store-content-bottom-padding: calc(var(--store-secondary-floating-bottom) + 3.75rem);
+  --store-content-bottom-padding: 1.5rem;
   --store-footer-bottom-padding: calc(var(--store-bottom-nav-height) + var(--store-bottom-nav-offset) + 1rem);
   --store-dialog-bottom: calc(var(--store-safe-bottom) + 1rem);
-  --store-hero-min-height: calc(100svh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset));
+  --store-hero-min-height: min(32rem, calc(100svh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset)));
   --background: oklch(0.13 0.02 280);
   --foreground: oklch(0.95 0.01 280);
   --card: oklch(0.16 0.02 280);
@@ -220,8 +222,8 @@
 
 .store-hero-section {
   min-height: var(--store-hero-min-height);
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.5rem;
 }
 
 .admin-shell {
@@ -236,7 +238,7 @@
 
 @supports (height: 100dvh) {
   :root {
-    --store-hero-min-height: calc(100dvh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset));
+    --store-hero-min-height: min(32rem, calc(100dvh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset)));
   }
 
   .store-floating-panel {
@@ -280,9 +282,9 @@
     --store-bottom-nav-height: 0px;
     --store-bottom-nav-offset: 0px;
     --store-floating-bottom: 2rem;
-    --store-secondary-floating-bottom: 7.5rem;
+    --store-secondary-floating-bottom: calc(var(--store-floating-bottom) + var(--store-chat-button-size) + 0.875rem);
     --store-banner-bottom: 1.5rem;
-    --store-content-bottom-padding: 5rem;
+    --store-content-bottom-padding: 2.5rem;
     --store-footer-bottom-padding: 0px;
     --store-dialog-bottom: 1rem;
     --store-hero-min-height: calc(100svh - var(--store-header-height) - var(--store-header-top-padding));
@@ -313,17 +315,17 @@
     --store-header-top-padding: max(var(--store-safe-top), 0.5rem);
     --store-bottom-nav-offset: calc(var(--store-safe-bottom) + 0.875rem);
     --store-floating-bottom: calc(var(--store-bottom-nav-offset) + var(--store-bottom-nav-height) + 0.875rem);
-    --store-secondary-floating-bottom: calc(var(--store-floating-bottom) + 4.5rem + var(--store-floating-stack-gap));
+    --store-secondary-floating-bottom: calc(var(--store-floating-bottom) + var(--store-chat-button-size) + var(--store-floating-stack-gap));
     --store-banner-bottom: calc(var(--store-bottom-nav-offset) + var(--store-bottom-nav-height) + 1.125rem);
-    --store-content-bottom-padding: calc(var(--store-secondary-floating-bottom) + 4rem);
+    --store-content-bottom-padding: 1.75rem;
     --store-footer-bottom-padding: calc(var(--store-bottom-nav-height) + var(--store-bottom-nav-offset) + 1.25rem);
     --store-dialog-bottom: calc(var(--store-safe-bottom) + 1rem);
-    --store-hero-min-height: calc(100svh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset));
+    --store-hero-min-height: min(32rem, calc(100svh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset)));
   }
 
   @supports (height: 100dvh) {
     :root {
-      --store-hero-min-height: calc(100dvh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset));
+      --store-hero-min-height: min(32rem, calc(100dvh - var(--store-header-height) - var(--store-header-top-padding) - var(--store-bottom-nav-height) - var(--store-bottom-nav-offset)));
     }
   }
 
@@ -342,9 +344,9 @@
     --store-bottom-nav-height: 0px;
     --store-bottom-nav-offset: 0px;
     --store-floating-bottom: 2rem;
-    --store-secondary-floating-bottom: 7.5rem;
+    --store-secondary-floating-bottom: calc(var(--store-floating-bottom) + var(--store-chat-button-size) + 0.875rem);
     --store-banner-bottom: 1.5rem;
-    --store-content-bottom-padding: 5rem;
+    --store-content-bottom-padding: 2.5rem;
     --store-footer-bottom-padding: 0px;
     --store-dialog-bottom: 1rem;
     --store-hero-min-height: calc(100svh - var(--store-header-height) - var(--store-header-top-padding));

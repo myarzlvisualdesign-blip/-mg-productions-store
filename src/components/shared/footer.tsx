@@ -26,7 +26,7 @@ export default function Footer() {
   }
 
   return (
-    <footer id="contact" className="store-footer mt-auto">
+    <footer id="contact" className="store-footer">
       {/* Top Border */}
       <div className="h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
 
