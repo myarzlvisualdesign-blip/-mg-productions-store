@@ -50,7 +50,7 @@ function usePWAState() {
     }).__mgDeferredPrompt ?? null
   }, [])
 
-  const waitForInstallPrompt = useCallback((timeoutMs = 1800) => {
+  const waitForInstallPrompt = useCallback((timeoutMs = 6000) => {
     if (typeof window === 'undefined') {
       return Promise.resolve<BeforeInstallPromptEvent | null>(null)
     }
@@ -318,7 +318,7 @@ export default function PWAInstallBanner() {
         // Keep flowing to the fallback below.
       }
 
-      promptEvent = await waitForInstallPrompt(1600)
+      promptEvent = await waitForInstallPrompt(6000)
     }
 
     if (!promptEvent) {

@@ -47,17 +47,9 @@ export default function PWARegister() {
       }
     }
 
-    if (document.readyState === 'complete') {
-      void register()
-      return () => {
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-        window.removeEventListener('appinstalled', handleAppInstalled)
-      }
-    }
+    void register()
 
-    window.addEventListener('load', register, { once: true })
     return () => {
-      window.removeEventListener('load', register)
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
       window.removeEventListener('appinstalled', handleAppInstalled)
     }
