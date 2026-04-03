@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { Partner } from './partner-form'
 import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
+import { broadcastLiveSync } from '@/lib/live-sync'
 
 interface PartnersTableProps {
   onEditPartner: (partner: Partner) => void
@@ -43,6 +44,7 @@ export default function PartnersTable({ onEditPartner, refreshKey }: PartnersTab
     try {
       const res = await adminFetch(`/api/partners/${partner.id}`, { method: 'DELETE' })
       if (res.ok) {
+        broadcastLiveSync('partners')
         toast.success('Mitra berhasil dihapus')
         setPartners((prev) => prev.filter((p) => p.id !== partner.id))
       } else {
@@ -65,6 +67,7 @@ export default function PartnersTable({ onEditPartner, refreshKey }: PartnersTab
       })
       if (res.ok) {
         const updated = await res.json()
+        broadcastLiveSync('partners')
         setPartners((prev) => prev.map((p) => (p.id === partner.id ? updated : p)))
         toast.success(partner.active ? 'Mitra dinonaktifkan' : 'Mitra diaktifkan')
       } else {

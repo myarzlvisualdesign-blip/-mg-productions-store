@@ -54,14 +54,27 @@ export async function PUT(
       }
     }
 
-    const category = await db.category.update({
-      where: { id },
-      data: {
-        ...(name !== undefined ? { name: name.trim() } : {}),
-        ...(order !== undefined ? { order: order } : {}),
-        ...(active !== undefined ? { active: active } : {}),
-      },
-    })
+    const nextName = name !== undefined ? name.trim() : existing.name
+    const nameChanged = nextName !== existing.name
+
+    const [category] = await db.$transaction([
+      db.category.update({
+        where: { id },
+        data: {
+          ...(name !== undefined ? { name: nextName } : {}),
+          ...(order !== undefined ? { order: order } : {}),
+          ...(active !== undefined ? { active: active } : {}),
+        },
+      }),
+      ...(nameChanged
+        ? [
+            db.product.updateMany({
+              where: { category: existing.name },
+              data: { category: nextName },
+            }),
+          ]
+        : []),
+    ])
 
     return NextResponse.json(category)
   } catch {

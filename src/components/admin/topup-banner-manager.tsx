@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
+import { broadcastLiveSync } from '@/lib/live-sync'
 
 interface BannerItem {
   id: string
@@ -384,6 +385,7 @@ export default function TopUpBannerManager() {
       })
 
       if (res.ok) {
+        broadcastLiveSync('topup-banners')
         toast.success(isEditing ? 'Banner berhasil diperbarui' : 'Banner berhasil ditambahkan')
         setShowForm(false)
         setEditItem(null)
@@ -407,6 +409,7 @@ export default function TopUpBannerManager() {
     try {
       const res = await adminFetch(`/api/topup-banners/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
+        broadcastLiveSync('topup-banners')
         toast.success(`"${deleteTarget.title}" berhasil dihapus`)
         fetchItems()
       } else {
@@ -431,6 +434,7 @@ export default function TopUpBannerManager() {
       })
       if (res.ok) {
         const updated = await res.json()
+        broadcastLiveSync('topup-banners')
         setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)))
         toast.success(item.active ? 'Dinonaktifkan' : 'Diaktifkan')
       } else {

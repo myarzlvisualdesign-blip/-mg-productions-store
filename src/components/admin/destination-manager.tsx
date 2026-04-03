@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
+import { broadcastLiveSync } from '@/lib/live-sync'
 
 interface DestinationItem {
   id: string
@@ -369,6 +370,7 @@ export default function DestinationManager() {
       })
 
       if (res.ok) {
+        broadcastLiveSync('destinations')
         toast.success(isEditing ? 'Destinasi berhasil diperbarui' : 'Destinasi berhasil ditambahkan')
         setShowForm(false)
         setEditItem(null)
@@ -392,6 +394,7 @@ export default function DestinationManager() {
     try {
       const res = await adminFetch(`/api/destinations/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
+        broadcastLiveSync('destinations')
         toast.success(`"${deleteTarget.name}" berhasil dihapus`)
         fetchItems()
       } else {
@@ -416,6 +419,7 @@ export default function DestinationManager() {
       })
       if (res.ok) {
         const updated = await res.json()
+        broadcastLiveSync('destinations')
         setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)))
         toast.success(item.active ? 'Dinonaktifkan' : 'Diaktifkan')
       } else {

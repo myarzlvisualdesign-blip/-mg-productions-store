@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { adminFetch } from '@/lib/admin-fetch'
+import { broadcastLiveSync } from '@/lib/live-sync'
 
 export interface Partner {
   id: string
@@ -186,6 +187,7 @@ export default function PartnerForm({ editPartner, onDone }: PartnerFormProps) {
       })
 
       if (res.ok) {
+        broadcastLiveSync('partners')
         toast.success(isEditing ? 'Mitra berhasil diperbarui' : 'Mitra berhasil ditambahkan')
         onDone()
       } else {

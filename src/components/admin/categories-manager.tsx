@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
+import { broadcastLiveSync } from '@/lib/live-sync'
 
 export interface Category {
   id: string
@@ -57,6 +58,7 @@ function EditRow({
         body: JSON.stringify({ name: name.trim() }),
       })
       if (res.ok) {
+        broadcastLiveSync('categories', 'products')
         toast.success('Kategori berhasil diperbarui')
         onSave(category.id, name.trim())
       } else {
@@ -126,6 +128,7 @@ export default function CategoriesManager() {
         body: JSON.stringify({ name: newName.trim() }),
       })
       if (res.ok) {
+        broadcastLiveSync('categories')
         toast.success(`Kategori "${newName.trim()}" berhasil ditambahkan`)
         setNewName('')
         fetchCategories()
@@ -151,6 +154,7 @@ export default function CategoriesManager() {
     try {
       const res = await adminFetch(`/api/categories/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
+        broadcastLiveSync('categories')
         toast.success(`Kategori "${deleteTarget.name}" berhasil dihapus`)
         fetchCategories()
       } else {
@@ -175,6 +179,7 @@ export default function CategoriesManager() {
       })
       if (res.ok) {
         const updated = await res.json()
+        broadcastLiveSync('categories')
         setCategories((prev) => prev.map((c) => (c.id === category.id ? updated : c)))
         toast.success(category.active ? 'Kategori dinonaktifkan' : 'Kategori diaktifkan')
       } else {

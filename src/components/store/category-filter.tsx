@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
+import { subscribeLiveSync } from '@/lib/live-sync'
 
 interface CategoryFilterProps {
   selectedCategory: string
@@ -22,19 +23,32 @@ export default function CategoryFilter({ selectedCategory, onSelect }: CategoryF
   const startX = useRef(0)
   const scrollStart = useRef(0)
 
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const data = await fetchJsonWithRetry<Array<{ name: string }>>('/api/categories')
-        if (Array.isArray(data) && data.length > 0) {
-          setCategories(['All', ...data.map((c: { name: string }) => c.name)])
-        }
-      } catch {
-        console.error('Failed to fetch categories')
+  const fetchCategories = useCallback(async () => {
+    try {
+      const data = await fetchJsonWithRetry<Array<{ name: string }>>('/api/categories')
+      if (Array.isArray(data) && data.length > 0) {
+        setCategories(['All', ...data.map((c: { name: string }) => c.name)])
+      } else {
+        setCategories(['All'])
       }
+    } catch {
+      console.error('Failed to fetch categories')
     }
-    fetchCategories()
   }, [])
+
+  useEffect(() => {
+    void fetchCategories()
+  }, [fetchCategories])
+
+  useEffect(() => subscribeLiveSync(['categories'], () => {
+    void fetchCategories()
+  }), [fetchCategories])
+
+  useEffect(() => {
+    if (selectedCategory !== 'All' && !categories.includes(selectedCategory)) {
+      onSelect('All')
+    }
+  }, [categories, onSelect, selectedCategory])
 
   const checkScroll = useCallback(() => {
     const el = scrollRef.current

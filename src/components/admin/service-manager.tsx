@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
+import { broadcastLiveSync } from '@/lib/live-sync'
 
 type ServiceType = 'topup' | 'food' | 'travel'
 
@@ -473,6 +474,7 @@ export default function ServiceManager({ type, title, description, iconEmoji }: 
       })
 
       if (res.ok) {
+        broadcastLiveSync(type)
         toast.success(isEditing ? 'Layanan berhasil diperbarui' : 'Layanan berhasil ditambahkan')
         setShowForm(false)
         setEditItem(null)
@@ -496,6 +498,7 @@ export default function ServiceManager({ type, title, description, iconEmoji }: 
     try {
       const res = await adminFetch(`${apiPath}/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
+        broadcastLiveSync(type)
         toast.success(`"${deleteTarget.name}" berhasil dihapus`)
         fetchItems()
       } else {
@@ -520,6 +523,7 @@ export default function ServiceManager({ type, title, description, iconEmoji }: 
       })
       if (res.ok) {
         const updated = await res.json()
+        broadcastLiveSync(type)
         setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)))
         toast.success(item.active ? 'Dinonaktifkan' : 'Diaktifkan')
       } else {

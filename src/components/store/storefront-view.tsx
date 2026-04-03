@@ -14,6 +14,7 @@ import BottomNav, { type BottomTab } from '@/components/store/bottom-nav'
 import ReferralDialog from '@/components/store/referral-dialog'
 import { toast } from 'sonner'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
+import { subscribeLiveSync } from '@/lib/live-sync'
 
 // Dynamic imports with SSR disabled — prevents hydration mismatch from Turbopack cache staleness
 const ProductGrid = dynamic(() => import('@/components/store/product-grid'), { ssr: false })
@@ -39,19 +40,27 @@ function FeaturedProducts() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({})
 
-  useEffect(() => {
-    async function fetchPartners() {
-      try {
-        const data = await fetchJsonWithRetry<PartnerData[]>('/api/partners')
-        if (Array.isArray(data)) setPartners(data)
-      } catch {
-        console.error('Failed to fetch partners')
-      } finally {
-        setLoading(false)
+  const fetchPartners = useCallback(async () => {
+    try {
+      const data = await fetchJsonWithRetry<PartnerData[]>('/api/partners')
+      if (Array.isArray(data)) {
+        setPartners(data)
+        setActiveIndex((prev) => (data.length === 0 ? 0 : Math.min(prev, data.length - 1)))
       }
+    } catch {
+      console.error('Failed to fetch partners')
+    } finally {
+      setLoading(false)
     }
-    fetchPartners()
   }, [])
+
+  useEffect(() => {
+    void fetchPartners()
+  }, [fetchPartners])
+
+  useEffect(() => subscribeLiveSync(['partners'], () => {
+    void fetchPartners()
+  }), [fetchPartners])
 
   useEffect(() => {
     if (partners.length === 0) return

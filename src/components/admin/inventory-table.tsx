@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatRupiah } from '@/lib/utils'
 import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
+import { broadcastLiveSync } from '@/lib/live-sync'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -97,6 +98,7 @@ export default function InventoryTable({ onEditProduct, refreshKey }: InventoryT
     try {
       const res = await adminFetch(`/api/products/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
+        broadcastLiveSync('products')
         toast.success('Product deleted successfully')
         fetchProducts()
       } else {

@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
+import { broadcastLiveSync } from '@/lib/live-sync'
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -128,6 +129,7 @@ export default function ChatbotSettings() {
         throw new Error(err.error || 'Gagal menyimpan')
       }
 
+      broadcastLiveSync('chatbot-settings')
       toast.success('Pengaturan chatbot berhasil disimpan!')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Gagal menyimpan pengaturan')

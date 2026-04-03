@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UtensilsCrossed, ArrowRight, ExternalLink, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
+import { subscribeLiveSync } from '@/lib/live-sync'
 
 const MAX_CARDS = 5
 const MAX_SUB_ITEMS = 5
@@ -48,19 +49,25 @@ export default function FoodSection() {
   const [browserUrl, setBrowserUrl] = useState('')
   const [browserTitle, setBrowserTitle] = useState('')
   const [browserOpen, setBrowserOpen] = useState(false)
-  useEffect(() => {
-    async function fetchFood() {
-      try {
-        const data = await fetchJsonWithRetry<FoodItemData[]>('/api/food')
-        if (Array.isArray(data)) setCategories(data)
-      } catch {
-        console.error('Failed to fetch food items')
-      } finally {
-        setLoading(false)
-      }
+
+  const fetchFood = useCallback(async () => {
+    try {
+      const data = await fetchJsonWithRetry<FoodItemData[]>('/api/food')
+      if (Array.isArray(data)) setCategories(data)
+    } catch {
+      console.error('Failed to fetch food items')
+    } finally {
+      setLoading(false)
     }
-    fetchFood()
   }, [])
+
+  useEffect(() => {
+    void fetchFood()
+  }, [fetchFood])
+
+  useEffect(() => subscribeLiveSync(['food'], () => {
+    void fetchFood()
+  }), [fetchFood])
 
   const parseItems = (itemsJson: string): MenuItem[] => {
     try { return JSON.parse(itemsJson) } catch { return [] }

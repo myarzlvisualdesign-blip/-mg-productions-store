@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { subscribeLiveSync } from '@/lib/live-sync'
 
 // ─── Types ───────────────────────────────────────────────────────────────
 
@@ -81,25 +82,54 @@ export default function AIChatbot() {
   const inputRef = useRef<HTMLInputElement>(null)
   const hasAddedWelcome = useRef(false)
 
+  const refreshSettings = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chatbot/settings?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      })
+
+      if (!res.ok) {
+        setSettings(DEFAULT_SETTINGS)
+        return
+      }
+
+      const data = (await res.json()) as ChatbotSettings
+      setSettings(data)
+
+      setMessages((prev) => {
+        const hasOnlyWelcome = prev.length === 1 && prev[0]?.id === 'welcome'
+        if (!hasOnlyWelcome) return prev
+
+        return [
+          {
+            ...prev[0],
+            content: data.welcomeMessage || DEFAULT_SETTINGS.welcomeMessage,
+            timestamp: new Date(),
+          },
+        ]
+      })
+
+      if (data.enabled === false) {
+        setIsOpen(false)
+      }
+    } catch {
+      setSettings(DEFAULT_SETTINGS)
+    } finally {
+      setSettingsLoaded(true)
+    }
+  }, [])
+
   // ─── Fetch settings on mount ─────────────────────────────────────────
   useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const res = await fetch('/api/chatbot/settings')
-        if (res.ok) {
-          const data = await res.json()
-          setSettings(data)
-        } else {
-          setSettings(DEFAULT_SETTINGS)
-        }
-      } catch {
-        setSettings(DEFAULT_SETTINGS)
-      } finally {
-        setSettingsLoaded(true)
-      }
-    }
-    fetchSettings()
-  }, [])
+    void refreshSettings()
+  }, [refreshSettings])
+
+  useEffect(() => subscribeLiveSync(['chatbot-settings'], () => {
+    void refreshSettings()
+  }), [refreshSettings])
 
   // ─── Auto-scroll to bottom ──────────────────────────────────────────
   useEffect(() => {
@@ -114,6 +144,12 @@ export default function AIChatbot() {
       setTimeout(() => inputRef.current?.focus(), 350)
     }
   }, [isOpen])
+
+  useEffect(() => {
+    if (isOpen) {
+      void refreshSettings()
+    }
+  }, [isOpen, refreshSettings])
 
   // ─── Add welcome message on first open ──────────────────────────────
   useEffect(() => {

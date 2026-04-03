@@ -19,6 +19,7 @@ import {
 import type { Product } from './inventory-table'
 import { adminFetch, adminFetchJson } from '@/lib/admin-fetch'
 import { formatRupiah } from '@/lib/utils'
+import { broadcastLiveSync } from '@/lib/live-sync'
 
 interface ProductFormProps {
   editProduct: Product | null
@@ -216,6 +217,7 @@ export default function ProductForm({ editProduct, onDone }: ProductFormProps) {
       })
 
       if (res.ok) {
+        broadcastLiveSync('products')
         toast.success(isEditing ? 'Produk berhasil diperbarui' : 'Produk berhasil ditambahkan')
         onDone()
       } else {

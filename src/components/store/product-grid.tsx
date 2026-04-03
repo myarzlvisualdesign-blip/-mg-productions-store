@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import CategoryFilter from './category-filter'
 import ProductCard, { type Product } from './product-card'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
+import { subscribeLiveSync } from '@/lib/live-sync'
 
 const ITEMS_PER_PAGE = 16
 type StoreSearchDetail = string | { query: string; scrollToResults?: boolean }
@@ -54,6 +55,25 @@ export default function ProductGrid() {
   const visibleProducts = products.slice(0, visibleCount)
   const hasMore = visibleCount < products.length
 
+  const fetchProducts = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (selectedCategory !== 'All') params.set('category', selectedCategory)
+      if (searchQuery) params.set('search', searchQuery)
+      const data = await fetchJsonWithRetry<Product[]>(
+        `/api/products?${params.toString()}`
+      )
+      if (Array.isArray(data)) {
+        setProducts(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch products:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [searchQuery, selectedCategory])
+
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE)
@@ -61,26 +81,12 @@ export default function ProductGrid() {
 
   // Fetch products
   useEffect(() => {
-    async function fetchProducts() {
-      setLoading(true)
-      try {
-        const params = new URLSearchParams()
-        if (selectedCategory !== 'All') params.set('category', selectedCategory)
-        if (searchQuery) params.set('search', searchQuery)
-        const data = await fetchJsonWithRetry<Product[]>(
-          `/api/products?${params.toString()}`
-        )
-        if (Array.isArray(data)) {
-          setProducts(data)
-        }
-      } catch (err) {
-        console.error('Failed to fetch products:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchProducts()
-  }, [selectedCategory, searchQuery])
+    void fetchProducts()
+  }, [fetchProducts])
+
+  useEffect(() => subscribeLiveSync(['products', 'categories'], () => {
+    void fetchProducts()
+  }), [fetchProducts])
 
   // Intersection Observer — auto load more when scrolling to bottom
   useEffect(() => {

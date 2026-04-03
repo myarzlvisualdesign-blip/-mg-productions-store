@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plane, ArrowRight, ExternalLink, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
 import InAppBrowser from '@/components/shared/in-app-browser'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
+import { subscribeLiveSync } from '@/lib/live-sync'
 
 const MAX_CARDS = 5
 const MAX_SUB_ITEMS = 5
@@ -62,20 +63,28 @@ function PopularDestinationsSlider() {
   const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  const fetchDestinations = useCallback(async () => {
+    try {
+      const data = await fetchJsonWithRetry<DestinationItem[]>('/api/destinations')
+      if (Array.isArray(data)) {
+        setDestinations(data)
+        setActiveIndex((prev) => (data.length === 0 ? 0 : Math.min(prev, data.length - 1)))
+      }
+    } catch {
+      console.error('Failed to fetch destinations')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   // Fetch destinations
   useEffect(() => {
-    async function fetchDestinations() {
-      try {
-        const data = await fetchJsonWithRetry<DestinationItem[]>('/api/destinations')
-        if (Array.isArray(data)) setDestinations(data)
-      } catch {
-        console.error('Failed to fetch destinations')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchDestinations()
-  }, [])
+    void fetchDestinations()
+  }, [fetchDestinations])
+
+  useEffect(() => subscribeLiveSync(['destinations'], () => {
+    void fetchDestinations()
+  }), [fetchDestinations])
 
   // Auto-slide timer
   useEffect(() => {
@@ -216,19 +225,25 @@ export default function TravelSection() {
   const [browserUrl, setBrowserUrl] = useState('')
   const [browserTitle, setBrowserTitle] = useState('')
   const [browserOpen, setBrowserOpen] = useState(false)
-  useEffect(() => {
-    async function fetchTravel() {
-      try {
-        const data = await fetchJsonWithRetry<TravelItem[]>('/api/travel')
-        if (Array.isArray(data)) setServices(data)
-      } catch {
-        console.error('Failed to fetch travel services')
-      } finally {
-        setLoading(false)
-      }
+
+  const fetchTravel = useCallback(async () => {
+    try {
+      const data = await fetchJsonWithRetry<TravelItem[]>('/api/travel')
+      if (Array.isArray(data)) setServices(data)
+    } catch {
+      console.error('Failed to fetch travel services')
+    } finally {
+      setLoading(false)
     }
-    fetchTravel()
   }, [])
+
+  useEffect(() => {
+    void fetchTravel()
+  }, [fetchTravel])
+
+  useEffect(() => subscribeLiveSync(['travel'], () => {
+    void fetchTravel()
+  }), [fetchTravel])
 
   const parseItems = (itemsJson: string): SubItem[] => {
     try { return JSON.parse(itemsJson) } catch { return [] }
