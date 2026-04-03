@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import dynamic from "next/dynamic";
 import "./globals.css";
 import { Toaster } from "sonner";
 import SplashWrapper from "@/components/shared/splash-wrapper";
-import AIChatbot from "@/components/shared/ai-chatbot";
+
+const AIChatbot = dynamic(() => import("@/components/shared/ai-chatbot"));
 
 export const viewport: Viewport = {
   themeColor: "#7c3aed",

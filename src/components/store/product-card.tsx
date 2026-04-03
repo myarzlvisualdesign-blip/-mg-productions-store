@@ -98,6 +98,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             src={product.image}
             alt={product.name}
             className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            decoding="async"
+            sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, 50vw"
             onError={() => setImgError(true)}
           />
         ) : (

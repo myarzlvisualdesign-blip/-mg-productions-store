@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useDeferredValue, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, PackageOpen, ChevronDown, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -52,6 +52,7 @@ export default function ProductGrid() {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE)
   const [loadingMore, setLoadingMore] = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const deferredSearchQuery = useDeferredValue(searchQuery)
 
   const visibleProducts = products.slice(0, visibleCount)
   const hasMore = visibleCount < products.length
@@ -64,7 +65,7 @@ export default function ProductGrid() {
     try {
       const params = new URLSearchParams()
       if (selectedCategory !== 'All') params.set('category', selectedCategory)
-      if (searchQuery) params.set('search', searchQuery)
+      if (deferredSearchQuery) params.set('search', deferredSearchQuery)
       const data = await fetchJsonWithRetry<Product[]>(
         `/api/products?${params.toString()}`
       )
@@ -78,12 +79,12 @@ export default function ProductGrid() {
         setLoading(false)
       }
     }
-  }, [searchQuery, selectedCategory])
+  }, [deferredSearchQuery, selectedCategory])
 
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE)
-  }, [selectedCategory, searchQuery])
+  }, [selectedCategory, deferredSearchQuery])
 
   // Fetch products
   useEffect(() => {

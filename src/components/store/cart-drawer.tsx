@@ -100,6 +100,8 @@ export default function CartDrawer() {
                               src={item.image}
                               alt={item.name}
                               className="w-full h-full object-cover"
+                              loading="lazy"
+                              decoding="async"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = 'none'
                               }}

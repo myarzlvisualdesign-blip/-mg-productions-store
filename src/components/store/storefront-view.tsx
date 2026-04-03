@@ -8,10 +8,8 @@ import { Gift } from 'lucide-react'
 // Store Components
 import StoreHeader from '@/components/shared/store-header'
 import HeroSection from '@/components/store/hero-section'
-import CartDrawer from '@/components/store/cart-drawer'
 import Footer from '@/components/shared/footer'
 import BottomNav, { type BottomTab } from '@/components/store/bottom-nav'
-import ReferralDialog from '@/components/store/referral-dialog'
 import { toast } from 'sonner'
 import { fetchJsonWithRetry } from '@/lib/client-fetch'
 import { subscribeLiveSync } from '@/lib/live-sync'
@@ -22,6 +20,8 @@ const ProductGrid = dynamic(() => import('@/components/store/product-grid'), { s
 const TopUpSection = dynamic(() => import('@/components/store/topup-section'), { ssr: false })
 const FoodSection = dynamic(() => import('@/components/store/food-section'), { ssr: false })
 const TravelSection = dynamic(() => import('@/components/store/travel-section'), { ssr: false })
+const CartDrawer = dynamic(() => import('@/components/store/cart-drawer'), { ssr: false })
+const ReferralDialog = dynamic(() => import('@/components/store/referral-dialog'), { ssr: false })
 
 // ─── Featured Products (Mitra Resmi Kami) Section ───────────────────────
 

@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 const SPLASH_KEY = 'mg_splash_shown'
-const DURATION = 4000
+const DURATION = 1600
+const TICK_MS = 50
 
 export default function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const [visible, setVisible] = useState(true)
@@ -22,27 +23,22 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
     }, 600)
   }, [onComplete])
 
-  // Progress timer: 0 → 100 over DURATION ms
   useEffect(() => {
     if (exiting) return
 
     const start = Date.now()
-    let rafId: number
-
-    const tick = () => {
+    const intervalId = window.setInterval(() => {
       const elapsed = Date.now() - start
       const pct = Math.min(100, (elapsed / DURATION) * 100)
       setProgress(pct)
 
       if (pct >= 100) {
+        window.clearInterval(intervalId)
         dismiss()
-        return
       }
-      rafId = requestAnimationFrame(tick)
-    }
+    }, TICK_MS)
 
-    rafId = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafId)
+    return () => window.clearInterval(intervalId)
   }, [exiting, dismiss])
 
   // Check if already shown this session
