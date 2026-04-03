@@ -60,6 +60,10 @@ export async function POST(request: NextRequest) {
 
     const normalized = normalizeText(message)
     const searchTerms = buildSearchTerms(message)
+    const isProductIntent = hasAnyKeyword(normalized, [
+      'produk', 'barang', 'catalog', 'katalog', 'tersedia', 'available',
+      'rekomendasi', 'cari', 'search', 'shop', 'belanja',
+    ]) || searchTerms.length > 0
     const activeReferralSettings = await db.referralSettings.findFirst({
       select: { enabled: true, minOrderAmount: true, refereeReward: true },
     })
@@ -192,6 +196,20 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         response: `Aku temukan beberapa produk yang relevan buat kamu:\n${lines.join('\n')}\n\nKalau mau, sebutkan nama, kategori, atau budget yang lebih spesifik supaya aku saring lagi.`,
+      })
+    }
+
+    if (isProductIntent) {
+      const totalProducts = await db.product.count()
+
+      if (totalProducts === 0) {
+        return NextResponse.json({
+          response: 'Saat ini katalog produk store sedang kosong, jadi aku tidak bisa merekomendasikan produk apa pun. Kalau kamu mau, aku masih bisa bantu info top up, food, travel, checkout, atau referral.',
+        })
+      }
+
+      return NextResponse.json({
+        response: 'Aku belum menemukan produk yang cocok dengan kata kunci itu di katalog saat ini. Coba ketik nama produk yang lebih spesifik, kategori, atau rentang budget yang kamu cari ya.',
       })
     }
 
