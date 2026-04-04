@@ -41,6 +41,10 @@ function FeaturedProducts() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({})
 
+  const goToNextPartner = useCallback(() => {
+    setActiveIndex((prev) => (partners.length === 0 ? 0 : (prev + 1) % partners.length))
+  }, [partners.length])
+
   const fetchPartners = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!silent) {
       setLoading(true)
@@ -77,20 +81,20 @@ function FeaturedProducts() {
   useEffect(() => {
     if (partners.length === 0) return
     const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % partners.length)
-    }, 4500)
+      goToNextPartner()
+    }, 2600)
     return () => clearInterval(timer)
-  }, [partners.length])
+  }, [goToNextPartner, partners.length])
 
   if (loading) {
     return (
       <section className="py-6 sm:py-14">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="h-6 w-40 animate-pulse rounded-lg bg-white/5 mb-6 mx-auto" />
-          <div className="flex items-center justify-center gap-3">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="w-14 h-14 rounded-full animate-pulse bg-white/5" />
-            ))}
+          <div className="mx-auto max-w-md">
+            <div className="mb-4 h-4 w-28 animate-pulse rounded-full bg-white/5 mx-auto" />
+            <div className="rounded-[2rem] border border-white/6 bg-white/[0.03] p-4 shadow-2xl shadow-black/20">
+              <div className="h-48 animate-pulse rounded-[1.5rem] bg-white/5 sm:h-56" />
+            </div>
           </div>
         </div>
       </section>
@@ -99,68 +103,74 @@ function FeaturedProducts() {
 
   if (partners.length === 0) return null
   const currentPartner = partners[activeIndex]
+  const hasLink = !!currentPartner.link
+  const cardContent = (
+    <div className="mx-auto w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-5">
+      <div className="text-center text-[11px] font-medium uppercase tracking-[0.28em] text-white/55">
+        Supported by
+      </div>
+
+      <div className="mt-4 flex min-h-[12rem] items-center justify-center rounded-[1.6rem] border border-white/6 bg-white/[0.03] px-6 py-8 sm:min-h-[14rem] sm:px-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPartner.id}
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -10 }}
+            transition={{ duration: 0.28, ease: 'easeOut' }}
+            className="flex h-full w-full items-center justify-center"
+          >
+            {!imgErrors[currentPartner.id] ? (
+              <img
+                src={currentPartner.image}
+                alt={currentPartner.name}
+                className="max-h-24 w-auto max-w-full object-contain sm:max-h-32"
+                onError={() => setImgErrors((prev) => ({ ...prev, [currentPartner.id]: true }))}
+              />
+            ) : (
+              <div className="text-center">
+                <div className="text-lg font-semibold text-foreground sm:text-xl">
+                  {currentPartner.name}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="mt-4 flex items-center gap-3">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/8">
+          <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500"
+            animate={{ width: `${((activeIndex + 1) / partners.length) * 100}%` }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          />
+        </div>
+        <span className="shrink-0 text-[11px] font-medium tabular-nums text-white/45">
+          {activeIndex + 1}/{partners.length}
+        </span>
+      </div>
+    </div>
+  )
 
   return (
     <section id="featured" className="py-6 sm:py-14">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
-        <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-3xl font-bold">
-            Our Official <span className="gradient-text">Partners</span>
-          </h2>
-          <p className="mt-1.5 text-xs sm:text-base text-muted-foreground max-w-md mx-auto">
-            Trusted business partner with high quality selected products
-          </p>
-        </div>
-
-        <div className="mx-auto flex max-w-full flex-wrap items-center justify-center gap-3 py-2 sm:flex-nowrap sm:gap-4">
-          {partners.map((partner, index) => {
-            const isActive = index === activeIndex
-            const hasLink = !!partner.link
-            const avatar = (
-              <div className="flex h-14 w-14 items-center justify-center sm:h-16 sm:w-16">
-                <div className={`h-14 w-14 rounded-full p-[3px] transition-all duration-300 transform-gpu sm:h-16 sm:w-16 ${isActive ? 'scale-100 bg-gradient-to-br from-purple-400 to-purple-600 shadow-[0_0_28px_rgba(168,85,247,0.35)]' : 'scale-[0.82] bg-white/[0.06]'}`}>
-                  <div className={`h-full w-full rounded-full overflow-hidden bg-muted/20 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-60 hover:opacity-80'}`}>
-                    {!imgErrors[partner.id] ? (
-                      <img src={partner.image} alt={partner.name} className="h-full w-full object-cover" onError={() => setImgErrors(p => ({ ...p, [partner.id]: true }))} />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <svg className="h-4 w-4 text-purple-400/40" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-
-            const itemClassName = "relative flex h-14 w-14 shrink-0 items-center justify-center transition-all duration-300 focus:outline-none sm:h-16 sm:w-16"
-
-            if (hasLink) {
-              return (
-                <a key={partner.id} href={partner.link} target="_blank" rel="noopener noreferrer" onClick={() => setActiveIndex(index)} className={itemClassName} aria-label={partner.name}>{avatar}</a>
-              )
-            }
-            return (
-              <button key={partner.id} onClick={() => setActiveIndex(index)} className={itemClassName} aria-label={partner.name}>{avatar}</button>
-            )
-          })}
-        </div>
-
-        <div className="flex items-center justify-center gap-1.5 mt-5 sm:mt-6">
-          {partners.map((_, index) => (
-            <button key={index} onClick={() => setActiveIndex(index)} className="transition-all duration-300 focus:outline-none">
-              <div className={`rounded-full transition-all duration-300 ${index === activeIndex ? 'w-6 h-1.5 bg-purple-500' : 'w-1.5 h-1.5 bg-white/20 hover:bg-white/40'}`} />
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-4 min-h-[4.5rem] px-4 text-center sm:mt-5 sm:min-h-[5rem]">
-          <AnimatePresence mode="wait">
-            <motion.div key={currentPartner.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
-              <h3 className="text-sm sm:text-lg font-semibold text-foreground leading-tight">{currentPartner.name}</h3>
-              <p className="mt-0.5 text-[11px] sm:text-sm text-muted-foreground line-clamp-2">{currentPartner.description}</p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
+        {hasLink ? (
+          <a
+            href={currentPartner.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={currentPartner.name}
+            className="block"
+          >
+            {cardContent}
+          </a>
+        ) : (
+          <div aria-label={currentPartner.name}>
+            {cardContent}
+          </div>
+        )}
       </div>
     </section>
   )
