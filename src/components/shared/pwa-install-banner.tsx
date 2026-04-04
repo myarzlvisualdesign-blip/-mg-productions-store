@@ -360,7 +360,7 @@ export default function PWAInstallBanner() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 80, scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 350, damping: 30, delay: 0.1 }}
-          className="store-install-banner fixed left-1/2 z-[70] w-[min(calc(100vw-1.5rem),18.75rem)] -translate-x-1/2 overflow-hidden rounded-[1.3rem] md:bottom-6 md:left-auto md:right-4 md:w-[20.5rem] md:translate-x-0"
+          className="store-install-banner fixed left-1/2 z-[70] w-[min(calc(100%-1.5rem),18.75rem)] -translate-x-1/2 overflow-hidden rounded-[1.3rem] md:bottom-6 md:left-auto md:right-4 md:w-[20.5rem] md:translate-x-0"
           style={{
             background: 'linear-gradient(180deg, rgba(50, 25, 77, 0.96) 0%, rgba(31, 16, 49, 0.98) 48%, rgba(24, 12, 37, 0.99) 100%)',
             backdropFilter: 'blur(24px)',

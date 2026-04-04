@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'mg-productions-static-v3';
+const STATIC_CACHE = 'mg-productions-static-v4';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/offline.html',

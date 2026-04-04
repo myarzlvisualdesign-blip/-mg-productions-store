@@ -112,7 +112,7 @@ function FeaturedProducts() {
           </p>
         </div>
 
-        <div className="flex items-center justify-center gap-3 sm:gap-4 flex-nowrap py-2">
+        <div className="mx-auto flex max-w-full flex-wrap items-center justify-center gap-3 py-2 sm:flex-nowrap sm:gap-4">
           {partners.map((partner, index) => {
             const isActive = index === activeIndex
             const hasLink = !!partner.link
@@ -206,7 +206,7 @@ export default function Storefront() {
   }, [])
 
   return (
-    <div className="min-h-svh">
+    <div className="min-h-svh w-full max-w-full overflow-x-hidden">
       <StoreHeader />
       <main className="storefront-main">
         <AnimatePresence mode="wait">

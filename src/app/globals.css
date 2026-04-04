@@ -138,8 +138,24 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    background-color: var(--background);
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+  }
   body {
     @apply bg-background text-foreground;
+    position: relative;
+  }
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
   }
 }
 
@@ -187,11 +203,19 @@
 }
 
 .storefront-main {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
   padding-top: calc(var(--store-header-height) + var(--store-header-top-padding));
   padding-bottom: var(--store-content-bottom-padding);
 }
 
 .store-footer {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
   padding-bottom: var(--store-footer-bottom-padding);
 }
 

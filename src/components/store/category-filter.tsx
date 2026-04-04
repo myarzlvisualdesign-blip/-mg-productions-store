@@ -198,6 +198,8 @@ export default function CategoryFilter({ selectedCategory, onSelect }: CategoryF
               '[scroll-snap-type:x_proximity]',
               // Touch momentum scrolling on iOS
               '[-webkit-overflow-scrolling:touch]',
+              // Keep horizontal swipe isolated to the category rail
+              'overscroll-x-contain touch-pan-x',
               // Hide native scrollbar
               '[scrollbar-width:none]',
               '[&::-webkit-scrollbar]:hidden',
