@@ -82,7 +82,7 @@ function FeaturedProducts() {
     if (partners.length === 0) return
     const timer = setInterval(() => {
       goToNextPartner()
-    }, 2600)
+    }, 3200)
     return () => clearInterval(timer)
   }, [goToNextPartner, partners.length])
 
@@ -90,11 +90,14 @@ function FeaturedProducts() {
     return (
       <section className="py-6 sm:py-14">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="mx-auto max-w-md">
-            <div className="mb-4 h-4 w-28 animate-pulse rounded-full bg-white/5 mx-auto" />
-            <div className="rounded-[2rem] border border-white/6 bg-white/[0.03] p-4 shadow-2xl shadow-black/20">
-              <div className="h-48 animate-pulse rounded-[1.5rem] bg-white/5 sm:h-56" />
-            </div>
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="mx-auto mb-3 h-6 w-48 animate-pulse rounded-lg bg-white/5 sm:h-8 sm:w-72" />
+            <div className="mx-auto h-4 w-72 max-w-full animate-pulse rounded-lg bg-white/5" />
+          </div>
+          <div className="mx-auto flex h-36 w-36 animate-pulse items-center justify-center rounded-full bg-white/5 sm:h-44 sm:w-44" />
+          <div className="mt-6 text-center">
+            <div className="mx-auto h-7 w-52 animate-pulse rounded-lg bg-white/5" />
+            <div className="mx-auto mt-3 h-5 w-64 max-w-full animate-pulse rounded-lg bg-white/5" />
           </div>
         </div>
       </section>
@@ -104,53 +107,66 @@ function FeaturedProducts() {
   if (partners.length === 0) return null
   const currentPartner = partners[activeIndex]
   const hasLink = !!currentPartner.link
-  const cardContent = (
-    <div className="mx-auto w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-5">
-      <div className="text-center text-[11px] font-medium uppercase tracking-[0.28em] text-white/55">
-        Supported by
+  const logoContent = (
+    <>
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-3xl font-bold">
+          Our Official <span className="gradient-text">Partners</span>
+        </h2>
+        <p className="mt-1.5 text-xs sm:text-base text-muted-foreground max-w-md mx-auto">
+          Trusted business partner with high quality selected products
+        </p>
       </div>
 
-      <div className="mt-4 flex min-h-[12rem] items-center justify-center rounded-[1.6rem] border border-white/6 bg-white/[0.03] px-6 py-8 sm:min-h-[14rem] sm:px-8">
+      <div className="mx-auto flex justify-center py-2 sm:py-3">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPartner.id}
-            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+            initial={{ opacity: 0, scale: 0.92, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: -10 }}
-            transition={{ duration: 0.28, ease: 'easeOut' }}
-            className="flex h-full w-full items-center justify-center"
+            exit={{ opacity: 0, scale: 0.92, y: -12 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="relative flex h-36 w-36 items-center justify-center sm:h-44 sm:w-44"
           >
-            {!imgErrors[currentPartner.id] ? (
-              <img
-                src={currentPartner.image}
-                alt={currentPartner.name}
-                className="max-h-24 w-auto max-w-full object-contain sm:max-h-32"
-                onError={() => setImgErrors((prev) => ({ ...prev, [currentPartner.id]: true }))}
-              />
-            ) : (
-              <div className="text-center">
-                <div className="text-lg font-semibold text-foreground sm:text-xl">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 shadow-[0_0_45px_rgba(168,85,247,0.35)]" />
+            <div className="absolute inset-[4px] rounded-full bg-background/95" />
+            <div className="relative z-10 flex h-[calc(100%-14px)] w-[calc(100%-14px)] items-center justify-center overflow-hidden rounded-full bg-white/[0.05] p-5 sm:p-6">
+              {!imgErrors[currentPartner.id] ? (
+                <img
+                  src={currentPartner.image}
+                  alt={currentPartner.name}
+                  className="max-h-full max-w-full object-contain"
+                  onError={() => setImgErrors((prev) => ({ ...prev, [currentPartner.id]: true }))}
+                />
+              ) : (
+                <div className="text-center text-base font-semibold text-foreground sm:text-lg">
                   {currentPartner.name}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
-        <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/8">
+      <div className="mt-6 min-h-[4.5rem] px-4 text-center sm:mt-7 sm:min-h-[5rem]">
+        <AnimatePresence mode="wait">
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500"
-            animate={{ width: `${((activeIndex + 1) / partners.length) * 100}%` }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-          />
-        </div>
-        <span className="shrink-0 text-[11px] font-medium tabular-nums text-white/45">
-          {activeIndex + 1}/{partners.length}
-        </span>
+            key={`${currentPartner.id}-copy`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
+          >
+            <h3 className="text-2xl font-semibold text-foreground leading-tight sm:text-3xl">
+              {currentPartner.name}
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+              {currentPartner.description}
+            </p>
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </div>
+    </>
   )
 
   return (
@@ -164,11 +180,11 @@ function FeaturedProducts() {
             aria-label={currentPartner.name}
             className="block"
           >
-            {cardContent}
+            {logoContent}
           </a>
         ) : (
           <div aria-label={currentPartner.name}>
-            {cardContent}
+            {logoContent}
           </div>
         )}
       </div>
