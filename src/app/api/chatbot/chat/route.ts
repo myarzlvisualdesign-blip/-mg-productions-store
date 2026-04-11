@@ -4,7 +4,7 @@ import { getCanonicalChatbotSettings } from '@/lib/chatbot-settings'
 import { getCanonicalReferralSettings } from '@/lib/referral-settings'
 
 const DEFAULT_SYSTEM_PROMPT =
-  'Kamu adalah MG Assistant untuk MG PRODUCTIONS. Kamu hanya membantu pertanyaan seputar produk, pencarian barang, checkout, top up, food, travel, referral, promo, dan fitur toko. Jika pertanyaan di luar topik toko, arahkan kembali ke layanan MG PRODUCTIONS.'
+  'Kamu adalah MG Assistant untuk MG PRODUCTIONS. Kamu membantu pertanyaan seputar katalog produk, rekomendasi barang, checkout, pembayaran, pengiriman, promo, referral, top up, food, travel, dan fitur toko. Jika pertanyaan di luar topik ecommerce MG PRODUCTIONS, arahkan kembali ke layanan toko.'
 
 const SESSION_TTL_MS = 30 * 60 * 1000
 const MAX_PRODUCT_RESULTS = 5
@@ -113,7 +113,7 @@ const OUT_OF_SCOPE_KEYWORDS = [
 
 function friendlyIntro(name?: string) {
   const assistantName = name?.trim() || 'MG Assistant'
-  return `Hai, aku ${assistantName}. Aku bantu jawab soal produk, checkout, promo, referral, top up, food, dan travel di MG PRODUCTIONS.`
+  return `Hai, aku ${assistantName}. Aku bantu jawab soal katalog produk, checkout, pembayaran, pengiriman, promo, referral, top up, food, dan travel di MG PRODUCTIONS.`
 }
 
 function normalizeText(value: string) {
@@ -153,6 +153,18 @@ function buildSearchTerms(message: string) {
 
 function hasAnyKeyword(message: string, keywords: string[]) {
   return keywords.some((keyword) => message.includes(keyword))
+}
+
+function matchesSearchFields(
+  searchTerms: string[],
+  ...fields: Array<string | null | undefined>
+) {
+  if (searchTerms.length === 0) {
+    return true
+  }
+
+  const haystack = normalizeText(fields.filter(Boolean).join(' '))
+  return searchTerms.some((term) => haystack.includes(term))
 }
 
 function cleanupSessionMemory() {
@@ -328,7 +340,10 @@ function detectIntent(
     return 'product_compare'
   }
 
-  if (hasAnyKeyword(normalized, ['checkout', 'bayar', 'pembayaran', 'order', 'pesan', 'keranjang', 'cart'])) {
+  if (hasAnyKeyword(normalized, [
+    'checkout', 'bayar', 'pembayaran', 'payment', 'order', 'pesan', 'keranjang', 'cart',
+    'pengiriman', 'shipping', 'ongkir', 'resi', 'tracking', 'lacak', 'status pesanan',
+  ])) {
     return 'checkout'
   }
 
@@ -490,23 +505,13 @@ function scoreProduct(product: ProductCandidate, search: ProductSearchContext) {
 }
 
 async function getProductRecommendations(search: ProductSearchContext) {
-  const broadSearch = search.searchTerms.length === 0
   const candidates = await db.product.findMany({
-    where: broadSearch
-      ? undefined
-      : {
-          OR: search.searchTerms.flatMap((term) => ([
-            { name: { contains: term, mode: 'insensitive' as const } },
-            { description: { contains: term, mode: 'insensitive' as const } },
-            { category: { contains: term, mode: 'insensitive' as const } },
-          ])),
-        },
     orderBy: [
       { featured: 'desc' },
       { stock: 'desc' },
       { createdAt: 'desc' },
     ],
-    take: broadSearch ? 24 : 18,
+    take: 80,
     select: {
       name: true,
       category: true,
@@ -569,7 +574,7 @@ async function getProductRecommendations(search: ProductSearchContext) {
 }
 
 function buildCapabilitiesResponse(name?: string) {
-  return `${friendlyIntro(name)} Aku bisa bantu carikan produk berdasarkan nama, kategori, atau budget; kasih rekomendasi yang lebih cocok; jelasin checkout dan cart; serta kasih info top up, food, travel, promo, dan referral. Kalau mau langsung praktis, tinggal bilang misalnya "cariin produk budget 1 juta" atau "info top up yang aktif".`
+  return `${friendlyIntro(name)} Aku bisa bantu carikan produk berdasarkan nama, kategori, atau budget; kasih rekomendasi yang lebih cocok; jelasin checkout, pembayaran, pengiriman, dan cart; serta kasih info top up, food, travel, promo, dan referral. Kalau mau langsung praktis, tinggal bilang misalnya "cariin produk budget 1 juta", "cara checkout", atau "info top up yang aktif".`
 }
 
 async function handleProductIntent(
@@ -726,7 +731,7 @@ export async function POST(request: NextRequest) {
       })
 
       return NextResponse.json({
-        response: 'Untuk checkout, pilih produk lalu masukkan ke cart. Setelah itu lanjut dari keranjang ke halaman checkout. Kalau produknya punya tombol Visit, berarti prosesnya diarahkan ke link eksternal. Kalau kamu bingung di langkah tertentu, bilang bagian mana yang mentok dan aku bantu jelaskan.',
+        response: 'Untuk checkout, pilih produk lalu masukkan ke cart. Setelah itu lanjut dari keranjang ke halaman checkout. Kalau produknya punya tombol Visit, berarti prosesnya diarahkan ke link eksternal. Kalau kamu butuh info pembayaran, pengiriman, ongkir, atau tracking pesanan, bilang tahap yang sedang kamu jalani dan aku bantu jelaskan langkah berikutnya.',
       })
     }
 
@@ -750,21 +755,19 @@ export async function POST(request: NextRequest) {
     }
 
     if (intent === 'topup') {
-      const services = await db.topUpService.findMany({
-        where: searchContext.searchTerms.length > 0
-          ? {
-              active: true,
-              OR: searchContext.searchTerms.flatMap((term) => ([
-                { name: { contains: term, mode: 'insensitive' } },
-                { subtitle: { contains: term, mode: 'insensitive' } },
-                { items: { contains: term, mode: 'insensitive' } },
-              ])),
-            }
-          : { active: true },
+      const allServices = await db.topUpService.findMany({
+        where: { active: true },
         orderBy: { order: 'asc' },
-        take: 5,
-        select: { name: true, subtitle: true },
+        select: { name: true, subtitle: true, items: true },
       })
+      const services = allServices
+        .filter((service) => matchesSearchFields(
+          searchContext.searchTerms,
+          service.name,
+          service.subtitle,
+          service.items
+        ))
+        .slice(0, 5)
 
       saveSession(sessionId, {
         lastIntent: intent,
@@ -787,21 +790,19 @@ export async function POST(request: NextRequest) {
     }
 
     if (intent === 'food') {
-      const items = await db.foodItem.findMany({
-        where: searchContext.searchTerms.length > 0
-          ? {
-              active: true,
-              OR: searchContext.searchTerms.flatMap((term) => ([
-                { name: { contains: term, mode: 'insensitive' } },
-                { subtitle: { contains: term, mode: 'insensitive' } },
-                { items: { contains: term, mode: 'insensitive' } },
-              ])),
-            }
-          : { active: true },
+      const allItems = await db.foodItem.findMany({
+        where: { active: true },
         orderBy: { order: 'asc' },
-        take: 5,
-        select: { name: true, subtitle: true },
+        select: { name: true, subtitle: true, items: true },
       })
+      const items = allItems
+        .filter((item) => matchesSearchFields(
+          searchContext.searchTerms,
+          item.name,
+          item.subtitle,
+          item.items
+        ))
+        .slice(0, 5)
 
       saveSession(sessionId, {
         lastIntent: intent,
@@ -820,37 +821,33 @@ export async function POST(request: NextRequest) {
     }
 
     if (intent === 'travel') {
-      const [services, destinations] = await Promise.all([
+      const [allServices, allDestinations] = await Promise.all([
         db.travelService.findMany({
-          where: searchContext.searchTerms.length > 0
-            ? {
-                active: true,
-                OR: searchContext.searchTerms.flatMap((term) => ([
-                  { name: { contains: term, mode: 'insensitive' } },
-                  { subtitle: { contains: term, mode: 'insensitive' } },
-                  { desc: { contains: term, mode: 'insensitive' } },
-                ])),
-              }
-            : { active: true },
+          where: { active: true },
           orderBy: { order: 'asc' },
-          take: 4,
-          select: { name: true, subtitle: true },
+          select: { name: true, subtitle: true, desc: true },
         }),
         db.popularDestination.findMany({
-          where: searchContext.searchTerms.length > 0
-            ? {
-                active: true,
-                OR: searchContext.searchTerms.flatMap((term) => ([
-                  { name: { contains: term, mode: 'insensitive' } },
-                  { subtitle: { contains: term, mode: 'insensitive' } },
-                ])),
-              }
-            : { active: true },
+          where: { active: true },
           orderBy: { order: 'asc' },
-          take: 4,
           select: { name: true, subtitle: true },
         }),
       ])
+      const services = allServices
+        .filter((service) => matchesSearchFields(
+          searchContext.searchTerms,
+          service.name,
+          service.subtitle,
+          service.desc
+        ))
+        .slice(0, 4)
+      const destinations = allDestinations
+        .filter((destination) => matchesSearchFields(
+          searchContext.searchTerms,
+          destination.name,
+          destination.subtitle
+        ))
+        .slice(0, 4)
 
       saveSession(sessionId, {
         lastIntent: intent,

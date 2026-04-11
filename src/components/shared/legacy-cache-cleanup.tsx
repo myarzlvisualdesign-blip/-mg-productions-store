@@ -2,12 +2,18 @@
 
 import { useEffect } from 'react'
 
+const CLEANUP_KEY = 'mg-cache-cleanup-v1'
+
 export default function LegacyCacheCleanup() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
     void (async () => {
       try {
+        if (window.localStorage.getItem(CLEANUP_KEY) === 'done') {
+          return
+        }
+
         if ('serviceWorker' in navigator) {
           const registrations = await navigator.serviceWorker.getRegistrations()
           await Promise.all(
@@ -18,9 +24,12 @@ export default function LegacyCacheCleanup() {
                 registration.installing?.scriptURL ||
                 ''
 
-              if (scriptUrl.includes('/sw.js')) {
+              if (scriptUrl && !scriptUrl.endsWith('/sw.js')) {
                 await registration.unregister()
+                return
               }
+
+              await registration.update().catch(() => {})
             })
           )
         }
@@ -33,6 +42,8 @@ export default function LegacyCacheCleanup() {
               .map((key) => caches.delete(key))
           )
         }
+
+        window.localStorage.setItem(CLEANUP_KEY, 'done')
       } catch {
         // Ignore cleanup failures and let the app continue normally.
       }

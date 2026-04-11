@@ -453,7 +453,7 @@ export default function AdminOverview() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[540px]">
             <thead>
               <tr className="border-b border-white/[0.06]">
                 <th className="text-left text-xs font-medium text-muted-foreground pb-3 pr-4">

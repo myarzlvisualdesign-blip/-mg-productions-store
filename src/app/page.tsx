@@ -6,6 +6,7 @@ import { useViewStore } from '@/store/view-store'
 import { useAuthStore } from '@/store/auth-store'
 import dynamic from 'next/dynamic'
 import PWARegister from '@/components/shared/pwa-register'
+import StorefrontLiveSync from '@/components/shared/storefront-live-sync'
 
 const Storefront = dynamic(() => import('@/components/store/storefront-view'), { ssr: false })
 const AdminDashboard = dynamic(() => import('@/components/admin/admin-dashboard'), { ssr: false })
@@ -63,6 +64,7 @@ export default function HomePage() {
   return (
     <>
       <PWARegister />
+      {viewMode === 'store' && <StorefrontLiveSync />}
       <AnimatePresence mode="wait">
         <motion.div key={viewMode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
           {viewMode === 'store' ? <Storefront /> : <AdminDashboard />}

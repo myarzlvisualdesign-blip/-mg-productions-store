@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "sonner";
 import SplashWrapper from "@/components/shared/splash-wrapper";
+import LegacyCacheCleanup from "@/components/shared/legacy-cache-cleanup";
 
 const AIChatbot = dynamic(() => import("@/components/shared/ai-chatbot"));
 
@@ -14,12 +15,13 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
+  interactiveWidget: "resizes-content",
 };
 
 export const metadata: Metadata = {
   title: "MG PRODUCTIONS — Premium E-Commerce",
   description: "Discover premium products curated for modern living. Shop electronics, fashion, home goods and more.",
-  manifest: "/manifest.json?v=2",
+  manifest: "/manifest.json?v=3",
   keywords: ["e-commerce", "premium", "shopping", "MG PRODUCTIONS", "modern"],
   authors: [{ name: "MG PRODUCTIONS Team" }],
   appleWebApp: {
@@ -79,6 +81,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body className="font-sans antialiased">
+        <LegacyCacheCleanup />
         <SplashWrapper>{children}</SplashWrapper>
         <Toaster
           position="top-right"

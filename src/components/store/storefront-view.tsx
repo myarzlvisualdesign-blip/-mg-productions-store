@@ -126,16 +126,16 @@ function FeaturedProducts() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: -12 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="relative flex h-36 w-36 items-center justify-center sm:h-44 sm:w-44"
+            className="relative flex h-40 w-40 items-center justify-center sm:h-48 sm:w-48"
           >
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 shadow-[0_0_45px_rgba(168,85,247,0.35)]" />
-            <div className="absolute inset-[4px] rounded-full bg-background/95" />
-            <div className="relative z-10 flex h-[calc(100%-14px)] w-[calc(100%-14px)] items-center justify-center overflow-hidden rounded-full bg-white/[0.05] p-5 sm:p-6">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-400 via-fuchsia-500 to-indigo-500 shadow-[0_0_55px_rgba(168,85,247,0.3)]" />
+            <div className="absolute inset-[4px] rounded-full bg-[#0b0814]" />
+            <div className="relative z-10 flex h-[calc(100%-18px)] w-[calc(100%-18px)] items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white shadow-inner shadow-black/10">
               {!imgErrors[currentPartner.id] ? (
                 <img
                   src={currentPartner.image}
                   alt={currentPartner.name}
-                  className="max-h-full max-w-full object-contain"
+                  className="h-full w-full object-cover object-center"
                   onError={() => setImgErrors((prev) => ({ ...prev, [currentPartner.id]: true }))}
                 />
               ) : (

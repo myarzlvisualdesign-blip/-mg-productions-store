@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
@@ -19,6 +19,7 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  X,
 } from 'lucide-react'
 import { useViewStore } from '@/store/view-store'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
 
 const navItems = [
   { id: 'overview' as const, icon: LayoutDashboard, label: 'Overview' },
@@ -52,25 +54,76 @@ const toolItems = [
   { id: 'referral' as const, icon: Gift, label: 'Referral', emoji: '🎁' },
 ]
 
-export default function AdminSidebar() {
-  const [expanded, setExpanded] = useState(false)
+interface AdminSidebarProps {
+  desktopExpanded: boolean
+  mobileOpen: boolean
+  onDesktopExpandedChange: (expanded: boolean) => void
+  onMobileOpenChange: (open: boolean) => void
+}
+
+export default function AdminSidebar({
+  desktopExpanded,
+  mobileOpen,
+  onDesktopExpandedChange,
+  onMobileOpenChange,
+}: AdminSidebarProps) {
   const { adminTab, setAdminTab, toggleView } = useViewStore()
-  const itemLayoutClass = expanded
+  const showLabels = desktopExpanded || mobileOpen
+  const itemLayoutClass = showLabels
     ? 'justify-start px-3'
     : 'justify-center px-0'
 
+  useEffect(() => {
+    if (!mobileOpen) return
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onMobileOpenChange(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [mobileOpen, onMobileOpenChange])
+
+  const handleSelect = (tab: typeof adminTab) => {
+    setAdminTab(tab)
+    onMobileOpenChange(false)
+  }
+
+  const handleBackToStore = () => {
+    onMobileOpenChange(false)
+    toggleView()
+  }
+
   return (
     <TooltipProvider delayDuration={0}>
-      <motion.aside
-        initial={false}
-        animate={{ width: expanded ? 256 : 64 }}
-        transition={{ duration: 0.3, ease: [0.25, 0.8, 0.25, 1] }}
-        className="admin-sidebar fixed left-0 top-0 z-40 flex h-screen flex-col glass-card border-r border-white/[0.06]"
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/65 backdrop-blur-[2px] md:hidden"
+            aria-label="Tutup navigasi admin"
+            onClick={() => onMobileOpenChange(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <aside
+        className={cn(
+          'admin-sidebar fixed left-0 top-0 z-50 flex h-screen flex-col glass-card border-r border-white/[0.06] transition-[width,transform] duration-300 md:translate-x-0',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full',
+          showLabels ? 'w-[280px] md:w-64' : 'w-[280px] md:w-16'
+        )}
       >
         {/* Top: Logo + Toggle */}
         <div
-          className={`flex items-center border-b border-white/[0.06] py-5 ${
-            expanded ? 'gap-3 px-4' : 'justify-center px-3'
+          className={`relative flex items-center border-b border-white/[0.06] py-5 ${
+            showLabels ? 'gap-3 px-4' : 'justify-center px-3'
           }`}
         >
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 overflow-hidden">
@@ -82,7 +135,7 @@ export default function AdminSidebar() {
           </div>
 
           <AnimatePresence>
-            {expanded && (
+            {showLabels && (
               <motion.div
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
@@ -99,12 +152,22 @@ export default function AdminSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setExpanded(!expanded)}
-            className={`h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground hover:bg-white/5 ${
-              expanded ? 'ml-auto' : 'absolute right-3 top-6'
+            onClick={() => onDesktopExpandedChange(!desktopExpanded)}
+            className={`hidden h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground hover:bg-white/5 md:inline-flex ${
+              desktopExpanded ? 'ml-auto' : 'absolute right-3 top-6'
             }`}
           >
-            {expanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            {desktopExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onMobileOpenChange(false)}
+            className="ml-auto h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground hover:bg-white/5 md:hidden"
+            aria-label="Tutup navigasi admin"
+          >
+            <X className="h-4 w-4" />
           </Button>
         </div>
 
@@ -117,7 +180,7 @@ export default function AdminSidebar() {
             const button = (
               <motion.button
                 key={item.id}
-                onClick={() => setAdminTab(item.id)}
+                onClick={() => handleSelect(item.id)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`relative flex items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ${itemLayoutClass} ${
@@ -128,7 +191,7 @@ export default function AdminSidebar() {
               >
                 <Icon className="h-5 w-5 shrink-0" />
                 <AnimatePresence>
-                  {expanded && (
+                  {showLabels && (
                     <motion.span
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: 'auto' }}
@@ -150,7 +213,7 @@ export default function AdminSidebar() {
               </motion.button>
             )
 
-            if (expanded) return button
+            if (showLabels) return button
             return (
               <Tooltip key={item.id}>
                 <TooltipTrigger asChild>{button}</TooltipTrigger>
@@ -165,7 +228,7 @@ export default function AdminSidebar() {
           </div>
 
           {/* Services Section Label */}
-          {expanded && (
+          {showLabels && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -185,7 +248,7 @@ export default function AdminSidebar() {
             const button = (
               <motion.button
                 key={item.id}
-                onClick={() => setAdminTab(item.id)}
+                onClick={() => handleSelect(item.id)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`relative flex items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ${itemLayoutClass} ${
@@ -196,7 +259,7 @@ export default function AdminSidebar() {
               >
                 <span className="shrink-0 text-base">{item.emoji}</span>
                 <AnimatePresence>
-                  {expanded && (
+                  {showLabels && (
                     <motion.span
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: 'auto' }}
@@ -218,7 +281,7 @@ export default function AdminSidebar() {
               </motion.button>
             )
 
-            if (expanded) return button
+            if (showLabels) return button
             return (
               <Tooltip key={item.id}>
                 <TooltipTrigger asChild>{button}</TooltipTrigger>
@@ -233,7 +296,7 @@ export default function AdminSidebar() {
           </div>
 
           {/* Tools Section Label */}
-          {expanded && (
+          {showLabels && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -253,7 +316,7 @@ export default function AdminSidebar() {
             const button = (
               <motion.button
                 key={item.id}
-                onClick={() => setAdminTab(item.id)}
+                onClick={() => handleSelect(item.id)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`relative flex items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ${itemLayoutClass} ${
@@ -264,7 +327,7 @@ export default function AdminSidebar() {
               >
                 <span className="shrink-0 text-base">{item.emoji}</span>
                 <AnimatePresence>
-                  {expanded && (
+                  {showLabels && (
                     <motion.span
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: 'auto' }}
@@ -286,7 +349,7 @@ export default function AdminSidebar() {
               </motion.button>
             )
 
-            if (expanded) return button
+            if (showLabels) return button
             return (
               <Tooltip key={item.id}>
                 <TooltipTrigger asChild>{button}</TooltipTrigger>
@@ -298,10 +361,10 @@ export default function AdminSidebar() {
 
         {/* Bottom: Back to Store */}
         <div className="border-t border-white/[0.06] px-3 py-4">
-          {expanded ? (
+          {showLabels ? (
             <Button
               variant="ghost"
-              onClick={toggleView}
+              onClick={handleBackToStore}
               className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-xl px-3"
             >
               <ArrowLeft className="h-5 w-5 shrink-0" />
@@ -321,7 +384,7 @@ export default function AdminSidebar() {
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
-                  onClick={toggleView}
+                  onClick={handleBackToStore}
                   className="w-full justify-center text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-xl px-0"
                 >
                   <ArrowLeft className="h-5 w-5 shrink-0" />
@@ -331,7 +394,7 @@ export default function AdminSidebar() {
             </Tooltip>
           )}
         </div>
-      </motion.aside>
+      </aside>
     </TooltipProvider>
   )
 }

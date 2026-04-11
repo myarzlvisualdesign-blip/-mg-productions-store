@@ -17,10 +17,8 @@ export async function POST(request: NextRequest) {
       db.order.findMany({ orderBy: { createdAt: 'asc' } }),
     ])
 
-    await db.$transaction([
-      db.order.deleteMany({}),
-      db.product.deleteMany({}),
-    ])
+    await db.order.deleteMany({})
+    await db.product.deleteMany({})
 
     return NextResponse.json({
       success: true,

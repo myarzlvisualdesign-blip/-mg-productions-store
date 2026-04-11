@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  serverExternalPackages: ["@prisma/client", ".prisma/client"],
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -23,6 +24,15 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/manifest.json",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate, proxy-revalidate",
+          },
+        ],
+      },
+      {
+        source: "/offline.html",
         headers: [
           {
             key: "Cache-Control",

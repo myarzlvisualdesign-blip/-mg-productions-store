@@ -1,47 +1,62 @@
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { PrismaClient } from '@prisma/client'
+import { PrismaD1 } from '@prisma/adapter-d1'
+import { cache } from 'react'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-function createClient() {
-  const rawUrl = process.env.DATABASE_URL
+type CloudflareEnv = {
+  DB?: D1Database
+  DATABASE_URL?: string
+}
 
-  if (!rawUrl) {
-    return new PrismaClient()
-  }
-
+function createCloudflareClient() {
   try {
-    const parsed = new URL(rawUrl)
-    const isSupabasePooler = parsed.hostname.endsWith('.pooler.supabase.com')
+    const { env } = getCloudflareContext()
+    const database = (env as CloudflareEnv).DB
 
-    // Production was repeatedly configured with the session pooler on :5432.
-    // Force Prisma runtime traffic onto the safer transaction pooler setup.
-    if (isSupabasePooler && parsed.port === '5432') {
-      parsed.port = '6543'
-      if (!parsed.searchParams.has('pgbouncer')) {
-        parsed.searchParams.set('pgbouncer', 'true')
-      }
-      if (!parsed.searchParams.has('connection_limit')) {
-        parsed.searchParams.set('connection_limit', '1')
-      }
-      if (!parsed.searchParams.has('sslmode')) {
-        parsed.searchParams.set('sslmode', 'require')
-      }
-    }
+    if (!database) return null
 
-    return new PrismaClient({
-      datasources: {
-        db: {
-          url: parsed.toString(),
-        },
-      },
-    })
+    const adapter = new PrismaD1(database)
+    return new PrismaClient({ adapter })
   } catch {
-    return new PrismaClient()
+    return null
   }
 }
 
-export const db = globalForPrisma.prisma ?? createClient()
+function createLocalClient() {
+  const existing = globalForPrisma.prisma
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+  if (existing) {
+    return existing
+  }
+
+  const client = process.env.DATABASE_URL
+    ? new PrismaClient({
+        datasources: {
+          db: {
+            url: process.env.DATABASE_URL,
+          },
+        },
+      })
+    : new PrismaClient()
+
+  if (process.env.NODE_ENV !== 'production') {
+    globalForPrisma.prisma = client
+  }
+
+  return client
+}
+
+export const getDb = cache(() => createCloudflareClient() ?? createLocalClient())
+
+export const db = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getDb()
+    const value = client[prop as keyof PrismaClient]
+
+    return typeof value === 'function' ? value.bind(client) : value
+  },
+})

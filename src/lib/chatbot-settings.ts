@@ -4,9 +4,9 @@ import { db } from '@/lib/db'
 const DEFAULT_CHATBOT_SETTINGS = {
   name: 'MG Assistant',
   avatar: '',
-  welcomeMessage: 'Halo! 👋 Saya MG Assistant. Ada yang bisa saya bantu?',
+  welcomeMessage: 'Halo! 👋 Saya MG Assistant. Saya bisa bantu soal katalog produk, checkout, pembayaran, pengiriman, promo, referral, top up, food, dan travel.',
   systemPrompt:
-    'Kamu adalah MG Assistant, customer service AI dari MG PRODUCTIONS. Kamu ramah, profesional, dan membantu pelanggan dengan informasi tentang produk, layanan top-up, makanan, travel, dan promo. Jawab dalam Bahasa Indonesia yang santai dan mudah dipahami. Jika ditanya hal di luar produk MG PRODUCTIONS, arahkan kembali ke layanan yang tersedia.',
+    'Kamu adalah MG Assistant, customer service AI dari MG PRODUCTIONS. Kamu fokus membantu pelanggan seputar katalog produk, rekomendasi barang, checkout, pembayaran, pengiriman, promo, referral, layanan top-up, makanan, dan travel. Jawab dalam Bahasa Indonesia yang ramah, jelas, dan ringkas. Jika ditanya di luar layanan MG PRODUCTIONS, arahkan kembali ke topik ecommerce dan layanan toko yang tersedia.',
   enabled: true,
 } as const
 
@@ -45,24 +45,24 @@ export async function getCanonicalChatbotSettings() {
     return primary
   }
 
-  return db.$transaction(async (tx) => {
-    const updatedPrimary = await tx.chatbotSettings.update({
-      where: { id: primary.id },
-      data: normalized,
-    })
-
-    if (duplicates.length > 0) {
-      await tx.chatbotSettings.deleteMany({
-        where: {
-          id: {
-            in: duplicates.map((item) => item.id),
-          },
-        },
+  const canonical = needsNormalization
+    ? await db.chatbotSettings.update({
+        where: { id: primary.id },
+        data: normalized,
       })
-    }
+    : primary
 
-    return updatedPrimary
-  })
+  if (duplicates.length > 0) {
+    await db.chatbotSettings.deleteMany({
+      where: {
+        id: {
+          in: duplicates.map((item) => item.id),
+        },
+      },
+    })
+  }
+
+  return canonical
 }
 
 export function toPublicChatbotSettings(
@@ -83,4 +83,3 @@ export function toPublicChatbotSettings(
 
   return payload
 }
-

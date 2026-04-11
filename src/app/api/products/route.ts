@@ -5,6 +5,10 @@ import { requireAdmin } from '@/lib/auth'
 import { publicJson } from '@/lib/public-api'
 import { normalizeAssetUrl } from '@/lib/asset-url'
 
+function normalizeSearchValue(value: string) {
+  return value.trim().toLowerCase()
+}
+
 // PUBLIC — Semua orang bisa melihat produk
 export async function GET(request: NextRequest) {
   try {
@@ -26,21 +30,21 @@ export async function GET(request: NextRequest) {
     if (featured === 'true') {
       where.featured = true
     }
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { category: { contains: search, mode: 'insensitive' } },
-      ]
-    }
-
     const products = await db.product.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      take,
     })
 
-    return publicJson(products.map((product) => ({
+    const normalizedSearch = search ? normalizeSearchValue(search) : ''
+    const filteredProducts = normalizedSearch
+      ? products.filter((product) => (
+          normalizeSearchValue(`${product.name} ${product.description} ${product.category}`)
+            .includes(normalizedSearch)
+        ))
+      : products
+    const visibleProducts = take ? filteredProducts.slice(0, take) : filteredProducts
+
+    return publicJson(visibleProducts.map((product) => ({
       ...product,
       image: normalizeAssetUrl(product.image),
     })))

@@ -192,7 +192,7 @@ export default function OrdersTable() {
 
       {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-white/[0.06]">
-        <Table>
+        <Table className="min-w-[760px]">
           <TableHeader>
             <TableRow className="border-white/[0.06] hover:bg-white/[0.02]">
               <TableHead className="text-muted-foreground font-medium">Order ID</TableHead>

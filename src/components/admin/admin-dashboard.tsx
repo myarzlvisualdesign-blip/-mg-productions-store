@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LogOut, Loader2 } from 'lucide-react'
+import { LogOut, Loader2, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useViewStore } from '@/store/view-store'
 import { useAuthStore } from '@/store/auth-store'
@@ -27,12 +27,25 @@ export default function AdminDashboard() {
   const [editPartner, setEditPartner] = useState<Partner | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated) {
       checkAuth()
     }
   }, [checkAuth, isAuthenticated])
+
+  useEffect(() => {
+    if (!mobileSidebarOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [mobileSidebarOpen])
 
   const handleEditProduct = useCallback((product: Product) => {
     setEditPartner(null)
@@ -91,10 +104,24 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-shell flex min-h-screen">
-      <AdminSidebar />
-      <main className="admin-main flex-1 ml-16 md:ml-64 transition-all duration-300">
+      <AdminSidebar
+        desktopExpanded={sidebarExpanded}
+        mobileOpen={mobileSidebarOpen}
+        onDesktopExpandedChange={setSidebarExpanded}
+        onMobileOpenChange={setMobileSidebarOpen}
+      />
+      <main className={`admin-main min-w-0 flex-1 transition-all duration-300 ${sidebarExpanded ? 'md:ml-64' : 'md:ml-16'}`}>
         <div className="admin-topbar sticky top-0 z-30 flex items-center justify-between px-4 py-3 glass-card border-b border-white/[0.06] sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-white/5 md:hidden"
+              aria-label="Buka navigasi admin"
+            >
+              <Menu className="size-4" />
+            </Button>
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-sm text-muted-foreground">
               Login sebagai <span className="text-foreground font-medium">{username ?? 'Admin'}</span>

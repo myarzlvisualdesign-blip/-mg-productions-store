@@ -7,6 +7,8 @@ import {
   toPublicReferralSettings,
 } from '@/lib/referral-settings'
 
+export const dynamic = 'force-dynamic'
+
 // PUBLIC GET — Fetch referral settings (create defaults if not exist)
 export async function GET() {
   try {

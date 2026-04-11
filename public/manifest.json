@@ -5,11 +5,13 @@
   "description": "Premium E-Commerce — Belanja produk pilihan terbaik untuk gaya hidup modern",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "background_color": "#0a0612",
   "theme_color": "#7c3aed",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "id",
+  "dir": "ltr",
   "categories": ["shopping", "lifestyle"],
   "icons": [
     {

@@ -1,3 +1,21 @@
+function withFreshQuery(input: string) {
+  try {
+    const base =
+      typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+    const url = new URL(input, base)
+    url.searchParams.set('_ts', Date.now().toString())
+
+    if (url.origin === base) {
+      return `${url.pathname}${url.search}${url.hash}`
+    }
+
+    return url.toString()
+  } catch {
+    const separator = input.includes('?') ? '&' : '?'
+    return `${input}${separator}_ts=${Date.now()}`
+  }
+}
+
 export async function fetchJsonWithRetry<T>(
   input: string,
   init?: RequestInit,
@@ -7,11 +25,13 @@ export async function fetchJsonWithRetry<T>(
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     try {
-      const response = await fetch(input, {
+      const response = await fetch(withFreshQuery(input), {
         ...init,
         cache: 'no-store',
         headers: {
-          'Cache-Control': 'no-cache',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
           ...(init?.headers ?? {}),
         },
       })

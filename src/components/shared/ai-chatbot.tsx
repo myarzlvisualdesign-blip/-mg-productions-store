@@ -62,10 +62,10 @@ const DEFAULT_SETTINGS: ChatbotSettings = {
 // ─── Quick Actions ───────────────────────────────────────────────────────
 
 const QUICK_ACTIONS = [
-  'Produk apa saja yang tersedia?',
-  'Cari produk kamera',
+  'Rekomendasi produk budget 1 juta',
+  'Cara checkout dan pembayaran',
   'Info layanan Top Up',
-  'Info layanan Travel',
+  'Promo dan referral yang aktif',
 ]
 
 // ─── Component ───────────────────────────────────────────────────────────
@@ -231,7 +231,7 @@ export default function AIChatbot() {
         const errorMsg: Message = {
           id: generateId(),
           role: 'assistant',
-          content: 'Maaf, saya sedang mengalami gangguan koneksi. Silakan coba lagi nanti.',
+          content: 'Server chat sedang sibuk. Saya tetap bisa bantu seputar katalog produk, checkout, pembayaran, pengiriman, promo, referral, top up, food, dan travel. Coba kirim ulang pertanyaan yang lebih spesifik.',
           timestamp: new Date(),
         }
         setMessages((prev) => [...prev, errorMsg])

@@ -51,24 +51,24 @@ export async function getCanonicalReferralSettings() {
     return primary
   }
 
-  return db.$transaction(async (tx) => {
-    const updatedPrimary = await tx.referralSettings.update({
-      where: { id: primary.id },
-      data: normalized,
-    })
-
-    if (duplicates.length > 0) {
-      await tx.referralSettings.deleteMany({
-        where: {
-          id: {
-            in: duplicates.map((item) => item.id),
-          },
-        },
+  const canonical = needsNormalization
+    ? await db.referralSettings.update({
+        where: { id: primary.id },
+        data: normalized,
       })
-    }
+    : primary
 
-    return updatedPrimary
-  })
+  if (duplicates.length > 0) {
+    await db.referralSettings.deleteMany({
+      where: {
+        id: {
+          in: duplicates.map((item) => item.id),
+        },
+      },
+    })
+  }
+
+  return canonical
 }
 
 export function toPublicReferralSettings(settings: ReferralSettings) {

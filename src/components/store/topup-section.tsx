@@ -241,6 +241,7 @@ export default function TopUpSection() {
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(false)
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
+  const [serviceImgErrors, setServiceImgErrors] = useState<Record<string, boolean>>({})
   const [browserUrl, setBrowserUrl] = useState('')
   const [browserTitle, setBrowserTitle] = useState('')
   const [browserOpen, setBrowserOpen] = useState(false)
@@ -358,16 +359,23 @@ export default function TopUpSection() {
                       {/* Header */}
                       <div className={`bg-gradient-to-r ${service.color} p-3 sm:p-4`}>
                         <div className="flex items-center gap-2 sm:gap-2.5">
-                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg sm:text-xl overflow-hidden">
-                            {service.image ? (
-                              <img src={service.image} alt={service.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <span>{service.emoji}</span>
-                            )}
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/90 p-0.5 text-lg shadow-lg shadow-black/10 sm:h-11 sm:w-11 sm:text-xl">
+                            <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-white">
+                              {service.image && !serviceImgErrors[service.id] ? (
+                                <img
+                                  src={service.image}
+                                  alt={service.name}
+                                  className="h-full w-full object-cover object-center"
+                                  onError={() => setServiceImgErrors((prev) => ({ ...prev, [service.id]: true }))}
+                                />
+                              ) : (
+                                <span className="drop-shadow-sm">{service.emoji}</span>
+                              )}
+                            </div>
                           </div>
                           <div className="min-w-0">
                             <h3 className="text-xs sm:text-sm font-bold text-white truncate">{service.name}</h3>
-                            <p className="text-[9px] sm:text-[11px] text-white/70 truncate">{service.subtitle}</p>
+                            <p className="line-clamp-2 text-[9px] sm:text-[11px] text-white/75">{service.subtitle}</p>
                           </div>
                         </div>
                       </div>
