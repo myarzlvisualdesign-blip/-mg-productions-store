@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { put } from '@vercel/blob'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
@@ -13,6 +14,67 @@ function getSafeFolder(folder: string) {
 
 function toDataUrl(fileType: string, buffer: Buffer) {
   return `data:${fileType};base64,${buffer.toString('base64')}`
+}
+
+type UploadRuntimeEnv = {
+  BLOB_READ_WRITE_TOKEN?: string
+  VERCEL?: string
+  GITHUB_UPLOAD_TOKEN?: string
+  GITHUB_UPLOAD_OWNER?: string
+  GITHUB_UPLOAD_REPO?: string
+  GITHUB_UPLOAD_BRANCH?: string
+}
+
+function getRuntimeEnv(): UploadRuntimeEnv {
+  try {
+    const { env } = getCloudflareContext()
+    return env as UploadRuntimeEnv
+  } catch {
+    return process.env as UploadRuntimeEnv
+  }
+}
+
+function isCloudflareWorkerRuntime() {
+  try {
+    getCloudflareContext()
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function uploadToGitHub(params: {
+  buffer: Buffer
+  contentType: string
+  owner: string
+  repo: string
+  branch: string
+  token: string
+  path: string
+}) {
+  const { buffer, contentType, owner, repo, branch, token, path } = params
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`
+  const response = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      'User-Agent': 'mg-productions-store-upload',
+    },
+    body: JSON.stringify({
+      message: `upload ${path}`,
+      content: buffer.toString('base64'),
+      branch,
+    }),
+  })
+
+  if (!response.ok) {
+    const payload = await response.text().catch(() => '')
+    throw new Error(payload || `GitHub upload failed with status ${response.status}`)
+  }
+
+  return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
 }
 
 export async function POST(request: NextRequest) {
@@ -54,11 +116,31 @@ export async function POST(request: NextRequest) {
     const ext = file.name.split('.').pop() || 'jpg'
     const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`
     const safeFolder = getSafeFolder(folder)
+    const runtimeEnv = getRuntimeEnv()
+    const githubOwner = runtimeEnv.GITHUB_UPLOAD_OWNER
+    const githubRepo = runtimeEnv.GITHUB_UPLOAD_REPO
+    const githubBranch = runtimeEnv.GITHUB_UPLOAD_BRANCH || 'cdn-assets'
+    const githubToken = runtimeEnv.GITHUB_UPLOAD_TOKEN
+    const uploadPath = `uploads/${safeFolder}/${uniqueName}`
 
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+    if (githubToken && githubOwner && githubRepo) {
+      const url = await uploadToGitHub({
+        buffer,
+        contentType: file.type,
+        owner: githubOwner,
+        repo: githubRepo,
+        branch: githubBranch,
+        token: githubToken,
+        path: uploadPath,
+      })
+
+      return NextResponse.json({ url, storage: 'github' })
+    }
+
+    if (runtimeEnv.BLOB_READ_WRITE_TOKEN) {
       const blob = await put(`${safeFolder}/${uniqueName}`, file, {
         access: 'public',
-        token: process.env.BLOB_READ_WRITE_TOKEN,
+        token: runtimeEnv.BLOB_READ_WRITE_TOKEN,
         addRandomSuffix: false,
         contentType: file.type,
       })
@@ -66,11 +148,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ url: blob.url })
     }
 
-    if (process.env.VERCEL) {
+    if (runtimeEnv.VERCEL) {
       return NextResponse.json({
         url: toDataUrl(file.type, buffer),
         storage: 'inline',
       })
+    }
+
+    if (isCloudflareWorkerRuntime()) {
+      return NextResponse.json(
+        { error: 'Storage upload belum dikonfigurasi di server Cloudflare.' },
+        { status: 503 }
+      )
     }
 
     const uploadDir = join(process.cwd(), 'public', 'uploads', safeFolder)

@@ -23,5 +23,10 @@
 			"binding": "WORKER_SELF_REFERENCE",
 			"service": "mg-productions-store"
 		}
-	]
+	],
+	"vars": {
+		"GITHUB_UPLOAD_OWNER": "myarzlvisualdesign-blip",
+		"GITHUB_UPLOAD_REPO": "-mg-productions-store",
+		"GITHUB_UPLOAD_BRANCH": "cdn-assets"
+	}
 }
